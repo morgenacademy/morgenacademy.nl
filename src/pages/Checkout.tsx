@@ -9,6 +9,8 @@ import {
   Loader2,
   Star,
   Quote,
+  RotateCcw,
+  CreditCard,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -295,6 +297,38 @@ const Checkout = () => {
                   </div>
                 </div>
 
+                {/* Payment methods */}
+                <div>
+                  <h2 className="font-display text-xl text-foreground mb-3">
+                    Betaalmethoden
+                  </h2>
+                  <div className="grid grid-cols-4 gap-2">
+                    {[
+                      { name: "iDEAL", icon: "https://www.mollie.com/external/icons/payment-methods/ideal.svg" },
+                      { name: "Creditcard", icon: "https://www.mollie.com/external/icons/payment-methods/creditcard.svg" },
+                      { name: "Klarna", icon: "https://www.mollie.com/external/icons/payment-methods/klarna.svg" },
+                      { name: "in3", icon: "https://www.mollie.com/external/icons/payment-methods/in3.svg" },
+                    ].map((method) => (
+                      <div
+                        key={method.name}
+                        className="flex flex-col items-center gap-1.5 rounded-lg border border-border bg-background/50 p-3"
+                      >
+                        <img
+                          src={method.icon}
+                          alt={method.name}
+                          className="h-6 w-auto"
+                        />
+                        <span className="text-[10px] text-muted-foreground font-ui">
+                          {method.name}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                  <p className="text-[10px] text-muted-foreground/60 mt-2 text-center">
+                    Je kiest je betaalmethode in de volgende stap
+                  </p>
+                </div>
+
                 {/* Checkboxes */}
                 <div className="space-y-3">
                   <label className="flex items-start gap-2.5 cursor-pointer">
@@ -337,6 +371,19 @@ const Checkout = () => {
                     "Afrekenen"
                   )}
                 </Button>
+
+                {/* Guarantee */}
+                <div className="rounded-lg border border-success/20 bg-success/5 p-4 flex items-start gap-3">
+                  <RotateCcw className="h-5 w-5 text-success shrink-0 mt-0.5" />
+                  <div>
+                    <p className="text-xs font-medium text-foreground">
+                      14 dagen niet goed? Geld terug.
+                    </p>
+                    <p className="text-[10px] text-muted-foreground mt-0.5 leading-relaxed">
+                      Niet tevreden? Neem binnen 14 dagen contact op en je krijgt je volledige aankoopbedrag terug. Geen vragen, geen gedoe.
+                    </p>
+                  </div>
+                </div>
 
                 {/* Trust badge */}
                 <div className="flex items-center justify-center gap-2 pt-1">
