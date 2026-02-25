@@ -20,6 +20,7 @@ export interface Course {
   totalDuration: string;
   progress?: number; // 0-100
   comingSoon?: boolean;
+  price?: string; // e.g. "49.00"
   lessons: Lesson[];
 }
 
@@ -32,6 +33,7 @@ export const courses: Course[] = [
     totalLessons: 5,
     totalDuration: "2u 15min",
     progress: 20,
+    price: "49.00",
     lessons: [
       {
         id: "les-1",

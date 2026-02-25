@@ -10,6 +10,7 @@ import ResetPassword from "./pages/ResetPassword";
 import Dashboard from "./pages/Dashboard";
 import CourseDetail from "./pages/CourseDetail";
 import ProtectedRoute from "./components/ProtectedRoute";
+import PaymentStatus from "./pages/PaymentStatus";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -25,6 +26,7 @@ const App = () => (
           <Route path="/login" element={<Login />} />
           <Route path="/registreren" element={<Register />} />
           <Route path="/reset-password" element={<ResetPassword />} />
+          <Route path="/betaling" element={<PaymentStatus />} />
           <Route
             path="/dashboard"
             element={

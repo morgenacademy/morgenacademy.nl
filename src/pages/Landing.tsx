@@ -1,10 +1,53 @@
+import { useState } from "react";
 import { motion } from "framer-motion";
-import { Play, Lock, ArrowRight, Sparkles } from "lucide-react";
+import { Play, Lock, ArrowRight, Sparkles, Loader2 } from "lucide-react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { courses } from "@/data/courses";
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
 
 const Landing = () => {
+  const [loadingCourse, setLoadingCourse] = useState<string | null>(null);
+  const { toast } = useToast();
+
+  const handleBuy = async (courseId: string, courseTitle: string, price: string) => {
+    setLoadingCourse(courseId);
+    try {
+      const email = prompt("Vul je e-mailadres in om af te rekenen:");
+      if (!email) {
+        setLoadingCourse(null);
+        return;
+      }
+
+      const redirectUrl = `${window.location.origin}/betaling?course=${courseId}`;
+
+      const { data, error } = await supabase.functions.invoke("create-mollie-payment", {
+        body: {
+          courseId,
+          courseTitle,
+          amount: price,
+          email,
+          redirectUrl,
+        },
+      });
+
+      if (error || !data?.checkoutUrl) {
+        throw new Error("Payment creation failed");
+      }
+
+      window.location.href = data.checkoutUrl;
+    } catch (err) {
+      console.error(err);
+      toast({
+        title: "Fout bij betaling",
+        description: "Er ging iets mis. Probeer het opnieuw.",
+        variant: "destructive",
+      });
+      setLoadingCourse(null);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-background">
       {/* Header */}
@@ -123,16 +166,25 @@ const Landing = () => {
                       {course.totalLessons} lessen · {course.totalDuration}
                     </span>
                     <div className="flex-1" />
-                    <a
-                      href="https://plugandpay.nl"
-                      target="_blank"
-                      rel="noopener noreferrer"
+                    {course.price && (
+                      <span className="text-sm font-semibold text-foreground mr-2">
+                        €{course.price}
+                      </span>
+                    )}
+                    <Button
+                      className="gap-2 text-sm"
+                      disabled={loadingCourse === course.id}
+                      onClick={() => handleBuy(course.id, course.title, course.price || "49.00")}
                     >
-                      <Button className="gap-2 text-sm">
-                        Koop nu
-                        <ArrowRight className="h-4 w-4" />
-                      </Button>
-                    </a>
+                      {loadingCourse === course.id ? (
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                      ) : (
+                        <>
+                          Koop nu
+                          <ArrowRight className="h-4 w-4" />
+                        </>
+                      )}
+                    </Button>
                   </div>
                 )}
               </div>
