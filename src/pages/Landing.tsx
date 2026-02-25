@@ -7,10 +7,12 @@ import { courses } from "@/data/courses";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import WaitlistDialog from "@/components/WaitlistDialog";
+import IncompanyDialog from "@/components/IncompanyDialog";
 
 const Landing = () => {
   const [loadingCourse, setLoadingCourse] = useState<string | null>(null);
   const [waitlistCourse, setWaitlistCourse] = useState<{ id: string; title: string } | null>(null);
+  const [incompanyOpen, setIncompanyOpen] = useState(false);
   const { toast } = useToast();
 
   const handleBuy = async (courseId: string, courseTitle: string, price: string) => {
@@ -245,12 +247,14 @@ const Landing = () => {
             </div>
 
             <div className="flex flex-col gap-3 shrink-0 w-full md:w-auto md:pt-10">
-              <a href="mailto:academy@morgencompany.com?subject=Incompany%20training%20aanvragen">
-                <Button size="lg" className="gap-2 text-sm uppercase tracking-wider w-full">
-                  <Mail className="h-4 w-4" />
-                  Training aanvragen
-                </Button>
-              </a>
+              <Button
+                size="lg"
+                className="gap-2 text-sm uppercase tracking-wider w-full"
+                onClick={() => setIncompanyOpen(true)}
+              >
+                <Mail className="h-4 w-4" />
+                Training aanvragen
+              </Button>
               <p className="text-xs text-muted-foreground text-center">
                 We nemen binnen 1 werkdag contact op
               </p>
@@ -266,6 +270,9 @@ const Landing = () => {
         courseId={waitlistCourse?.id || ""}
         courseTitle={waitlistCourse?.title || ""}
       />
+
+      {/* Incompany Dialog */}
+      <IncompanyDialog open={incompanyOpen} onOpenChange={setIncompanyOpen} />
 
       {/* Footer */}
       <footer className="border-t border-border/50 py-8">

@@ -26,7 +26,7 @@ const IncompanyDialog = ({ open, onOpenChange }: IncompanyDialogProps) => {
 
     setLoading(true);
     try {
-      const { error } = await supabase.from("incompany_requests").insert({
+      const { error } = await (supabase as any).from("incompany_requests").insert({
         name: name.trim(),
         email: email.trim().toLowerCase(),
         remarks: remarks.trim() || null,
