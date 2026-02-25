@@ -3,6 +3,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } f
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import { Checkbox } from "@/components/ui/checkbox";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { Loader2, CheckCircle } from "lucide-react";
@@ -17,6 +18,7 @@ const IncompanyDialog = ({ open, onOpenChange }: IncompanyDialogProps) => {
   const [email, setEmail] = useState("");
   const [remarks, setRemarks] = useState("");
   const [loading, setLoading] = useState(false);
+  const [newsletter, setNewsletter] = useState(true);
   const [success, setSuccess] = useState(false);
   const { toast } = useToast();
 
@@ -30,6 +32,7 @@ const IncompanyDialog = ({ open, onOpenChange }: IncompanyDialogProps) => {
         name: name.trim(),
         email: email.trim().toLowerCase(),
         remarks: remarks.trim() || null,
+        newsletter,
       });
 
       if (error) throw error;
@@ -52,6 +55,7 @@ const IncompanyDialog = ({ open, onOpenChange }: IncompanyDialogProps) => {
         setName("");
         setEmail("");
         setRemarks("");
+        setNewsletter(true);
       }, 300);
     }
     onOpenChange(open);
@@ -109,6 +113,16 @@ const IncompanyDialog = ({ open, onOpenChange }: IncompanyDialogProps) => {
                 maxLength={1000}
                 rows={3}
               />
+              <label className="flex items-start gap-2.5 cursor-pointer">
+                <Checkbox
+                  checked={newsletter}
+                  onCheckedChange={(checked) => setNewsletter(checked === true)}
+                  className="mt-0.5"
+                />
+                <span className="text-xs text-muted-foreground leading-relaxed">
+                  Keep me in the loop — ik ontvang graag AI- en automatiseringstips van Morgen 🚀
+                </span>
+              </label>
               <Button type="submit" className="w-full" disabled={loading}>
                 {loading ? (
                   <Loader2 className="h-4 w-4 animate-spin" />

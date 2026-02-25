@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Checkbox } from "@/components/ui/checkbox";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { Loader2, CheckCircle, Sparkles, Zap, Target } from "lucide-react";
@@ -17,6 +18,7 @@ const WaitlistDialog = ({ open, onOpenChange, courseId, courseTitle }: WaitlistD
   const [firstName, setFirstName] = useState("");
   const [email, setEmail] = useState("");
   const [loading, setLoading] = useState(false);
+  const [newsletter, setNewsletter] = useState(true);
   const [success, setSuccess] = useState(false);
   const { toast } = useToast();
 
@@ -30,6 +32,7 @@ const WaitlistDialog = ({ open, onOpenChange, courseId, courseTitle }: WaitlistD
         course_id: courseId,
         first_name: firstName.trim(),
         email: email.trim().toLowerCase(),
+        newsletter,
       });
 
       if (error) {
@@ -61,6 +64,7 @@ const WaitlistDialog = ({ open, onOpenChange, courseId, courseTitle }: WaitlistD
         setSuccess(false);
         setFirstName("");
         setEmail("");
+        setNewsletter(true);
       }, 300);
     }
     onOpenChange(open);
@@ -143,6 +147,16 @@ const WaitlistDialog = ({ open, onOpenChange, courseId, courseTitle }: WaitlistD
                 required
                 maxLength={255}
               />
+              <label className="flex items-start gap-2.5 cursor-pointer">
+                <Checkbox
+                  checked={newsletter}
+                  onCheckedChange={(checked) => setNewsletter(checked === true)}
+                  className="mt-0.5"
+                />
+                <span className="text-xs text-muted-foreground leading-relaxed">
+                  Keep me in the loop — ik ontvang graag AI- en automatiseringstips van Morgen 🚀
+                </span>
+              </label>
               <Button type="submit" className="w-full" disabled={loading}>
                 {loading ? (
                   <Loader2 className="h-4 w-4 animate-spin" />
