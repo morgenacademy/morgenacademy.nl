@@ -13,6 +13,7 @@ import ProtectedRoute from "./components/ProtectedRoute";
 import PaymentStatus from "./pages/PaymentStatus";
 import AdminUpload from "./pages/AdminUpload";
 import Checkout from "./pages/Checkout";
+import Privacy from "./pages/Privacy";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -30,6 +31,7 @@ const App = () => (
           <Route path="/reset-password" element={<ResetPassword />} />
           <Route path="/betaling" element={<PaymentStatus />} />
           <Route path="/checkout/:courseId" element={<Checkout />} />
+          <Route path="/privacy" element={<Privacy />} />
           <Route
             path="/admin/upload"
             element={

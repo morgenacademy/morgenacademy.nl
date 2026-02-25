@@ -416,6 +416,14 @@ const Checkout = () => {
                   </div>
                   <Shield className="h-3.5 w-3.5 text-muted-foreground" />
                 </div>
+                <div className="text-center pt-1">
+                  <Link
+                    to="/privacy"
+                    className="text-[10px] text-muted-foreground/50 hover:text-primary transition-colors"
+                  >
+                    Privacybeleid
+                  </Link>
+                </div>
               </form>
             </div>
           </motion.div>
