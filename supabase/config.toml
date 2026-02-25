@@ -1,1 +1,7 @@
 project_id = "gfesfrcanrjnocqeveuh"
+
+[functions.create-mollie-payment]
+verify_jwt = false
+
+[functions.mollie-webhook]
+verify_jwt = false
