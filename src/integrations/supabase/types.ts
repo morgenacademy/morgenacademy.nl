@@ -14,6 +14,30 @@ export type Database = {
   }
   public: {
     Tables: {
+      incompany_requests: {
+        Row: {
+          created_at: string
+          email: string
+          id: string
+          name: string
+          remarks: string | null
+        }
+        Insert: {
+          created_at?: string
+          email: string
+          id?: string
+          name: string
+          remarks?: string | null
+        }
+        Update: {
+          created_at?: string
+          email?: string
+          id?: string
+          name?: string
+          remarks?: string | null
+        }
+        Relationships: []
+      }
       payments: {
         Row: {
           amount: number
