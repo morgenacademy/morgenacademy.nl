@@ -216,7 +216,7 @@ const Landing = () => {
           <p className="text-sm text-muted-foreground">
             Een initiatief van{" "}
             <a
-              href="https://morgencompany.nl"
+              href="https://www.morgencompany.com"
               target="_blank"
               rel="noopener noreferrer"
               className="text-primary hover:underline"
@@ -224,9 +224,14 @@ const Landing = () => {
               Morgen Company
             </a>
           </p>
-          <p className="text-xs text-muted-foreground/60">
-            © {new Date().getFullYear()} Morgen Academy
-          </p>
+          <a
+            href="https://www.morgencompany.com"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-xs text-muted-foreground/60 hover:text-primary transition-colors"
+          >
+            © {new Date().getFullYear()} Morgen Company
+          </a>
         </div>
       </footer>
     </div>
