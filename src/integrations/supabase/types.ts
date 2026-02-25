@@ -65,6 +65,30 @@ export type Database = {
         }
         Relationships: []
       }
+      waitlist: {
+        Row: {
+          course_id: string
+          created_at: string
+          email: string
+          first_name: string
+          id: string
+        }
+        Insert: {
+          course_id: string
+          created_at?: string
+          email: string
+          first_name: string
+          id?: string
+        }
+        Update: {
+          course_id?: string
+          created_at?: string
+          email?: string
+          first_name?: string
+          id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
