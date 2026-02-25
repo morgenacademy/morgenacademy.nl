@@ -4,13 +4,11 @@ import { motion } from "framer-motion";
 import {
   ArrowLeft,
   Shield,
-  Clock,
-  BookOpen,
-  Zap,
+  Lock,
   CheckCircle,
   Loader2,
-  Lock,
   Star,
+  Quote,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -19,37 +17,31 @@ import { courses } from "@/data/courses";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 
-const testimonials = [
-  {
-    name: "Marieke V.",
-    role: "Marketing Manager",
-    quote:
-      "Na deze training heb ik binnen een week mijn eerste AI-assistent gebouwd. Heel praktisch en goed uitgelegd!",
-    stars: 5,
-  },
-  {
-    name: "Thomas B.",
-    role: "Ondernemer",
-    quote:
-      "Eindelijk een training die niet alleen theorie is, maar je echt aan de slag laat gaan. Aanrader!",
-    stars: 5,
-  },
-  {
-    name: "Lisa K.",
-    role: "HR Adviseur",
-    quote:
-      "De stap-voor-stap aanpak maakt het heel toegankelijk. Ik had geen technische achtergrond en kon het prima volgen.",
-    stars: 5,
-  },
+const benefits = [
+  "Bespaar 20% tijd en win een volle werkdag per week",
+  "Eenvoudig en je hebt geen technische kennis nodig",
+  "Bouw je eigen assistenten; automatisering die nooit slaapt",
+  "Toekomstbestendig: van afwachter naar voorloper in je vak",
+  "Volledig online, leer in je eigen tempo en plek",
+  "Onbeperkt toegang en blijvende updates voor altijd",
 ];
 
-const benefits = [
-  "Direct toegang na betaling",
-  "Levenslang beschikbaar",
-  "31 praktische videolessen",
-  "Bouw je eigen AI-assistent",
-  "Downloadbare templates en checklists",
-  "Op je eigen tempo leren",
+const testimonials = [
+  {
+    quote:
+      "Een heldere to the point training. Nu een week na de training al ontzettend veel tijdwinst geboekt. Een hele goede investering in jezelf en je bedrijf!",
+    name: "Maaike Bemelmans",
+  },
+  {
+    quote:
+      "Hands on training die gelijk resultaat oplevert. Heel praktisch en duidelijk uitgelegd.",
+    name: "Alies van der Linden",
+  },
+  {
+    quote:
+      "Eindelijk een training die niet alleen theorie is, maar je echt aan de slag laat gaan. Aanrader!",
+    name: "Thomas B.",
+  },
 ];
 
 const Checkout = () => {
@@ -57,8 +49,11 @@ const Checkout = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
 
+  const [firstName, setFirstName] = useState("");
+  const [lastName, setLastName] = useState("");
   const [email, setEmail] = useState("");
   const [newsletter, setNewsletter] = useState(true);
+  const [agree, setAgree] = useState(false);
   const [loading, setLoading] = useState(false);
 
   const course = courses.find((c) => c.id === courseId);
@@ -78,9 +73,13 @@ const Checkout = () => {
     );
   }
 
+  const price = course.price || "49.00";
+  const priceNum = parseFloat(price);
+  const btw = priceNum - priceNum / 1.21;
+
   const handleCheckout = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!email.trim()) return;
+    if (!email.trim() || !firstName.trim() || !agree) return;
 
     setLoading(true);
     try {
@@ -92,7 +91,7 @@ const Checkout = () => {
           body: {
             courseId: course.id,
             courseTitle: course.title,
-            amount: course.price || "49.00",
+            amount: price,
             email: email.trim().toLowerCase(),
             redirectUrl,
           },
@@ -119,13 +118,12 @@ const Checkout = () => {
     <div className="min-h-screen bg-background">
       {/* Header */}
       <header className="border-b border-border/50">
-        <div className="mx-auto flex max-w-6xl items-center px-6 py-5">
+        <div className="mx-auto flex max-w-6xl items-center px-6 py-4">
           <button
             onClick={() => navigate(-1)}
             className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors font-ui"
           >
             <ArrowLeft className="h-4 w-4" />
-            Terug
           </button>
           <div className="flex-1 text-center">
             <Link to="/">
@@ -134,133 +132,182 @@ const Checkout = () => {
               </span>
             </Link>
           </div>
-          <div className="w-16" />
+          <div className="w-8" />
         </div>
       </header>
 
-      <div className="mx-auto max-w-6xl px-6 py-12">
-        <div className="grid gap-12 lg:grid-cols-5">
-          {/* Left: Course info & social proof */}
-          <div className="lg:col-span-3 space-y-10">
-            {/* Course overview */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5 }}
-            >
-              <div className="flex gap-5 items-start">
-                <img
-                  src={course.thumbnail}
-                  alt={course.title}
-                  className="w-28 h-20 rounded-lg object-cover shrink-0"
-                />
-                <div>
-                  <h1 className="font-display text-2xl md:text-3xl text-foreground">
-                    {course.title}
-                  </h1>
-                  <p className="text-muted-foreground mt-1 text-sm leading-relaxed">
-                    {course.subtitle}
-                  </p>
-                </div>
-              </div>
-            </motion.div>
+      <div className="mx-auto max-w-6xl px-6 py-10 md:py-16">
+        <div className="grid gap-10 lg:grid-cols-2">
+          {/* LEFT: Sales copy + social proof */}
+          <motion.div
+            initial={{ opacity: 0, x: -20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.5 }}
+            className="space-y-8"
+          >
+            {/* Hero copy */}
+            <div>
+              <h1 className="font-display text-3xl md:text-4xl text-foreground leading-tight">
+                Win wekelijks 8 uur terug met AI
+              </h1>
+              <p className="mt-4 text-muted-foreground leading-relaxed">
+                <strong className="text-foreground">
+                  Claim je voorsprong. 100% online en onbeperkt toegang.
+                </strong>{" "}
+                De wereld verandert snel. Terwijl anderen nog handmatig werken,
+                zet jij de turbo aan. In deze praktische online training leer je
+                hoe je AI voor je laat werken. Geen vage theorie, maar directe
+                tijdwinst.
+              </p>
+            </div>
+
+            {/* Course image */}
+            <div className="rounded-xl overflow-hidden border border-border">
+              <img
+                src={course.thumbnail}
+                alt={course.title}
+                className="w-full aspect-video object-cover"
+              />
+            </div>
 
             {/* Benefits */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5, delay: 0.1 }}
-            >
+            <div>
               <h2 className="font-display text-xl text-foreground mb-4">
-                Wat je krijgt
+                Transformeer je werkroutine met slimme automatisering
               </h2>
-              <div className="grid sm:grid-cols-2 gap-3">
-                {benefits.map((benefit, i) => (
-                  <div
-                    key={i}
-                    className="flex items-center gap-2.5 text-sm text-muted-foreground"
-                  >
-                    <CheckCircle className="h-4 w-4 text-primary shrink-0" />
-                    <span>{benefit}</span>
-                  </div>
-                ))}
-              </div>
-            </motion.div>
-
-            {/* Testimonials */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5, delay: 0.2 }}
-            >
-              <h2 className="font-display text-xl text-foreground mb-4">
-                Wat anderen zeggen
-              </h2>
-              <div className="space-y-4">
-                {testimonials.map((t, i) => (
-                  <div
-                    key={i}
-                    className="rounded-xl border border-border bg-card p-5"
-                  >
-                    <div className="flex gap-1 mb-2">
-                      {Array.from({ length: t.stars }).map((_, j) => (
-                        <Star
-                          key={j}
-                          className="h-3.5 w-3.5 fill-primary text-primary"
-                        />
-                      ))}
-                    </div>
-                    <p className="text-sm text-foreground leading-relaxed italic">
-                      "{t.quote}"
-                    </p>
-                    <p className="text-xs text-muted-foreground mt-2">
-                      {t.name} · {t.role}
-                    </p>
-                  </div>
-                ))}
-              </div>
-            </motion.div>
-          </div>
-
-          {/* Right: Checkout form */}
-          <div className="lg:col-span-2">
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5, delay: 0.15 }}
-              className="sticky top-8"
-            >
-              <div className="rounded-xl border border-border bg-card p-6 space-y-6">
-                {/* Price */}
-                <div className="text-center pb-4 border-b border-border">
-                  <p className="text-xs uppercase tracking-[0.2em] text-muted-foreground mb-1">
-                    Eenmalig
-                  </p>
-                  <div className="flex items-baseline justify-center gap-1">
-                    <span className="font-display text-5xl text-foreground">
-                      €{course.price}
+              <div className="space-y-3">
+                {benefits.map((b, i) => (
+                  <div key={i} className="flex items-start gap-3">
+                    <CheckCircle className="h-5 w-5 text-primary shrink-0 mt-0.5" />
+                    <span className="text-sm text-muted-foreground leading-relaxed">
+                      {b}
                     </span>
                   </div>
-                  <p className="text-xs text-muted-foreground mt-1">
-                    Inclusief BTW · Levenslang toegang
+                ))}
+              </div>
+            </div>
+
+            {/* Long description */}
+            <div>
+              <p className="text-sm text-muted-foreground leading-relaxed">
+                Leer efficiënt en zonder technisch gedoe AI te gebruiken om taken
+                te automatiseren, lessen te volgen en continue updates te
+                ontvangen. Je bouwt systematisch aan je eigen vaardigheden en
+                krijgt levenslange toegang tot alle materialen.
+              </p>
+            </div>
+
+            {/* Testimonials */}
+            <div className="space-y-4 pt-2">
+              {testimonials.map((t, i) => (
+                <div
+                  key={i}
+                  className="rounded-xl border border-border bg-card p-5 relative"
+                >
+                  <Quote className="h-4 w-4 text-primary/30 absolute top-4 right-4" />
+                  <p className="text-sm text-foreground leading-relaxed italic pr-6">
+                    {t.quote}
+                  </p>
+                  <p className="text-xs text-muted-foreground mt-3 font-ui font-medium">
+                    {t.name}
                   </p>
                 </div>
+              ))}
+            </div>
+          </motion.div>
 
-                {/* Form */}
-                <form onSubmit={handleCheckout} className="space-y-3">
-                  <div>
-                    <label className="text-xs font-ui text-muted-foreground mb-1.5 block">
-                      E-mailadres
-                    </label>
+          {/* RIGHT: Checkout form */}
+          <motion.div
+            initial={{ opacity: 0, x: 20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.5, delay: 0.1 }}
+          >
+            <div className="sticky top-8 space-y-6">
+              <form
+                onSubmit={handleCheckout}
+                className="rounded-xl border border-border bg-card p-6 md:p-8 space-y-6"
+              >
+                {/* Your details */}
+                <div>
+                  <h2 className="font-display text-xl text-foreground mb-4">
+                    Jouw gegevens
+                  </h2>
+                  <div className="space-y-3">
+                    <div className="grid grid-cols-2 gap-3">
+                      <Input
+                        placeholder="Voornaam"
+                        value={firstName}
+                        onChange={(e) => setFirstName(e.target.value)}
+                        required
+                        maxLength={50}
+                      />
+                      <Input
+                        placeholder="Achternaam"
+                        value={lastName}
+                        onChange={(e) => setLastName(e.target.value)}
+                        maxLength={50}
+                      />
+                    </div>
                     <Input
                       type="email"
-                      placeholder="jouw@email.nl"
+                      placeholder="E-mailadres"
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
                       required
                       maxLength={255}
                     />
                   </div>
+                </div>
+
+                {/* Order summary */}
+                <div>
+                  <h2 className="font-display text-xl text-foreground mb-4">
+                    Besteloverzicht
+                  </h2>
+                  <div className="space-y-3">
+                    <div className="flex justify-between items-start">
+                      <div>
+                        <p className="text-sm font-medium text-foreground">
+                          {course.title}
+                        </p>
+                        <p className="text-xs text-muted-foreground mt-0.5">
+                          Eenmalig inclusief 21% btw
+                        </p>
+                      </div>
+                      <span className="text-sm font-semibold text-foreground whitespace-nowrap">
+                        € {priceNum.toFixed(2).replace(".", ",")}
+                      </span>
+                    </div>
+
+                    <div className="border-t border-border pt-3">
+                      <div className="flex justify-between items-center">
+                        <span className="text-sm font-semibold text-foreground">
+                          Totaal
+                        </span>
+                        <span className="text-lg font-display font-semibold text-foreground">
+                          € {priceNum.toFixed(2).replace(".", ",")}
+                        </span>
+                      </div>
+                      <p className="text-xs text-muted-foreground mt-1">
+                        Totaalbedrag is inclusief € {btw.toFixed(2).replace(".", ",")} btw
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Checkboxes */}
+                <div className="space-y-3">
+                  <label className="flex items-start gap-2.5 cursor-pointer">
+                    <Checkbox
+                      checked={agree}
+                      onCheckedChange={(checked) => setAgree(checked === true)}
+                      className="mt-0.5"
+                      required
+                    />
+                    <span className="text-xs text-muted-foreground leading-relaxed">
+                      Ik bevestig mijn aankoop en gegevens.
+                    </span>
+                  </label>
 
                   <label className="flex items-start gap-2.5 cursor-pointer">
                     <Checkbox
@@ -275,53 +322,38 @@ const Checkout = () => {
                       automatiseringstips van Morgen 🚀
                     </span>
                   </label>
-
-                  <Button
-                    type="submit"
-                    size="lg"
-                    className="w-full text-sm uppercase tracking-wider"
-                    disabled={loading}
-                  >
-                    {loading ? (
-                      <Loader2 className="h-4 w-4 animate-spin" />
-                    ) : (
-                      "Afrekenen"
-                    )}
-                  </Button>
-                </form>
-
-                {/* Trust signals */}
-                <div className="space-y-3 pt-2">
-                  <div className="flex items-center gap-2.5 text-xs text-muted-foreground">
-                    <Shield className="h-4 w-4 text-primary shrink-0" />
-                    <span>Veilig betalen via Mollie (iDEAL, creditcard, etc.)</span>
-                  </div>
-                  <div className="flex items-center gap-2.5 text-xs text-muted-foreground">
-                    <Clock className="h-4 w-4 text-primary shrink-0" />
-                    <span>Direct toegang na betaling</span>
-                  </div>
-                  <div className="flex items-center gap-2.5 text-xs text-muted-foreground">
-                    <BookOpen className="h-4 w-4 text-primary shrink-0" />
-                    <span>
-                      {course.totalLessons} lessen · {course.totalDuration}
-                    </span>
-                  </div>
-                  <div className="flex items-center gap-2.5 text-xs text-muted-foreground">
-                    <Lock className="h-4 w-4 text-primary shrink-0" />
-                    <span>Levenslang toegang, op je eigen tempo</span>
-                  </div>
                 </div>
 
-                {/* Guarantee */}
-                <div className="rounded-lg border border-primary/20 bg-primary/5 p-4 text-center">
-                  <p className="text-xs text-muted-foreground leading-relaxed">
-                    <Zap className="h-3.5 w-3.5 text-primary inline -mt-0.5 mr-1" />
-                    Niet tevreden? Neem binnen 14 dagen contact op en je krijgt je geld terug. Geen vragen.
-                  </p>
+                {/* CTA */}
+                <Button
+                  type="submit"
+                  size="lg"
+                  className="w-full text-sm uppercase tracking-wider"
+                  disabled={loading || !agree}
+                >
+                  {loading ? (
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                  ) : (
+                    "Afrekenen"
+                  )}
+                </Button>
+
+                {/* Trust badge */}
+                <div className="flex items-center justify-center gap-2 pt-1">
+                  <Lock className="h-3.5 w-3.5 text-muted-foreground" />
+                  <div className="text-center">
+                    <p className="text-xs font-medium text-muted-foreground">
+                      Veilige betaling
+                    </p>
+                    <p className="text-[10px] text-muted-foreground/60">
+                      Verbindingen zijn versleuteld met SSL
+                    </p>
+                  </div>
+                  <Shield className="h-3.5 w-3.5 text-muted-foreground" />
                 </div>
-              </div>
-            </motion.div>
-          </div>
+              </form>
+            </div>
+          </motion.div>
         </div>
       </div>
     </div>
