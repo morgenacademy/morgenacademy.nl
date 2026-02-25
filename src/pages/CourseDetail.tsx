@@ -4,14 +4,15 @@ import { motion } from "framer-motion";
 import { ArrowLeft, FileText, ExternalLink } from "lucide-react";
 import VideoPlayer from "@/components/VideoPlayer";
 import LessonList from "@/components/LessonList";
-import { courses } from "@/data/courses";
+import { courses, getAllLessons } from "@/data/courses";
 import { supabase } from "@/integrations/supabase/client";
 
 const CourseDetail = () => {
   const { courseId } = useParams();
   const course = courses.find((c) => c.id === courseId);
-  const [activeLessonId, setActiveLessonId] = useState(course?.lessons[0]?.id || "");
-  const activeLesson = course?.lessons.find((l) => l.id === activeLessonId) || course?.lessons[0];
+  const allLessons = course ? getAllLessons(course) : [];
+  const [activeLessonId, setActiveLessonId] = useState(allLessons[0]?.id || "");
+  const activeLesson = allLessons.find((l) => l.id === activeLessonId) || allLessons[0];
   const [videoUrl, setVideoUrl] = useState(activeLesson?.videoUrl || "");
 
   useEffect(() => {
@@ -39,9 +40,10 @@ const CourseDetail = () => {
     );
   }
 
+  const isArticle = activeLesson.type === "article";
+
   return (
     <div className="min-h-screen bg-background">
-      {/* Header */}
       <header className="border-b border-border">
         <div className="mx-auto flex max-w-7xl items-center gap-4 px-6 py-4">
           <Link
@@ -60,7 +62,6 @@ const CourseDetail = () => {
 
       <div className="mx-auto max-w-7xl px-6 py-8">
         <div className="flex flex-col lg:flex-row gap-8">
-          {/* Main content */}
           <motion.div
             className="flex-1 min-w-0"
             initial={{ opacity: 0, y: 20 }}
@@ -68,7 +69,21 @@ const CourseDetail = () => {
             transition={{ duration: 0.5 }}
             key={activeLessonId}
           >
-            <VideoPlayer src={videoUrl} />
+            {isArticle ? (
+              <div className="rounded-xl bg-secondary/50 border border-border flex items-center justify-center min-h-[200px] p-10">
+                <div className="text-center space-y-3">
+                  <FileText className="h-12 w-12 mx-auto text-primary" />
+                  <h3 className="text-lg font-semibold text-foreground">
+                    {activeLesson.title}
+                  </h3>
+                  <p className="text-muted-foreground text-sm max-w-md">
+                    {activeLesson.description}
+                  </p>
+                </div>
+              </div>
+            ) : (
+              <VideoPlayer src={videoUrl} />
+            )}
 
             <div className="mt-6">
               <h1 className="font-display text-2xl md:text-3xl font-semibold text-foreground">
@@ -78,7 +93,6 @@ const CourseDetail = () => {
                 {activeLesson.description}
               </p>
 
-              {/* Attachments & Links */}
               {(activeLesson.attachments || activeLesson.links) && (
                 <div className="mt-6 space-y-2">
                   {activeLesson.attachments?.map((att) => (
@@ -108,14 +122,13 @@ const CourseDetail = () => {
             </div>
           </motion.div>
 
-          {/* Sidebar - Lesson List */}
           <div className="w-full lg:w-80 shrink-0">
             <div className="sticky top-8">
               <h3 className="text-xs uppercase tracking-[0.2em] text-muted-foreground mb-4 px-1">
-                Lessen ({course.lessons.length})
+                Lessen ({allLessons.length})
               </h3>
               <LessonList
-                lessons={course.lessons}
+                modules={course.modules}
                 activeLesson={activeLessonId}
                 onSelectLesson={setActiveLessonId}
               />
