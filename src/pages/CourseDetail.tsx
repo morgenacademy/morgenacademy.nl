@@ -27,7 +27,7 @@ const CourseDetail = () => {
       <header className="border-b border-border">
         <div className="mx-auto flex max-w-7xl items-center gap-4 px-6 py-4">
           <Link
-            to="/"
+            to="/dashboard"
             className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors"
           >
             <ArrowLeft className="h-4 w-4" />
