@@ -1,4 +1,4 @@
-import { useState } from "react";
+import React, { useState, useRef } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import {
@@ -57,6 +57,8 @@ const Checkout = () => {
   const [newsletter, setNewsletter] = useState(true);
   const [agree, setAgree] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [selectedMethod, setSelectedMethod] = useState<string | null>(null);
+  const formRef = useRef<HTMLFormElement>(null);
 
   const course = courses.find((c) => c.id === courseId);
 
@@ -79,9 +81,18 @@ const Checkout = () => {
   const priceNum = parseFloat(price);
   const btw = priceNum - priceNum / 1.21;
 
-  const handleCheckout = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!email.trim() || !firstName.trim() || !agree) return;
+  const handleCheckout = async (e?: React.FormEvent) => {
+    e?.preventDefault();
+    if (!email.trim() || !firstName.trim()) {
+      // Scroll to form on mobile if fields missing
+      formRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+      toast({
+        title: "Vul je gegevens in",
+        description: "Voornaam en e-mailadres zijn verplicht.",
+        variant: "destructive",
+      });
+      return;
+    }
 
     setLoading(true);
     try {
@@ -226,6 +237,7 @@ const Checkout = () => {
           >
             <div className="sticky top-8 space-y-6">
               <form
+                ref={formRef}
                 onSubmit={handleCheckout}
                 className="rounded-xl border border-border bg-card p-6 md:p-8 space-y-6"
               >
@@ -297,10 +309,10 @@ const Checkout = () => {
                   </div>
                 </div>
 
-                {/* Payment methods */}
+                {/* Payment methods - clickable */}
                 <div>
                   <h2 className="font-display text-xl text-foreground mb-3">
-                    Betaalmethoden
+                    Betaal direct met
                   </h2>
                   <div className="grid grid-cols-4 gap-2">
                     {[
@@ -309,9 +321,18 @@ const Checkout = () => {
                       { name: "Klarna", icon: "https://www.mollie.com/external/icons/payment-methods/klarna.svg" },
                       { name: "in3", icon: "https://www.mollie.com/external/icons/payment-methods/in3.svg" },
                     ].map((method) => (
-                      <div
+                      <button
                         key={method.name}
-                        className="flex flex-col items-center gap-1.5 rounded-lg border border-border bg-background/50 p-3"
+                        type="button"
+                        onClick={() => {
+                          setSelectedMethod(method.name);
+                          handleCheckout();
+                        }}
+                        className={`flex flex-col items-center gap-1.5 rounded-lg border p-3 transition-all cursor-pointer hover:border-primary/50 hover:bg-primary/5 ${
+                          selectedMethod === method.name
+                            ? "border-primary bg-primary/10"
+                            : "border-border bg-background/50"
+                        }`}
                       >
                         <img
                           src={method.icon}
@@ -321,12 +342,9 @@ const Checkout = () => {
                         <span className="text-[10px] text-muted-foreground font-ui">
                           {method.name}
                         </span>
-                      </div>
+                      </button>
                     ))}
                   </div>
-                  <p className="text-[10px] text-muted-foreground/60 mt-2 text-center">
-                    Je kiest je betaalmethode in de volgende stap
-                  </p>
                 </div>
 
                 {/* Checkboxes */}
@@ -403,6 +421,33 @@ const Checkout = () => {
           </motion.div>
         </div>
       </div>
+
+      {/* Sticky mobile CTA bar */}
+      <div className="fixed bottom-0 left-0 right-0 z-50 lg:hidden border-t border-border bg-card/95 backdrop-blur-md px-4 py-3">
+        <div className="flex items-center justify-between gap-4">
+          <div>
+            <p className="text-xs text-muted-foreground">Totaal</p>
+            <p className="text-lg font-display font-semibold text-foreground">
+              € {priceNum.toFixed(2).replace(".", ",")}
+            </p>
+          </div>
+          <Button
+            size="lg"
+            className="text-sm uppercase tracking-wider px-8"
+            disabled={loading}
+            onClick={() => handleCheckout()}
+          >
+            {loading ? (
+              <Loader2 className="h-4 w-4 animate-spin" />
+            ) : (
+              "Afrekenen"
+            )}
+          </Button>
+        </div>
+      </div>
+
+      {/* Bottom spacer for mobile sticky bar */}
+      <div className="h-20 lg:hidden" />
     </div>
   );
 };
