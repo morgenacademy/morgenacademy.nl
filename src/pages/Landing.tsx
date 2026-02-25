@@ -20,11 +20,18 @@ const Landing = () => {
           <h2 className="font-display text-xl font-semibold text-foreground tracking-tight">
             Morgen <span className="text-primary">Academy</span>
           </h2>
-          <Link to="/login">
-            <Button variant="outline" size="sm" className="text-xs uppercase tracking-wider">
-              Inloggen
-            </Button>
-          </Link>
+          <div className="flex items-center gap-3">
+            <a href="mailto:totmorgen@morgenacademy.nl">
+              <Button variant="ghost" size="sm" className="text-xs uppercase tracking-wider">
+                Contact
+              </Button>
+            </a>
+            <Link to="/login">
+              <Button variant="outline" size="sm" className="text-xs uppercase tracking-wider">
+                Inloggen
+              </Button>
+            </Link>
+          </div>
         </div>
       </header>
 
@@ -241,20 +248,28 @@ const Landing = () => {
               Morgen Company
             </a>
           </p>
-          <a
-            href="https://www.morgencompany.com"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="text-xs text-muted-foreground/60 hover:text-primary transition-colors"
-          >
-            © {new Date().getFullYear()} Morgen Company
-          </a>
-          <Link
-            to="/privacy"
-            className="text-xs text-muted-foreground/60 hover:text-primary transition-colors"
-          >
-            Privacy
-          </Link>
+          <div className="flex items-center gap-4">
+            <a
+              href="mailto:totmorgen@morgenacademy.nl"
+              className="text-xs text-muted-foreground/60 hover:text-primary transition-colors"
+            >
+              totmorgen@morgenacademy.nl
+            </a>
+            <a
+              href="https://www.morgencompany.com"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-xs text-muted-foreground/60 hover:text-primary transition-colors"
+            >
+              © {new Date().getFullYear()} Morgen Company
+            </a>
+            <Link
+              to="/privacy"
+              className="text-xs text-muted-foreground/60 hover:text-primary transition-colors"
+            >
+              Privacy
+            </Link>
+          </div>
         </div>
       </footer>
     </div>
