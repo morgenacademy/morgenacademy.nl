@@ -249,6 +249,12 @@ const Landing = () => {
           >
             © {new Date().getFullYear()} Morgen Company
           </a>
+          <Link
+            to="/privacy"
+            className="text-xs text-muted-foreground/60 hover:text-primary transition-colors"
+          >
+            Privacy
+          </Link>
         </div>
       </footer>
     </div>
