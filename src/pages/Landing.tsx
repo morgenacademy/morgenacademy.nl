@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { Play, Lock, ArrowRight, Sparkles, Loader2, Bell } from "lucide-react";
+import { Play, Lock, ArrowRight, Sparkles, Loader2, Bell, Users, Clock, Mail } from "lucide-react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { courses } from "@/data/courses";
@@ -200,6 +200,63 @@ const Landing = () => {
             </motion.div>
           ))}
         </div>
+      </section>
+
+      {/* Incompany / Live sectie */}
+      <section className="mx-auto max-w-6xl px-6 pb-20">
+        <motion.div
+          initial={{ opacity: 0, y: 30 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.5 }}
+          className="rounded-xl border border-border bg-card p-8 md:p-12 relative overflow-hidden"
+        >
+          {/* Subtle accent line */}
+          <div className="absolute top-0 left-0 right-0 h-[3px] bg-gradient-to-r from-primary to-accent" />
+
+          <div className="flex flex-col md:flex-row gap-8 md:gap-12 items-start">
+            <div className="flex-1">
+              <p className="text-xs uppercase tracking-[0.25em] text-primary mb-3">
+                Live training
+              </p>
+              <h2 className="font-display text-3xl md:text-4xl font-semibold text-foreground mb-4">
+                Liever samen met je team?
+              </h2>
+              <p className="text-muted-foreground leading-relaxed mb-6">
+                Boek een incompany training en leer samen met je team werken met AI. 
+                In twee uur krijgt je team een praktische, interactieve sessie op locatie of online.
+              </p>
+
+              <div className="flex flex-wrap gap-6 mb-8">
+                <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                  <Users className="h-4 w-4 text-primary" />
+                  <span>10 personen incl.</span>
+                </div>
+                <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                  <Clock className="h-4 w-4 text-primary" />
+                  <span>2 uur</span>
+                </div>
+              </div>
+
+              <div className="flex flex-wrap items-center gap-4">
+                <span className="text-2xl font-display font-semibold text-foreground">€ 995,-</span>
+                <span className="text-xs text-muted-foreground">meer personen in overleg</span>
+              </div>
+            </div>
+
+            <div className="flex flex-col gap-3 shrink-0 w-full md:w-auto md:pt-10">
+              <a href="mailto:academy@morgencompany.com?subject=Incompany%20training%20aanvragen">
+                <Button size="lg" className="gap-2 text-sm uppercase tracking-wider w-full">
+                  <Mail className="h-4 w-4" />
+                  Training aanvragen
+                </Button>
+              </a>
+              <p className="text-xs text-muted-foreground text-center">
+                We nemen binnen 1 werkdag contact op
+              </p>
+            </div>
+          </div>
+        </motion.div>
       </section>
 
       {/* Waitlist Dialog */}
