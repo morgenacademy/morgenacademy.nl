@@ -120,10 +120,10 @@ const Privacy = () => {
               Kom je er niet uit, of wil je gewoon weten wat er precies van je is
               opgeslagen? Stuur ons een berichtje via{" "}
               <a
-                href="mailto:academy@morgencompany.com"
+                href="mailto:totmorgen@morgenacademy.nl"
                 className="text-primary hover:underline"
               >
-                academy@morgencompany.com
+                totmorgen@morgenacademy.nl
               </a>
               . We reageren binnen 2 werkdagen.
             </p>
