@@ -1,25 +1,43 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useParams, Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import { ArrowLeft, FileText, ExternalLink } from "lucide-react";
 import VideoPlayer from "@/components/VideoPlayer";
 import LessonList from "@/components/LessonList";
 import { courses } from "@/data/courses";
+import { supabase } from "@/integrations/supabase/client";
 
 const CourseDetail = () => {
   const { courseId } = useParams();
   const course = courses.find((c) => c.id === courseId);
   const [activeLessonId, setActiveLessonId] = useState(course?.lessons[0]?.id || "");
+  const activeLesson = course?.lessons.find((l) => l.id === activeLessonId) || course?.lessons[0];
+  const [videoUrl, setVideoUrl] = useState(activeLesson?.videoUrl || "");
 
-  if (!course) {
+  useEffect(() => {
+    if (!course || !activeLesson) return;
+    const getStorageVideo = async () => {
+      const filePath = `${course.id}/${activeLesson.id}.mp4`;
+      const { data } = await supabase.storage
+        .from("course-videos")
+        .createSignedUrl(filePath, 3600);
+
+      if (data?.signedUrl) {
+        setVideoUrl(data.signedUrl);
+      } else {
+        setVideoUrl(activeLesson.videoUrl);
+      }
+    };
+    getStorageVideo();
+  }, [activeLessonId, course?.id, activeLesson?.videoUrl, activeLesson?.id]);
+
+  if (!course || !activeLesson) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-background">
         <p className="text-muted-foreground">Cursus niet gevonden</p>
       </div>
     );
   }
-
-  const activeLesson = course.lessons.find((l) => l.id === activeLessonId) || course.lessons[0];
 
   return (
     <div className="min-h-screen bg-background">
@@ -50,7 +68,7 @@ const CourseDetail = () => {
             transition={{ duration: 0.5 }}
             key={activeLessonId}
           >
-            <VideoPlayer src={activeLesson.videoUrl} />
+            <VideoPlayer src={videoUrl} />
 
             <div className="mt-6">
               <h1 className="font-display text-2xl md:text-3xl font-semibold text-foreground">

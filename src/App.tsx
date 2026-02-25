@@ -11,6 +11,7 @@ import Dashboard from "./pages/Dashboard";
 import CourseDetail from "./pages/CourseDetail";
 import ProtectedRoute from "./components/ProtectedRoute";
 import PaymentStatus from "./pages/PaymentStatus";
+import AdminUpload from "./pages/AdminUpload";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -27,6 +28,14 @@ const App = () => (
           <Route path="/registreren" element={<Register />} />
           <Route path="/reset-password" element={<ResetPassword />} />
           <Route path="/betaling" element={<PaymentStatus />} />
+          <Route
+            path="/admin/upload"
+            element={
+              <ProtectedRoute>
+                <AdminUpload />
+              </ProtectedRoute>
+            }
+          />
           <Route
             path="/dashboard"
             element={
