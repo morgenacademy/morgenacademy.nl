@@ -161,7 +161,7 @@ const AdminUpload = () => {
               Klik om video's te selecteren
             </p>
             <p className="text-sm text-muted-foreground mt-1">
-              Selecteer meerdere bestanden tegelijk — wijs ze daarna toe aan lessen
+              Selecteer meerdere bestanden tegelijk, wijs ze daarna toe aan lessen
             </p>
           </label>
         </motion.div>

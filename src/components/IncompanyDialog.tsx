@@ -120,7 +120,7 @@ const IncompanyDialog = ({ open, onOpenChange }: IncompanyDialogProps) => {
                   className="mt-0.5"
                 />
                 <span className="text-xs text-muted-foreground leading-relaxed">
-                  Keep me in the loop — ik ontvang graag AI- en automatiseringstips van Morgen 🚀
+                  Keep me in the loop! Ik ontvang graag AI- en automatiseringstips van Morgen 🚀
                 </span>
               </label>
               <Button type="submit" className="w-full" disabled={loading}>
