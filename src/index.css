@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=Playfair+Display:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@700;800;900&family=Plus+Jakarta+Sans:wght@400;500;600;700&family=Arimo:wght@400;500;600;700&display=swap');
 
 @tailwind base;
 @tailwind components;
@@ -6,47 +6,71 @@
 
 @layer base {
   :root {
-    --background: 220 20% 7%;
-    --foreground: 40 10% 92%;
+    /* Navy palette */
+    --navy: 240 54% 12%;       /* #0e0e30 */
+    --nmd: 240 47% 16%;        /* #15153e */
+    --nlt: 240 47% 22%;        /* #1c1c52 */
 
-    --card: 220 18% 10%;
-    --card-foreground: 40 10% 92%;
+    /* Brand colors */
+    --pink: 293 58% 58%;       /* #c850d8 */
+    --purple: 267 56% 50%;     /* #7c35c9 */
+    --blue: 225 66% 47%;       /* #2552c9 */
+    --green: 155 71% 36%;      /* #1a9e72 */
 
-    --popover: 220 18% 10%;
-    --popover-foreground: 40 10% 92%;
+    /* Text colors */
+    --brand-white: 252 100% 97%;  /* #f2f0ff */
+    --brand-grey: 242 21% 63%;    /* #8a88b8 */
+    --brand-lgrey: 243 26% 81%;   /* #c0bdde */
+    --brand-black: 240 33% 7%;    /* #0a0a1a */
 
-    --primary: 40 60% 55%;
-    --primary-foreground: 220 20% 7%;
+    /* Semantic tokens mapped to brand */
+    --background: var(--navy);
+    --foreground: var(--brand-white);
 
-    --secondary: 220 15% 15%;
-    --secondary-foreground: 40 10% 85%;
+    --card: var(--nmd);
+    --card-foreground: var(--brand-white);
 
-    --muted: 220 15% 13%;
-    --muted-foreground: 220 10% 55%;
+    --popover: var(--nmd);
+    --popover-foreground: var(--brand-white);
 
-    --accent: 40 60% 55%;
-    --accent-foreground: 220 20% 7%;
+    --primary: var(--pink);
+    --primary-foreground: var(--brand-white);
 
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 210 40% 98%;
+    --secondary: var(--nlt);
+    --secondary-foreground: var(--brand-lgrey);
 
-    --border: 220 15% 16%;
-    --input: 220 15% 16%;
-    --ring: 40 60% 55%;
+    --muted: var(--nmd);
+    --muted-foreground: var(--brand-grey);
 
-    --radius: 0.75rem;
+    --accent: var(--purple);
+    --accent-foreground: var(--brand-white);
 
-    --sidebar-background: 220 18% 10%;
-    --sidebar-foreground: 40 10% 85%;
-    --sidebar-primary: 40 60% 55%;
-    --sidebar-primary-foreground: 220 20% 7%;
-    --sidebar-accent: 220 15% 15%;
-    --sidebar-accent-foreground: 40 10% 85%;
-    --sidebar-border: 220 15% 16%;
-    --sidebar-ring: 40 60% 55%;
+    --destructive: 0 84% 60%;
+    --destructive-foreground: var(--brand-white);
 
-    --font-display: 'Playfair Display', serif;
-    --font-body: 'DM Sans', sans-serif;
+    --success: var(--green);
+
+    --border: 0 0% 100% / 0.06;
+    --input: var(--nmd);
+    --ring: var(--purple);
+
+    --radius: 3px;
+
+    --sidebar-background: var(--nmd);
+    --sidebar-foreground: var(--brand-lgrey);
+    --sidebar-primary: var(--pink);
+    --sidebar-primary-foreground: var(--brand-white);
+    --sidebar-accent: var(--nlt);
+    --sidebar-accent-foreground: var(--brand-lgrey);
+    --sidebar-border: 0 0% 100% / 0.06;
+    --sidebar-ring: var(--purple);
+
+    --font-display: 'Barlow Condensed', sans-serif;
+    --font-body: 'Arimo', sans-serif;
+    --font-ui: 'Plus Jakarta Sans', sans-serif;
+
+    --gradient-primary: linear-gradient(135deg, #c850d8, #7c35c9);
+    --gradient-accent: linear-gradient(135deg, #c850d8, #7c35c9);
   }
 }
 
@@ -58,11 +82,33 @@
   body {
     @apply bg-background text-foreground;
     font-family: var(--font-body);
+    color: hsl(var(--brand-lgrey));
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
   }
 
-  h1, h2, h3 {
+  h1, h2, h3, h4, h5, h6 {
     font-family: var(--font-display);
+    font-weight: 900;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    color: hsl(var(--brand-white));
+  }
+
+  label, nav, button {
+    font-family: var(--font-ui);
+  }
+
+  /* Input focus states */
+  input:focus, textarea:focus, select:focus {
+    border-color: hsl(var(--purple)) !important;
+  }
+
+  /* Callout blocks */
+  .callout {
+    border-left: 3px solid hsl(var(--pink));
+    background: rgba(200, 80, 216, 0.08);
+    padding: 1rem 1.25rem;
+    border-radius: var(--radius);
   }
 }
