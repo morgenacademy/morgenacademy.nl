@@ -408,10 +408,10 @@ const Checkout = () => {
                   <Lock className="h-3.5 w-3.5 text-muted-foreground" />
                   <div className="text-center">
                     <p className="text-xs font-medium text-muted-foreground">
-                      Veilige betaling
+                      100% veilig betalen
                     </p>
                     <p className="text-[10px] text-muted-foreground/60">
-                      Verbindingen zijn versleuteld met SSL
+                      We gebruiken dezelfde beveiliging als je bank
                     </p>
                   </div>
                   <Shield className="h-3.5 w-3.5 text-muted-foreground" />
