@@ -1,10 +1,10 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { Upload, Check, Loader2, Film, ArrowLeft } from "lucide-react";
+import { Upload, Check, Loader2, Film, ArrowLeft, FileText } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
-import { courses } from "@/data/courses";
+import { courses, getAllLessons } from "@/data/courses";
 import { useToast } from "@/hooks/use-toast";
 
 const AdminUpload = () => {
@@ -17,21 +17,14 @@ const AdminUpload = () => {
   useEffect(() => {
     const checkAdmin = async () => {
       const { data: { user } } = await supabase.auth.getUser();
-      if (!user) {
-        navigate("/login");
-        return;
-      }
+      if (!user) { navigate("/login"); return; }
       const { data } = await supabase
         .from("user_roles")
         .select("role")
         .eq("user_id", user.id)
         .eq("role", "admin")
         .maybeSingle();
-
-      if (!data) {
-        navigate("/dashboard");
-        return;
-      }
+      if (!data) { navigate("/dashboard"); return; }
       setIsAdmin(true);
       checkExistingVideos();
     };
@@ -39,44 +32,34 @@ const AdminUpload = () => {
   }, [navigate]);
 
   const checkExistingVideos = async () => {
-    const { data } = await supabase.storage.from("course-videos").list("", { limit: 100 });
-    if (data) {
-      const existing: Record<string, boolean> = {};
-      data.forEach((file) => {
-        existing[file.name] = true;
-      });
-      setUploadedVideos(existing);
+    // List files per course folder
+    const available = courses.filter((c) => !c.comingSoon);
+    const existing: Record<string, boolean> = {};
+    for (const course of available) {
+      const { data } = await supabase.storage.from("course-videos").list(course.id, { limit: 200 });
+      if (data) {
+        data.forEach((file) => {
+          existing[`${course.id}/${file.name}`] = true;
+        });
+      }
     }
+    setUploadedVideos(existing);
   };
 
   const handleUpload = async (courseId: string, lessonId: string, file: File) => {
     const key = `${courseId}/${lessonId}`;
     setUploading(key);
-
     try {
       const filePath = `${courseId}/${lessonId}.mp4`;
-
       const { error } = await supabase.storage
         .from("course-videos")
-        .upload(filePath, file, {
-          cacheControl: "3600",
-          upsert: true,
-        });
-
+        .upload(filePath, file, { cacheControl: "3600", upsert: true });
       if (error) throw error;
-
       setUploadedVideos((prev) => ({ ...prev, [filePath]: true }));
-      toast({
-        title: "Video geüpload!",
-        description: `${lessonId} is succesvol geüpload.`,
-      });
+      toast({ title: "Video geüpload!", description: `${lessonId} is succesvol geüpload.` });
     } catch (err: any) {
       console.error(err);
-      toast({
-        title: "Upload mislukt",
-        description: err.message || "Probeer het opnieuw.",
-        variant: "destructive",
-      });
+      toast({ title: "Upload mislukt", description: err.message || "Probeer het opnieuw.", variant: "destructive" });
     } finally {
       setUploading(null);
     }
@@ -117,66 +100,81 @@ const AdminUpload = () => {
               {course.title}
             </h2>
 
-            <div className="space-y-3">
-              {course.lessons.map((lesson) => {
-                const filePath = `${course.id}/${lesson.id}.mp4`;
-                const isUploaded = uploadedVideos[filePath];
-                const isCurrentlyUploading = uploading === `${course.id}/${lesson.id}`;
+            {course.modules.map((mod) => (
+              <div key={mod.id} className="mb-6">
+                <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider mb-3 px-1">
+                  {mod.title}
+                </h3>
+                <div className="space-y-2">
+                  {mod.lessons.map((lesson) => {
+                    const isArticle = lesson.type === "article";
+                    const filePath = `${course.id}/${lesson.id}.mp4`;
+                    const isUploaded = uploadedVideos[filePath];
+                    const isCurrentlyUploading = uploading === `${course.id}/${lesson.id}`;
 
-                return (
-                  <div
-                    key={lesson.id}
-                    className="flex items-center justify-between rounded-lg border border-border bg-card p-4"
-                  >
-                    <div className="flex items-center gap-3">
-                      <Film className="h-5 w-5 text-muted-foreground" />
-                      <div>
-                        <p className="font-medium text-foreground">{lesson.title}</p>
-                        <p className="text-sm text-muted-foreground">{lesson.duration}</p>
-                      </div>
-                    </div>
+                    return (
+                      <div
+                        key={lesson.id}
+                        className="flex items-center justify-between rounded-lg border border-border bg-card p-4"
+                      >
+                        <div className="flex items-center gap-3">
+                          {isArticle ? (
+                            <FileText className="h-5 w-5 text-muted-foreground" />
+                          ) : (
+                            <Film className="h-5 w-5 text-muted-foreground" />
+                          )}
+                          <div>
+                            <p className="font-medium text-foreground">{lesson.title}</p>
+                            <p className="text-sm text-muted-foreground">
+                              {isArticle ? "Artikel" : lesson.duration}
+                            </p>
+                          </div>
+                        </div>
 
-                    <div className="flex items-center gap-3">
-                      {isUploaded && (
-                        <span className="flex items-center gap-1 text-sm text-primary">
-                          <Check className="h-4 w-4" /> Geüpload
-                        </span>
-                      )}
-
-                      <label className="cursor-pointer">
-                        <input
-                          type="file"
-                          accept="video/mp4,video/*"
-                          className="hidden"
-                          onChange={(e) => {
-                            const file = e.target.files?.[0];
-                            if (file) handleUpload(course.id, lesson.id, file);
-                          }}
-                          disabled={isCurrentlyUploading}
-                        />
-                        <Button
-                          variant={isUploaded ? "outline" : "default"}
-                          size="sm"
-                          disabled={isCurrentlyUploading}
-                          asChild
-                        >
-                          <span>
-                            {isCurrentlyUploading ? (
-                              <Loader2 className="h-4 w-4 animate-spin" />
-                            ) : (
-                              <>
-                                <Upload className="h-4 w-4" />
-                                {isUploaded ? "Vervangen" : "Upload"}
-                              </>
+                        {!isArticle && (
+                          <div className="flex items-center gap-3">
+                            {isUploaded && (
+                              <span className="flex items-center gap-1 text-sm text-primary">
+                                <Check className="h-4 w-4" /> Geüpload
+                              </span>
                             )}
-                          </span>
-                        </Button>
-                      </label>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
+                            <label className="cursor-pointer">
+                              <input
+                                type="file"
+                                accept="video/mp4,video/*"
+                                className="hidden"
+                                onChange={(e) => {
+                                  const file = e.target.files?.[0];
+                                  if (file) handleUpload(course.id, lesson.id, file);
+                                }}
+                                disabled={isCurrentlyUploading}
+                              />
+                              <Button
+                                variant={isUploaded ? "outline" : "default"}
+                                size="sm"
+                                disabled={isCurrentlyUploading}
+                                asChild
+                              >
+                                <span>
+                                  {isCurrentlyUploading ? (
+                                    <Loader2 className="h-4 w-4 animate-spin" />
+                                  ) : (
+                                    <>
+                                      <Upload className="h-4 w-4" />
+                                      {isUploaded ? "Vervangen" : "Upload"}
+                                    </>
+                                  )}
+                                </span>
+                              </Button>
+                            </label>
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            ))}
           </motion.div>
         ))}
       </main>
