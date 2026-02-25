@@ -20,6 +20,7 @@ export type Database = {
           email: string
           id: string
           name: string
+          newsletter: boolean
           remarks: string | null
         }
         Insert: {
@@ -27,6 +28,7 @@ export type Database = {
           email: string
           id?: string
           name: string
+          newsletter?: boolean
           remarks?: string | null
         }
         Update: {
@@ -34,6 +36,7 @@ export type Database = {
           email?: string
           id?: string
           name?: string
+          newsletter?: boolean
           remarks?: string | null
         }
         Relationships: []
@@ -96,6 +99,7 @@ export type Database = {
           email: string
           first_name: string
           id: string
+          newsletter: boolean
         }
         Insert: {
           course_id: string
@@ -103,6 +107,7 @@ export type Database = {
           email: string
           first_name: string
           id?: string
+          newsletter?: boolean
         }
         Update: {
           course_id?: string
@@ -110,6 +115,7 @@ export type Database = {
           email?: string
           first_name?: string
           id?: string
+          newsletter?: boolean
         }
         Relationships: []
       }
