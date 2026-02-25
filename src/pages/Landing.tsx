@@ -1,14 +1,16 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { Play, Lock, ArrowRight, Sparkles, Loader2 } from "lucide-react";
+import { Play, Lock, ArrowRight, Sparkles, Loader2, Bell } from "lucide-react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { courses } from "@/data/courses";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import WaitlistDialog from "@/components/WaitlistDialog";
 
 const Landing = () => {
   const [loadingCourse, setLoadingCourse] = useState<string | null>(null);
+  const [waitlistCourse, setWaitlistCourse] = useState<{ id: string; title: string } | null>(null);
   const { toast } = useToast();
 
   const handleBuy = async (courseId: string, courseTitle: string, price: string) => {
@@ -158,7 +160,14 @@ const Landing = () => {
 
                 {course.comingSoon ? (
                   <div className="mt-6">
-                    <p className="text-sm text-muted-foreground">In ontwikkeling — binnenkort beschikbaar</p>
+                    <Button
+                      variant="outline"
+                      className="gap-2 text-sm w-full"
+                      onClick={() => setWaitlistCourse({ id: course.id, title: course.title })}
+                    >
+                      <Bell className="h-4 w-4" />
+                      Op de wachtlijst zetten
+                    </Button>
                   </div>
                 ) : (
                   <div className="mt-6 flex flex-wrap items-center gap-4">
@@ -192,6 +201,14 @@ const Landing = () => {
           ))}
         </div>
       </section>
+
+      {/* Waitlist Dialog */}
+      <WaitlistDialog
+        open={!!waitlistCourse}
+        onOpenChange={(open) => !open && setWaitlistCourse(null)}
+        courseId={waitlistCourse?.id || ""}
+        courseTitle={waitlistCourse?.title || ""}
+      />
 
       {/* Footer */}
       <footer className="border-t border-border/50 py-8">
