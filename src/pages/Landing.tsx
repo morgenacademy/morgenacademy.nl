@@ -6,11 +6,15 @@ import { Button } from "@/components/ui/button";
 import { courses } from "@/data/courses";
 import WaitlistDialog from "@/components/WaitlistDialog";
 import IncompanyDialog from "@/components/IncompanyDialog";
+import ContactDialog from "@/components/ContactDialog";
+import NewsletterDialog from "@/components/NewsletterDialog";
 
 const Landing = () => {
   const navigate = useNavigate();
   const [waitlistCourse, setWaitlistCourse] = useState<{ id: string; title: string } | null>(null);
   const [incompanyOpen, setIncompanyOpen] = useState(false);
+  const [contactOpen, setContactOpen] = useState(false);
+  const [newsletterOpen, setNewsletterOpen] = useState(false);
 
   return (
     <div className="min-h-screen bg-background">
@@ -21,11 +25,14 @@ const Landing = () => {
             Morgen <span className="text-primary">Academy</span>
           </h2>
           <div className="flex items-center gap-3">
-            <a href="mailto:totmorgen@morgenacademy.nl">
-              <Button variant="ghost" size="sm" className="text-xs uppercase tracking-wider">
-                Contact
-              </Button>
-            </a>
+            <Button
+              variant="ghost"
+              size="sm"
+              className="text-xs uppercase tracking-wider"
+              onClick={() => setContactOpen(true)}
+            >
+              Contact
+            </Button>
             <Link to="/login">
               <Button variant="outline" size="sm" className="text-xs uppercase tracking-wider">
                 Inloggen
@@ -43,15 +50,15 @@ const Landing = () => {
           transition={{ duration: 0.7 }}
           className="max-w-2xl"
         >
-          <p className="text-xs uppercase tracking-[0.3em] text-primary mb-4 flex items-center gap-2">
+          <p className="mb-4 flex items-center gap-2 text-xs uppercase tracking-[0.3em] text-primary">
             <Sparkles className="h-3.5 w-3.5" />
             Online trainingen
           </p>
-          <h1 className="font-display text-4xl md:text-5xl lg:text-6xl font-semibold text-foreground leading-[1.1]">
+          <h1 className="font-display text-4xl font-semibold leading-[1.1] text-foreground md:text-5xl lg:text-6xl">
             Leer werken met AI & automatisering
           </h1>
-          <p className="mt-6 text-lg text-muted-foreground leading-relaxed">
-            Praktische videotrainingen waarmee je direct aan de slag kunt. 
+          <p className="mt-6 text-lg leading-relaxed text-muted-foreground">
+            Praktische videotrainingen waarmee je direct aan de slag kunt.
             Leer op je eigen tempo, waar en wanneer je wilt.
           </p>
           <div className="mt-8 flex flex-wrap gap-4">
@@ -61,12 +68,24 @@ const Landing = () => {
                 <ArrowRight className="h-4 w-4" />
               </Button>
             </a>
+            <Button
+              variant="outline"
+              size="lg"
+              className="text-sm uppercase tracking-wider"
+              onClick={() => setNewsletterOpen(true)}
+            >
+              Nieuwsbrief
+            </Button>
             <Link to="/login">
               <Button variant="outline" size="lg" className="text-sm uppercase tracking-wider">
                 Al een account? Log in
               </Button>
             </Link>
           </div>
+          <p className="mt-5 max-w-xl text-sm leading-relaxed text-muted-foreground">
+            Onze nieuwsbrief zit boordevol praktische tips die je AI-gebruik echt een boost geven.
+            Geen spam, geen reclame. Wel waarde.
+          </p>
         </motion.div>
       </section>
 
@@ -171,25 +190,24 @@ const Landing = () => {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.5 }}
-          className="rounded-xl border border-border bg-card p-8 md:p-12 relative overflow-hidden"
+          className="relative overflow-hidden rounded-xl border border-border bg-card p-8 md:p-12"
         >
-          {/* Subtle accent line */}
           <div className="absolute top-0 left-0 right-0 h-[3px] bg-gradient-to-r from-primary to-accent" />
 
-          <div className="flex flex-col md:flex-row gap-8 md:gap-12 items-start">
+          <div className="flex flex-col items-start gap-8 md:flex-row md:gap-12">
             <div className="flex-1">
-              <p className="text-xs uppercase tracking-[0.25em] text-primary mb-3">
+              <p className="mb-3 text-xs uppercase tracking-[0.25em] text-primary">
                 Live training
               </p>
-              <h2 className="font-display text-3xl md:text-4xl font-semibold text-foreground mb-4">
+              <h2 className="mb-4 font-display text-3xl font-semibold text-foreground md:text-4xl">
                 Liever samen met je team?
               </h2>
-              <p className="text-muted-foreground leading-relaxed mb-6">
-                Boek een incompany training en leer samen met je team werken met AI. 
+              <p className="mb-6 leading-relaxed text-muted-foreground">
+                Boek een incompany training en leer samen met je team werken met AI.
                 In twee uur krijgt je team een praktische, interactieve sessie op locatie of online.
               </p>
 
-              <div className="flex flex-wrap gap-6 mb-8">
+              <div className="mb-8 flex flex-wrap gap-6">
                 <div className="flex items-center gap-2 text-sm text-muted-foreground">
                   <Users className="h-4 w-4 text-primary" />
                   <span>10 personen incl.</span>
@@ -206,16 +224,16 @@ const Landing = () => {
               </div>
             </div>
 
-            <div className="flex flex-col gap-3 shrink-0 w-full md:w-auto md:pt-10">
+            <div className="w-full shrink-0 flex-col gap-3 md:w-auto md:pt-10 flex">
               <Button
                 size="lg"
-                className="gap-2 text-sm uppercase tracking-wider w-full"
+                className="w-full gap-2 text-sm uppercase tracking-wider"
                 onClick={() => setIncompanyOpen(true)}
               >
                 <Mail className="h-4 w-4" />
                 Training aanvragen
               </Button>
-              <p className="text-xs text-muted-foreground text-center">
+              <p className="text-center text-xs text-muted-foreground">
                 We nemen binnen 1 werkdag contact op
               </p>
             </div>
@@ -223,20 +241,19 @@ const Landing = () => {
         </motion.div>
       </section>
 
-      {/* Waitlist Dialog */}
       <WaitlistDialog
         open={!!waitlistCourse}
         onOpenChange={(open) => !open && setWaitlistCourse(null)}
         courseId={waitlistCourse?.id || ""}
         courseTitle={waitlistCourse?.title || ""}
       />
-
-      {/* Incompany Dialog */}
       <IncompanyDialog open={incompanyOpen} onOpenChange={setIncompanyOpen} />
+      <ContactDialog open={contactOpen} onOpenChange={setContactOpen} />
+      <NewsletterDialog open={newsletterOpen} onOpenChange={setNewsletterOpen} />
 
       {/* Footer */}
       <footer className="border-t border-border/50 py-8">
-        <div className="mx-auto max-w-6xl px-6 flex flex-col sm:flex-row items-center justify-between gap-4">
+        <div className="mx-auto flex max-w-6xl flex-col items-center justify-between gap-4 px-6 sm:flex-row">
           <p className="text-sm text-muted-foreground">
             Een initiatief van{" "}
             <a
@@ -249,12 +266,13 @@ const Landing = () => {
             </a>
           </p>
           <div className="flex items-center gap-4">
-            <a
-              href="mailto:totmorgen@morgenacademy.nl"
-              className="text-xs text-muted-foreground/60 hover:text-primary transition-colors"
+            <button
+              type="button"
+              onClick={() => setContactOpen(true)}
+              className="text-xs text-muted-foreground/60 transition-colors hover:text-primary"
             >
               totmorgen@morgenacademy.nl
-            </a>
+            </button>
             <a
               href="https://www.morgencompany.com"
               target="_blank"
@@ -277,3 +295,4 @@ const Landing = () => {
 };
 
 export default Landing;
+
