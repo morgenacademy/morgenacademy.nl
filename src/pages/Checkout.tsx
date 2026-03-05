@@ -41,7 +41,7 @@ const testimonials = [
   },
   {
     quote:
-      "Eindelijk een training die niet alleen theorie is, maar je echt aan de slag laat gaan. Aanrader!",
+      "Vandaag volgde ik een workshop van Karin. Haar aanpak is grondig en duidelijk. Ze neemt de tijd om in te gaan op verdiepende vragen, ook als die even buiten het onderwerp vallen. Daarna brengt ze het gesprek weer scherp terug naar de kern. Dat werkt prettig en houdt focus.\n\nWat ik extra waardeer, is haar oog voor de verschillende niveaus in de groep. Iedereen kan aansluiten en wordt uitgedaagd om een stap verder te zetten.\n\nEen sterke en inspirerende workshop. Complimenten!",
     name: "Thomas B.",
   },
 ];
