@@ -14,6 +14,33 @@ export type Database = {
   }
   public: {
     Tables: {
+      contact_requests: {
+        Row: {
+          created_at: string
+          email: string
+          id: string
+          message: string
+          name: string
+          newsletter: boolean
+        }
+        Insert: {
+          created_at?: string
+          email: string
+          id?: string
+          message: string
+          name: string
+          newsletter?: boolean
+        }
+        Update: {
+          created_at?: string
+          email?: string
+          id?: string
+          message?: string
+          name?: string
+          newsletter?: boolean
+        }
+        Relationships: []
+      }
       incompany_requests: {
         Row: {
           created_at: string
@@ -38,6 +65,27 @@ export type Database = {
           name?: string
           newsletter?: boolean
           remarks?: string | null
+        }
+        Relationships: []
+      }
+      newsletter_signups: {
+        Row: {
+          created_at: string
+          email: string
+          first_name: string | null
+          id: string
+        }
+        Insert: {
+          created_at?: string
+          email: string
+          first_name?: string | null
+          id?: string
+        }
+        Update: {
+          created_at?: string
+          email?: string
+          first_name?: string | null
+          id?: string
         }
         Relationships: []
       }
