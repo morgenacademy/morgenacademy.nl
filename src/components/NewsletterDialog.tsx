@@ -13,7 +13,7 @@ interface NewsletterDialogProps {
 }
 
 const newsletterSchema = z.object({
-  firstName: z.string().trim().max(100, "Naam is te lang").optional(),
+  firstName: z.string().trim().min(1, "Vul je voornaam in").max(100, "Naam is te lang"),
   email: z.string().trim().email("Vul een geldig e-mailadres in").max(255, "E-mailadres is te lang"),
 });
 
@@ -60,7 +60,7 @@ const NewsletterDialog = ({ open, onOpenChange }: NewsletterDialogProps) => {
     event.preventDefault();
 
     const parsed = newsletterSchema.safeParse({
-      firstName: firstName.trim() || undefined,
+      firstName,
       email,
     });
 
@@ -77,7 +77,7 @@ const NewsletterDialog = ({ open, onOpenChange }: NewsletterDialogProps) => {
 
     try {
       const { error } = await supabase.from("newsletter_signups").insert({
-        first_name: parsed.data.firstName ?? null,
+        first_name: parsed.data.firstName,
         email: parsed.data.email.toLowerCase(),
       });
 
@@ -136,10 +136,11 @@ const NewsletterDialog = ({ open, onOpenChange }: NewsletterDialogProps) => {
 
             <form onSubmit={handleSubmit} className="space-y-3 pt-3">
               <Input
-                placeholder="Voornaam (optioneel)"
+                placeholder="Voornaam"
                 value={firstName}
                 onChange={(event) => setFirstName(event.target.value)}
                 maxLength={100}
+                required
               />
               <Input
                 type="email"

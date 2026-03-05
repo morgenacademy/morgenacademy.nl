@@ -45,21 +45,25 @@ const Privacy = () => {
               Wat we van je opslaan
             </h2>
             <p>
-              We vragen alleen wat we echt nodig hebben. Bij aanmelden bewaren we
-              je voornaam en e-mailadres. Meer niet. We verzamelen geen gegevens
-              die we niet nodig hebben, en we verkopen jouw informatie nooit aan
-              derden. Nooit.
+              We vragen alleen wat we echt nodig hebben. Als je een account aanmaakt,
+              bewaren we je voornaam en e-mailadres. Schrijf je je in voor de
+              nieuwsbrief, dan bewaren we ook je voornaam en e-mailadres zodat we je
+              de nieuwsbrief kunnen sturen. Gebruik je het contactformulier of vraag
+              je een incompany training aan, dan bewaren we daarnaast ook je bericht
+              of opmerkingen om je aanvraag goed te kunnen opvolgen.
             </p>
           </section>
 
           <section>
             <h2 className="font-display text-xl text-foreground mb-3">
-              Tips en tricks ontvangen
+              Nieuwsbrief en contact
             </h2>
             <p>
-              Regelmatig delen we praktische tips en tricks. Wil je die ontvangen?
-              Dan kun je dat bij aanmelden aanvinken. Heb je dat niet gedaan, dan
-              hoor je niets van ons buiten het platform. Simpel.
+              Onze nieuwsbrief zit boordevol praktische tips waarmee je je AI-gebruik
+              echt een boost geeft. Geen spam, geen reclame. Wel waarde. Je schrijft
+              je alleen in als je dat zelf doet, en je kunt je altijd weer afmelden.
+              Neem je contact met ons op, dan gebruiken we je gegevens alleen om je
+              vraag te beantwoorden of je aanvraag op te volgen.
             </p>
           </section>
 
