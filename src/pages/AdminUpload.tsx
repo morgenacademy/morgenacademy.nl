@@ -260,8 +260,10 @@ const AdminUpload = () => {
 
                           {bunnyVideos.length > 0 ? (
                             <Select
-                              value={guid}
-                              onValueChange={(val) => setGuids((prev) => ({ ...prev, [key]: val }))}
+                              value={guid || undefined}
+                              onValueChange={(val) =>
+                                setGuids((prev) => ({ ...prev, [key]: val === "__clear__" ? "" : val }))
+                              }
                             >
                               <SelectTrigger className="flex-1 text-sm h-9">
                                 <SelectValue placeholder="Selecteer een video...">
