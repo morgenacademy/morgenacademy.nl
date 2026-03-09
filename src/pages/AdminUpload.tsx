@@ -1,24 +1,29 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
-import { courses, getAllLessons } from "@/data/courses";
+import { courses } from "@/data/courses";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
-import { ArrowLeft, Save, Check, Video } from "lucide-react";
+import { ArrowLeft, Save, Check, Video, Settings } from "lucide-react";
 
-interface LessonVideo {
-  course_id: string;
-  lesson_id: string;
-  video_url: string;
-}
+const LIBRARY_ID_KEY = "bunny-library-id";
 
 const AdminUpload = () => {
   const navigate = useNavigate();
   const [isAdmin, setIsAdmin] = useState<boolean | null>(null);
-  const [lessonUrls, setLessonUrls] = useState<Record<string, string>>({});
-  const [savedUrls, setSavedUrls] = useState<Record<string, string>>({});
+  const [libraryId, setLibraryId] = useState(() => localStorage.getItem(LIBRARY_ID_KEY) || "");
+  const [guids, setGuids] = useState<Record<string, string>>({});
+  const [savedGuids, setSavedGuids] = useState<Record<string, string>>({});
   const [saving, setSaving] = useState<string | null>(null);
+
+  const buildUrl = (guid: string) =>
+    guid && libraryId ? `https://iframe.mediadelivery.net/embed/${libraryId}/${guid}` : "";
+
+  const extractGuid = (url: string) => {
+    const match = url.match(/\/embed\/[^/]+\/([a-f0-9-]+)/i);
+    return match ? match[1] : url;
+  };
 
   useEffect(() => {
     const checkAdmin = async () => {
@@ -38,50 +43,34 @@ const AdminUpload = () => {
 
   useEffect(() => {
     if (!isAdmin) return;
-    const loadUrls = async () => {
+    const load = async () => {
       const { data } = await supabase.from("lesson_videos").select("*");
       if (data) {
-        const urlMap: Record<string, string> = {};
-        (data as LessonVideo[]).forEach((row) => {
-          urlMap[`${row.course_id}/${row.lesson_id}`] = row.video_url;
+        const map: Record<string, string> = {};
+        data.forEach((row: { course_id: string; lesson_id: string; video_url: string }) => {
+          map[`${row.course_id}/${row.lesson_id}`] = extractGuid(row.video_url);
         });
-        setLessonUrls(urlMap);
-        setSavedUrls(urlMap);
+        setGuids(map);
+        setSavedGuids(map);
       }
     };
-    loadUrls();
+    load();
   }, [isAdmin]);
 
-  const handleUrlChange = (courseId: string, lessonId: string, url: string) => {
-    setLessonUrls((prev) => ({ ...prev, [`${courseId}/${lessonId}`]: url }));
-  };
-
-  const handleSave = async (courseId: string, lessonId: string) => {
-    const key = `${courseId}/${lessonId}`;
-    const url = (lessonUrls[key] || "").trim();
-    setSaving(key);
-
-    const { error } = await supabase.from("lesson_videos").upsert(
-      { course_id: courseId, lesson_id: lessonId, video_url: url, updated_at: new Date().toISOString() },
-      { onConflict: "course_id,lesson_id" }
-    );
-
-    if (error) {
-      toast.error("Opslaan mislukt: " + error.message);
-    } else {
-      setSavedUrls((prev) => ({ ...prev, [key]: url }));
-      toast.success("URL opgeslagen");
-    }
-    setSaving(null);
+  const handleLibraryChange = (val: string) => {
+    setLibraryId(val);
+    localStorage.setItem(LIBRARY_ID_KEY, val);
   };
 
   const handleSaveAll = async () => {
+    if (!libraryId.trim()) { toast.error("Vul eerst je Bunny Library ID in"); return; }
     setSaving("all");
-    const rows = Object.entries(lessonUrls)
-      .filter(([, url]) => url.trim() !== "")
-      .map(([key, url]) => {
+
+    const rows = Object.entries(guids)
+      .filter(([, guid]) => guid.trim() !== "")
+      .map(([key, guid]) => {
         const [course_id, lesson_id] = key.split("/");
-        return { course_id, lesson_id, video_url: url.trim(), updated_at: new Date().toISOString() };
+        return { course_id, lesson_id, video_url: buildUrl(guid.trim()), updated_at: new Date().toISOString() };
       });
 
     if (rows.length === 0) { setSaving(null); return; }
@@ -91,10 +80,12 @@ const AdminUpload = () => {
     if (error) {
       toast.error("Opslaan mislukt: " + error.message);
     } else {
-      const newSaved = { ...savedUrls };
-      rows.forEach((r) => { newSaved[`${r.course_id}/${r.lesson_id}`] = r.video_url; });
-      setSavedUrls(newSaved);
-      toast.success(`${rows.length} URL's opgeslagen`);
+      const newSaved = { ...savedGuids };
+      rows.forEach((r) => {
+        newSaved[`${r.course_id}/${r.lesson_id}`] = extractGuid(r.video_url);
+      });
+      setSavedGuids(newSaved);
+      toast.success(`${rows.length} video's opgeslagen`);
     }
     setSaving(null);
   };
@@ -108,6 +99,7 @@ const AdminUpload = () => {
   }
 
   const activeCourses = courses.filter((c) => !c.comingSoon);
+  const filledCount = Object.values(guids).filter((g) => g.trim()).length;
 
   return (
     <div className="min-h-screen bg-background">
@@ -121,70 +113,66 @@ const AdminUpload = () => {
           </div>
           <Button onClick={handleSaveAll} disabled={saving === "all"} size="sm">
             <Save className="h-4 w-4 mr-2" />
-            {saving === "all" ? "Opslaan..." : "Alles opslaan"}
+            {saving === "all" ? "Opslaan..." : `Alles opslaan (${filledCount})`}
           </Button>
         </div>
       </header>
 
-      <div className="mx-auto max-w-4xl px-6 py-8 space-y-10">
-        <p className="text-muted-foreground text-sm">
-          Vul per les de Bunny Stream embed-URL in. Formaat:{" "}
-          <code className="text-xs bg-secondary px-1.5 py-0.5 rounded">
-            https://iframe.mediadelivery.net/embed/LIBRARY_ID/VIDEO_GUID
-          </code>
-        </p>
+      <div className="mx-auto max-w-4xl px-6 py-8 space-y-8">
+        {/* Library ID */}
+        <div className="rounded-xl border border-border bg-secondary/30 p-5 space-y-3">
+          <div className="flex items-center gap-2">
+            <Settings className="h-4 w-4 text-primary" />
+            <span className="text-sm font-medium text-foreground">Bunny Stream Library ID</span>
+          </div>
+          <Input
+            placeholder="Bijv. 123456"
+            value={libraryId}
+            onChange={(e) => handleLibraryChange(e.target.value)}
+            className="max-w-xs text-sm h-9"
+          />
+          <p className="text-xs text-muted-foreground">
+            Vind je in het Bunny Stream dashboard. Vul deze één keer in, daarna plak je per les alleen het korte Video GUID.
+          </p>
+        </div>
 
+        {/* Lessons */}
         {activeCourses.map((course) => (
           <div key={course.id}>
             <h2 className="font-display text-lg font-semibold text-foreground mb-4">{course.title}</h2>
-            <div className="space-y-1">
-              {course.modules.map((mod) => {
-                const modVideoLessons = mod.lessons.filter((l) => l.type !== "article");
-                if (modVideoLessons.length === 0) return null;
+            {course.modules.map((mod) => {
+              const videoLessons = mod.lessons.filter((l) => l.type !== "article");
+              if (videoLessons.length === 0) return null;
 
-                return (
-                  <div key={mod.id} className="mb-6">
-                    <h3 className="text-sm font-medium text-muted-foreground mb-3 px-1">{mod.title}</h3>
-                    <div className="space-y-2">
-                      {modVideoLessons.map((lesson) => {
-                        const key = `${course.id}/${lesson.id}`;
-                        const currentUrl = lessonUrls[key] || "";
-                        const isSaved = savedUrls[key] === currentUrl && currentUrl !== "";
-                        const isChanged = currentUrl !== (savedUrls[key] || "");
+              return (
+                <div key={mod.id} className="mb-6">
+                  <h3 className="text-sm font-medium text-muted-foreground mb-3 px-1">{mod.title}</h3>
+                  <div className="space-y-2">
+                    {videoLessons.map((lesson) => {
+                      const key = `${course.id}/${lesson.id}`;
+                      const guid = guids[key] || "";
+                      const isSaved = savedGuids[key] === guid && guid !== "";
 
-                        return (
-                          <div key={lesson.id} className="flex items-center gap-3 rounded-lg bg-secondary/50 p-3">
-                            <Video className="h-4 w-4 text-muted-foreground shrink-0" />
-                            <span className="text-sm text-foreground min-w-[180px] shrink-0 truncate" title={lesson.title}>
-                              {lesson.title}
-                            </span>
-                            <Input
-                              placeholder="https://iframe.mediadelivery.net/embed/..."
-                              value={currentUrl}
-                              onChange={(e) => handleUrlChange(course.id, lesson.id, e.target.value)}
-                              className="flex-1 text-sm h-9"
-                            />
-                            {isSaved ? (
-                              <Check className="h-4 w-4 text-green-500 shrink-0" />
-                            ) : (
-                              <Button
-                                size="sm"
-                                variant="ghost"
-                                onClick={() => handleSave(course.id, lesson.id)}
-                                disabled={saving === key || !isChanged}
-                                className="shrink-0"
-                              >
-                                {saving === key ? "..." : "Opslaan"}
-                              </Button>
-                            )}
-                          </div>
-                        );
-                      })}
-                    </div>
+                      return (
+                        <div key={lesson.id} className="flex items-center gap-3 rounded-lg bg-secondary/50 p-3">
+                          <Video className="h-4 w-4 text-muted-foreground shrink-0" />
+                          <span className="text-sm text-foreground min-w-[180px] shrink-0 truncate" title={lesson.title}>
+                            {lesson.title}
+                          </span>
+                          <Input
+                            placeholder="Video GUID (bijv. a1b2c3d4-...)"
+                            value={guid}
+                            onChange={(e) => setGuids((prev) => ({ ...prev, [key]: e.target.value }))}
+                            className="flex-1 text-sm h-9 font-mono"
+                          />
+                          {isSaved && <Check className="h-4 w-4 text-primary shrink-0" />}
+                        </div>
+                      );
+                    })}
                   </div>
-                );
-              })}
-            </div>
+                </div>
+              );
+            })}
           </div>
         ))}
       </div>
