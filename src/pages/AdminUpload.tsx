@@ -1,31 +1,24 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { motion } from "framer-motion";
-import { Upload, Check, Loader2, Film, ArrowLeft, X, ChevronDown } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { supabase } from "@/integrations/supabase/client";
 import { courses, getAllLessons } from "@/data/courses";
-import { useToast } from "@/hooks/use-toast";
-import { Progress } from "@/components/ui/progress";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { toast } from "sonner";
+import { ArrowLeft, Save, Check, Video } from "lucide-react";
 
-interface PendingFile {
-  file: File;
-  lessonId: string | null;
+interface LessonVideo {
+  course_id: string;
+  lesson_id: string;
+  video_url: string;
 }
 
 const AdminUpload = () => {
   const navigate = useNavigate();
-  const { toast } = useToast();
   const [isAdmin, setIsAdmin] = useState<boolean | null>(null);
-  const [uploadedVideos, setUploadedVideos] = useState<Record<string, boolean>>({});
-  const [pendingFiles, setPendingFiles] = useState<PendingFile[]>([]);
-  const [isBulkUploading, setIsBulkUploading] = useState(false);
-  const [uploadProgress, setUploadProgress] = useState({ done: 0, total: 0 });
-
-  const course = courses.find((c) => !c.comingSoon);
-  const allLessons = course ? getAllLessons(course) : [];
-  const videoLessons = allLessons.filter((l) => l.type !== "article");
+  const [lessonUrls, setLessonUrls] = useState<Record<string, string>>({});
+  const [savedUrls, setSavedUrls] = useState<Record<string, string>>({});
+  const [saving, setSaving] = useState<string | null>(null);
 
   useEffect(() => {
     const checkAdmin = async () => {
@@ -39,264 +32,162 @@ const AdminUpload = () => {
         .maybeSingle();
       if (!data) { navigate("/dashboard"); return; }
       setIsAdmin(true);
-      checkExistingVideos();
     };
     checkAdmin();
   }, [navigate]);
 
-  const checkExistingVideos = async () => {
-    if (!course) return;
-    const { data } = await supabase.storage.from("course-videos").list(course.id, { limit: 200 });
-    if (data) {
-      const existing: Record<string, boolean> = {};
-      data.forEach((file) => {
-        existing[`${course.id}/${file.name}`] = true;
-      });
-      setUploadedVideos(existing);
-    }
-  };
-
-  const handleFilesSelected = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = Array.from(e.target.files || []);
-    const newPending: PendingFile[] = files.map((file) => ({ file, lessonId: null }));
-    setPendingFiles((prev) => [...prev, ...newPending]);
-    e.target.value = "";
-  };
-
-  const updateLessonAssignment = (index: number, lessonId: string) => {
-    setPendingFiles((prev) =>
-      prev.map((pf, i) => (i === index ? { ...pf, lessonId } : pf))
-    );
-  };
-
-  const removeFile = (index: number) => {
-    setPendingFiles((prev) => prev.filter((_, i) => i !== index));
-  };
-
-  const assignedLessonIds = pendingFiles
-    .map((pf) => pf.lessonId)
-    .filter(Boolean) as string[];
-
-  const canUpload =
-    pendingFiles.length > 0 &&
-    pendingFiles.every((pf) => pf.lessonId !== null);
-
-  const handleBulkUpload = async () => {
-    if (!course || !canUpload) return;
-    setIsBulkUploading(true);
-    setUploadProgress({ done: 0, total: pendingFiles.length });
-
-    let successes = 0;
-    let failures = 0;
-
-    for (const pf of pendingFiles) {
-      const filePath = `${course.id}/${pf.lessonId}.mp4`;
-      try {
-        const { error } = await supabase.storage
-          .from("course-videos")
-          .upload(filePath, pf.file, { cacheControl: "3600", upsert: true });
-        if (error) throw error;
-        setUploadedVideos((prev) => ({ ...prev, [filePath]: true }));
-        successes++;
-      } catch (err: any) {
-        console.error(`Upload failed for ${pf.file.name}:`, err);
-        failures++;
+  useEffect(() => {
+    if (!isAdmin) return;
+    const loadUrls = async () => {
+      const { data } = await supabase.from("lesson_videos").select("*");
+      if (data) {
+        const urlMap: Record<string, string> = {};
+        (data as LessonVideo[]).forEach((row) => {
+          urlMap[`${row.course_id}/${row.lesson_id}`] = row.video_url;
+        });
+        setLessonUrls(urlMap);
+        setSavedUrls(urlMap);
       }
-      setUploadProgress((prev) => ({ ...prev, done: prev.done + 1 }));
+    };
+    loadUrls();
+  }, [isAdmin]);
+
+  const handleUrlChange = (courseId: string, lessonId: string, url: string) => {
+    setLessonUrls((prev) => ({ ...prev, [`${courseId}/${lessonId}`]: url }));
+  };
+
+  const handleSave = async (courseId: string, lessonId: string) => {
+    const key = `${courseId}/${lessonId}`;
+    const url = (lessonUrls[key] || "").trim();
+    setSaving(key);
+
+    const { error } = await supabase.from("lesson_videos").upsert(
+      { course_id: courseId, lesson_id: lessonId, video_url: url, updated_at: new Date().toISOString() },
+      { onConflict: "course_id,lesson_id" }
+    );
+
+    if (error) {
+      toast.error("Opslaan mislukt: " + error.message);
+    } else {
+      setSavedUrls((prev) => ({ ...prev, [key]: url }));
+      toast.success("URL opgeslagen");
     }
+    setSaving(null);
+  };
 
-    setIsBulkUploading(false);
-    setPendingFiles([]);
+  const handleSaveAll = async () => {
+    setSaving("all");
+    const rows = Object.entries(lessonUrls)
+      .filter(([, url]) => url.trim() !== "")
+      .map(([key, url]) => {
+        const [course_id, lesson_id] = key.split("/");
+        return { course_id, lesson_id, video_url: url.trim(), updated_at: new Date().toISOString() };
+      });
 
-    toast({
-      title: failures === 0 ? "Alle video's geüpload!" : "Upload voltooid met fouten",
-      description: `${successes} gelukt, ${failures} mislukt.`,
-      variant: failures > 0 ? "destructive" : "default",
-    });
+    if (rows.length === 0) { setSaving(null); return; }
+
+    const { error } = await supabase.from("lesson_videos").upsert(rows, { onConflict: "course_id,lesson_id" });
+
+    if (error) {
+      toast.error("Opslaan mislukt: " + error.message);
+    } else {
+      const newSaved = { ...savedUrls };
+      rows.forEach((r) => { newSaved[`${r.course_id}/${r.lesson_id}`] = r.video_url; });
+      setSavedUrls(newSaved);
+      toast.success(`${rows.length} URL's opgeslagen`);
+    }
+    setSaving(null);
   };
 
   if (isAdmin === null) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      <div className="flex min-h-screen items-center justify-center bg-background">
+        <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />
       </div>
     );
   }
 
-  const formatSize = (bytes: number) => {
-    if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(0)} KB`;
-    return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
-  };
+  const activeCourses = courses.filter((c) => !c.comingSoon);
 
   return (
     <div className="min-h-screen bg-background">
-      <header className="border-b border-border/50">
-        <div className="mx-auto flex max-w-4xl items-center gap-4 px-6 py-5">
-          <Button variant="ghost" size="icon" onClick={() => navigate("/dashboard")}>
-            <ArrowLeft className="h-5 w-5" />
+      <header className="border-b border-border">
+        <div className="mx-auto flex max-w-4xl items-center justify-between px-6 py-4">
+          <div className="flex items-center gap-4">
+            <button onClick={() => navigate("/dashboard")} className="text-muted-foreground hover:text-foreground transition-colors">
+              <ArrowLeft className="h-5 w-5" />
+            </button>
+            <h1 className="font-display text-xl font-semibold text-foreground">Video URL beheer</h1>
+          </div>
+          <Button onClick={handleSaveAll} disabled={saving === "all"} size="sm">
+            <Save className="h-4 w-4 mr-2" />
+            {saving === "all" ? "Opslaan..." : "Alles opslaan"}
           </Button>
-          <h1 className="font-display text-xl font-semibold text-foreground">
-            Video Upload <span className="text-primary">Admin</span>
-          </h1>
         </div>
       </header>
 
-      <main className="mx-auto max-w-4xl px-6 py-10 space-y-10">
-        {/* Upload zone */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-        >
-          <label className="flex flex-col items-center justify-center rounded-xl border-2 border-dashed border-border bg-card/50 p-10 cursor-pointer hover:border-primary/40 transition-colors">
-            <input
-              type="file"
-              accept="video/mp4,video/*"
-              multiple
-              className="hidden"
-              onChange={handleFilesSelected}
-              disabled={isBulkUploading}
-            />
-            <Upload className="h-10 w-10 text-muted-foreground mb-3" />
-            <p className="font-medium text-foreground">
-              Klik om video's te selecteren
-            </p>
-            <p className="text-sm text-muted-foreground mt-1">
-              Selecteer meerdere bestanden tegelijk, wijs ze daarna toe aan lessen
-            </p>
-          </label>
-        </motion.div>
+      <div className="mx-auto max-w-4xl px-6 py-8 space-y-10">
+        <p className="text-muted-foreground text-sm">
+          Vul per les de Bunny Stream embed-URL in. Formaat:{" "}
+          <code className="text-xs bg-secondary px-1.5 py-0.5 rounded">
+            https://iframe.mediadelivery.net/embed/LIBRARY_ID/VIDEO_GUID
+          </code>
+        </p>
 
-        {/* Pending files list */}
-        {pendingFiles.length > 0 && (
-          <div className="space-y-4">
-            <h2 className="font-display text-lg font-semibold text-foreground">
-              {pendingFiles.length} bestand{pendingFiles.length !== 1 && "en"} geselecteerd
-            </h2>
-
-            <div className="space-y-2">
-              {pendingFiles.map((pf, index) => (
-                <div
-                  key={`${pf.file.name}-${index}`}
-                  className="flex items-center gap-3 rounded-lg border border-border bg-card p-4"
-                >
-                  <Film className="h-5 w-5 shrink-0 text-muted-foreground" />
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium text-foreground truncate">
-                      {pf.file.name}
-                    </p>
-                    <p className="text-xs text-muted-foreground">
-                      {formatSize(pf.file.size)}
-                    </p>
-                  </div>
-
-                  <Select
-                    value={pf.lessonId || ""}
-                    onValueChange={(val) => updateLessonAssignment(index, val)}
-                  >
-                    <SelectTrigger className="w-[280px] shrink-0">
-                      <SelectValue placeholder="Kies een les..." />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {course?.modules.map((mod) => (
-                        <div key={mod.id}>
-                          <div className="px-2 py-1.5 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                            {mod.title}
-                          </div>
-                          {mod.lessons
-                            .filter((l) => l.type !== "article")
-                            .map((lesson) => {
-                              const alreadyAssigned =
-                                assignedLessonIds.includes(lesson.id) &&
-                                pf.lessonId !== lesson.id;
-                              const alreadyUploaded =
-                                uploadedVideos[`${course.id}/${lesson.id}.mp4`];
-                              return (
-                                <SelectItem
-                                  key={lesson.id}
-                                  value={lesson.id}
-                                  disabled={alreadyAssigned}
-                                >
-                                  <span className="flex items-center gap-2">
-                                    {lesson.title}
-                                    {alreadyUploaded && (
-                                      <Check className="h-3 w-3 text-primary inline" />
-                                    )}
-                                  </span>
-                                </SelectItem>
-                              );
-                            })}
-                        </div>
-                      ))}
-                    </SelectContent>
-                  </Select>
-
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="shrink-0"
-                    onClick={() => removeFile(index)}
-                    disabled={isBulkUploading}
-                  >
-                    <X className="h-4 w-4" />
-                  </Button>
-                </div>
-              ))}
-            </div>
-
-            {isBulkUploading && (
-              <div className="space-y-2">
-                <Progress
-                  value={(uploadProgress.done / uploadProgress.total) * 100}
-                />
-                <p className="text-sm text-muted-foreground text-center">
-                  {uploadProgress.done} / {uploadProgress.total} geüpload...
-                </p>
-              </div>
-            )}
-
-            <Button
-              size="lg"
-              className="w-full"
-              disabled={!canUpload || isBulkUploading}
-              onClick={handleBulkUpload}
-            >
-              {isBulkUploading ? (
-                <>
-                  <Loader2 className="h-4 w-4 animate-spin mr-2" />
-                  Uploaden...
-                </>
-              ) : (
-                <>
-                  <Upload className="h-4 w-4 mr-2" />
-                  Alles uploaden
-                </>
-              )}
-            </Button>
-          </div>
-        )}
-
-        {/* Already uploaded overview */}
-        {Object.keys(uploadedVideos).length > 0 && (
-          <div>
-            <h2 className="font-display text-lg font-semibold text-foreground mb-4">
-              Al geüpload
-            </h2>
+        {activeCourses.map((course) => (
+          <div key={course.id}>
+            <h2 className="font-display text-lg font-semibold text-foreground mb-4">{course.title}</h2>
             <div className="space-y-1">
-              {videoLessons
-                .filter((l) => uploadedVideos[`${course?.id}/${l.id}.mp4`])
-                .map((lesson) => (
-                  <div
-                    key={lesson.id}
-                    className="flex items-center gap-3 rounded-lg p-3 text-sm"
-                  >
-                    <Check className="h-4 w-4 text-primary shrink-0" />
-                    <span className="text-foreground">{lesson.title}</span>
+              {course.modules.map((mod) => {
+                const modVideoLessons = mod.lessons.filter((l) => l.type !== "article");
+                if (modVideoLessons.length === 0) return null;
+
+                return (
+                  <div key={mod.id} className="mb-6">
+                    <h3 className="text-sm font-medium text-muted-foreground mb-3 px-1">{mod.title}</h3>
+                    <div className="space-y-2">
+                      {modVideoLessons.map((lesson) => {
+                        const key = `${course.id}/${lesson.id}`;
+                        const currentUrl = lessonUrls[key] || "";
+                        const isSaved = savedUrls[key] === currentUrl && currentUrl !== "";
+                        const isChanged = currentUrl !== (savedUrls[key] || "");
+
+                        return (
+                          <div key={lesson.id} className="flex items-center gap-3 rounded-lg bg-secondary/50 p-3">
+                            <Video className="h-4 w-4 text-muted-foreground shrink-0" />
+                            <span className="text-sm text-foreground min-w-[180px] shrink-0 truncate" title={lesson.title}>
+                              {lesson.title}
+                            </span>
+                            <Input
+                              placeholder="https://iframe.mediadelivery.net/embed/..."
+                              value={currentUrl}
+                              onChange={(e) => handleUrlChange(course.id, lesson.id, e.target.value)}
+                              className="flex-1 text-sm h-9"
+                            />
+                            {isSaved ? (
+                              <Check className="h-4 w-4 text-green-500 shrink-0" />
+                            ) : (
+                              <Button
+                                size="sm"
+                                variant="ghost"
+                                onClick={() => handleSave(course.id, lesson.id)}
+                                disabled={saving === key || !isChanged}
+                                className="shrink-0"
+                              >
+                                {saving === key ? "..." : "Opslaan"}
+                              </Button>
+                            )}
+                          </div>
+                        );
+                      })}
+                    </div>
                   </div>
-                ))}
+                );
+              })}
             </div>
           </div>
-        )}
-      </main>
+        ))}
+      </div>
     </div>
   );
 };

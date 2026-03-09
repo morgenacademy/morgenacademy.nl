@@ -68,6 +68,30 @@ export type Database = {
         }
         Relationships: []
       }
+      lesson_videos: {
+        Row: {
+          course_id: string
+          id: string
+          lesson_id: string
+          updated_at: string
+          video_url: string
+        }
+        Insert: {
+          course_id: string
+          id?: string
+          lesson_id: string
+          updated_at?: string
+          video_url?: string
+        }
+        Update: {
+          course_id?: string
+          id?: string
+          lesson_id?: string
+          updated_at?: string
+          video_url?: string
+        }
+        Relationships: []
+      }
       newsletter_signups: {
         Row: {
           created_at: string
