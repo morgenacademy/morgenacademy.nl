@@ -5,3 +5,6 @@ verify_jwt = false
 
 [functions.mollie-webhook]
 verify_jwt = false
+
+[functions.bunny-videos]
+verify_jwt = false
