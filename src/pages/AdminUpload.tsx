@@ -13,12 +13,23 @@ interface LessonVideo {
   video_url: string;
 }
 
+const LIBRARY_ID_KEY = "bunny-library-id";
+
 const AdminUpload = () => {
   const navigate = useNavigate();
   const [isAdmin, setIsAdmin] = useState<boolean | null>(null);
-  const [lessonUrls, setLessonUrls] = useState<Record<string, string>>({});
-  const [savedUrls, setSavedUrls] = useState<Record<string, string>>({});
+  const [libraryId, setLibraryId] = useState(() => localStorage.getItem(LIBRARY_ID_KEY) || "");
+  const [lessonGuids, setLessonGuids] = useState<Record<string, string>>({});
+  const [savedGuids, setSavedGuids] = useState<Record<string, string>>({});
   const [saving, setSaving] = useState<string | null>(null);
+
+  const buildUrl = (guid: string) =>
+    guid && libraryId ? `https://iframe.mediadelivery.net/embed/${libraryId}/${guid}` : "";
+
+  const extractGuid = (url: string) => {
+    const match = url.match(/\/embed\/[^/]+\/([a-f0-9-]+)/i);
+    return match ? match[1] : url; // fallback: treat as raw guid
+  };
 
   useEffect(() => {
     const checkAdmin = async () => {
