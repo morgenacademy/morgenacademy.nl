@@ -89,11 +89,6 @@ const AdminUpload = () => {
       let page = 1;
       let totalItems = 0;
       do {
-        const { data, error } = await supabase.functions.invoke("bunny-videos", {
-          body: null,
-          headers: {},
-        });
-        // We need to use GET params, so construct manually
         const session = await supabase.auth.getSession();
         const token = session.data.session?.access_token;
         const projectId = import.meta.env.VITE_SUPABASE_PROJECT_ID;
