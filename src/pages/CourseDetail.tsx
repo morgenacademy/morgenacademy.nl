@@ -1,11 +1,10 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useParams, Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import { ArrowLeft, FileText, ExternalLink } from "lucide-react";
 import VideoPlayer from "@/components/VideoPlayer";
 import LessonList from "@/components/LessonList";
 import { courses, getAllLessons } from "@/data/courses";
-import { supabase } from "@/integrations/supabase/client";
 
 const CourseDetail = () => {
   const { courseId } = useParams();
@@ -13,24 +12,6 @@ const CourseDetail = () => {
   const allLessons = course ? getAllLessons(course) : [];
   const [activeLessonId, setActiveLessonId] = useState(allLessons[0]?.id || "");
   const activeLesson = allLessons.find((l) => l.id === activeLessonId) || allLessons[0];
-  const [videoUrl, setVideoUrl] = useState(activeLesson?.videoUrl || "");
-
-  useEffect(() => {
-    if (!course || !activeLesson) return;
-    const getStorageVideo = async () => {
-      const filePath = `${course.id}/${activeLesson.id}.mp4`;
-      const { data } = await supabase.storage
-        .from("course-videos")
-        .createSignedUrl(filePath, 3600);
-
-      if (data?.signedUrl) {
-        setVideoUrl(data.signedUrl);
-      } else {
-        setVideoUrl(activeLesson.videoUrl);
-      }
-    };
-    getStorageVideo();
-  }, [activeLessonId, course?.id, activeLesson?.videoUrl, activeLesson?.id]);
 
   if (!course || !activeLesson) {
     return (
@@ -82,7 +63,7 @@ const CourseDetail = () => {
                 </div>
               </div>
             ) : (
-              <VideoPlayer src={videoUrl} />
+              <VideoPlayer src={activeLesson.videoUrl} />
             )}
 
             <div className="mt-6">

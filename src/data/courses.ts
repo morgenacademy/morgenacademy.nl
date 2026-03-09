@@ -36,8 +36,9 @@ export function getAllLessons(course: Course): Lesson[] {
   return course.modules.flatMap((m) => m.lessons);
 }
 
-const placeholderVideo =
-  "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4";
+// Vul hier je Bunny Stream embed-URL in, bijv.:
+// "https://iframe.mediadelivery.net/embed/LIBRARY_ID/VIDEO_GUID?autoplay=false&preload=true"
+const placeholderVideo = "";
 
 export const courses: Course[] = [
   {
