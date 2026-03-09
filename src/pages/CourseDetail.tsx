@@ -1,10 +1,11 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useParams, Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import { ArrowLeft, FileText, ExternalLink } from "lucide-react";
 import VideoPlayer from "@/components/VideoPlayer";
 import LessonList from "@/components/LessonList";
 import { courses, getAllLessons } from "@/data/courses";
+import { supabase } from "@/integrations/supabase/client";
 
 const CourseDetail = () => {
   const { courseId } = useParams();
@@ -12,6 +13,23 @@ const CourseDetail = () => {
   const allLessons = course ? getAllLessons(course) : [];
   const [activeLessonId, setActiveLessonId] = useState(allLessons[0]?.id || "");
   const activeLesson = allLessons.find((l) => l.id === activeLessonId) || allLessons[0];
+  const [videoUrl, setVideoUrl] = useState("");
+
+  // Fetch Bunny Stream URL from database
+  useEffect(() => {
+    if (!course || !activeLesson) return;
+    const fetchUrl = async () => {
+      const { data } = await supabase
+        .from("lesson_videos")
+        .select("video_url")
+        .eq("course_id", course.id)
+        .eq("lesson_id", activeLesson.id)
+        .maybeSingle();
+
+      setVideoUrl(data?.video_url || activeLesson.videoUrl || "");
+    };
+    fetchUrl();
+  }, [activeLessonId, course?.id, activeLesson?.id, activeLesson?.videoUrl]);
 
   if (!course || !activeLesson) {
     return (
@@ -63,7 +81,7 @@ const CourseDetail = () => {
                 </div>
               </div>
             ) : (
-              <VideoPlayer src={activeLesson.videoUrl} />
+              <VideoPlayer src={videoUrl} />
             )}
 
             <div className="mt-6">
