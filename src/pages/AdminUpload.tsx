@@ -1,13 +1,28 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { courses } from "@/data/courses";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
-import { ArrowLeft, Save, Check, Video, Settings } from "lucide-react";
+import { ArrowLeft, Save, Check, Video, Settings, RefreshCw, Search } from "lucide-react";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 const LIBRARY_ID_KEY = "bunny-library-id";
+
+interface BunnyVideo {
+  guid: string;
+  title: string;
+  length: number;
+  status: number;
+  dateUploaded: string;
+}
 
 const AdminUpload = () => {
   const navigate = useNavigate();
@@ -16,6 +31,11 @@ const AdminUpload = () => {
   const [guids, setGuids] = useState<Record<string, string>>({});
   const [savedGuids, setSavedGuids] = useState<Record<string, string>>({});
   const [saving, setSaving] = useState<string | null>(null);
+
+  // Bunny video list
+  const [bunnyVideos, setBunnyVideos] = useState<BunnyVideo[]>([]);
+  const [loadingVideos, setLoadingVideos] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
 
   const buildUrl = (guid: string) =>
     guid && libraryId ? `https://iframe.mediadelivery.net/embed/${libraryId}/${guid}` : "";
@@ -57,6 +77,62 @@ const AdminUpload = () => {
     load();
   }, [isAdmin]);
 
+  const fetchBunnyVideos = useCallback(async () => {
+    if (!libraryId.trim()) {
+      toast.error("Vul eerst je Bunny Library ID in");
+      return;
+    }
+    setLoadingVideos(true);
+    try {
+      // Fetch all pages
+      let allVideos: BunnyVideo[] = [];
+      let page = 1;
+      let totalItems = 0;
+      do {
+        const { data, error } = await supabase.functions.invoke("bunny-videos", {
+          body: null,
+          headers: {},
+        });
+        // We need to use GET params, so construct manually
+        const session = await supabase.auth.getSession();
+        const token = session.data.session?.access_token;
+        const projectId = import.meta.env.VITE_SUPABASE_PROJECT_ID;
+        const res = await fetch(
+          `https://${projectId}.supabase.co/functions/v1/bunny-videos?libraryId=${encodeURIComponent(libraryId)}&page=${page}`,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+              "Content-Type": "application/json",
+            },
+          }
+        );
+        if (!res.ok) {
+          const errBody = await res.json().catch(() => ({}));
+          throw new Error(errBody.error || `HTTP ${res.status}`);
+        }
+        const result = await res.json();
+        allVideos = [...allVideos, ...(result.videos || [])];
+        totalItems = result.totalItems || 0;
+        page++;
+      } while (allVideos.length < totalItems && page <= 10);
+
+      setBunnyVideos(allVideos);
+      toast.success(`${allVideos.length} video's opgehaald uit Bunny`);
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : "Onbekende fout";
+      toast.error("Bunny video's ophalen mislukt: " + msg);
+    } finally {
+      setLoadingVideos(false);
+    }
+  }, [libraryId]);
+
+  // Auto-fetch when library ID is set
+  useEffect(() => {
+    if (isAdmin && libraryId.trim() && bunnyVideos.length === 0) {
+      fetchBunnyVideos();
+    }
+  }, [isAdmin, libraryId]);
+
   const handleLibraryChange = (val: string) => {
     setLibraryId(val);
     localStorage.setItem(LIBRARY_ID_KEY, val);
@@ -90,6 +166,16 @@ const AdminUpload = () => {
     setSaving(null);
   };
 
+  const formatDuration = (seconds: number) => {
+    const m = Math.floor(seconds / 60);
+    const s = seconds % 60;
+    return `${m}:${s.toString().padStart(2, "0")}`;
+  };
+
+  const filteredVideos = bunnyVideos.filter((v) =>
+    v.title.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
   if (isAdmin === null) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-background">
@@ -119,20 +205,31 @@ const AdminUpload = () => {
       </header>
 
       <div className="mx-auto max-w-4xl px-6 py-8 space-y-8">
-        {/* Library ID */}
+        {/* Library ID + Fetch */}
         <div className="rounded-xl border border-border bg-secondary/30 p-5 space-y-3">
           <div className="flex items-center gap-2">
             <Settings className="h-4 w-4 text-primary" />
             <span className="text-sm font-medium text-foreground">Bunny Stream Library ID</span>
           </div>
-          <Input
-            placeholder="Bijv. 123456"
-            value={libraryId}
-            onChange={(e) => handleLibraryChange(e.target.value)}
-            className="max-w-xs text-sm h-9"
-          />
+          <div className="flex items-center gap-3">
+            <Input
+              placeholder="Bijv. 123456"
+              value={libraryId}
+              onChange={(e) => handleLibraryChange(e.target.value)}
+              className="max-w-xs text-sm h-9"
+            />
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={fetchBunnyVideos}
+              disabled={loadingVideos || !libraryId.trim()}
+            >
+              <RefreshCw className={`h-4 w-4 mr-2 ${loadingVideos ? "animate-spin" : ""}`} />
+              {loadingVideos ? "Laden..." : `Video's ophalen${bunnyVideos.length ? ` (${bunnyVideos.length})` : ""}`}
+            </Button>
+          </div>
           <p className="text-xs text-muted-foreground">
-            Vind je in het Bunny Stream dashboard. Vul deze één keer in, daarna plak je per les alleen het korte Video GUID.
+            Vul je Library ID in en klik op "Video's ophalen" om je Bunny video's te laden. Daarna kun je per les een video selecteren.
           </p>
         </div>
 
@@ -152,6 +249,7 @@ const AdminUpload = () => {
                       const key = `${course.id}/${lesson.id}`;
                       const guid = guids[key] || "";
                       const isSaved = savedGuids[key] === guid && guid !== "";
+                      const selectedVideo = bunnyVideos.find((v) => v.guid === guid);
 
                       return (
                         <div key={lesson.id} className="flex items-center gap-3 rounded-lg bg-secondary/50 p-3">
@@ -159,12 +257,65 @@ const AdminUpload = () => {
                           <span className="text-sm text-foreground min-w-[180px] shrink-0 truncate" title={lesson.title}>
                             {lesson.title}
                           </span>
-                          <Input
-                            placeholder="Video GUID (bijv. a1b2c3d4-...)"
-                            value={guid}
-                            onChange={(e) => setGuids((prev) => ({ ...prev, [key]: e.target.value }))}
-                            className="flex-1 text-sm h-9 font-mono"
-                          />
+
+                          {bunnyVideos.length > 0 ? (
+                            <Select
+                              value={guid}
+                              onValueChange={(val) => setGuids((prev) => ({ ...prev, [key]: val }))}
+                            >
+                              <SelectTrigger className="flex-1 text-sm h-9">
+                                <SelectValue placeholder="Selecteer een video...">
+                                  {selectedVideo
+                                    ? `${selectedVideo.title} (${formatDuration(selectedVideo.length)})`
+                                    : guid
+                                    ? `GUID: ${guid.substring(0, 12)}...`
+                                    : "Selecteer een video..."}
+                                </SelectValue>
+                              </SelectTrigger>
+                              <SelectContent>
+                                <div className="p-2">
+                                  <div className="flex items-center gap-2 px-2 pb-2 border-b border-border mb-1">
+                                    <Search className="h-3 w-3 text-muted-foreground" />
+                                    <input
+                                      className="text-sm bg-transparent outline-none flex-1 text-foreground placeholder:text-muted-foreground"
+                                      placeholder="Zoek video..."
+                                      value={searchQuery}
+                                      onChange={(e) => setSearchQuery(e.target.value)}
+                                      onClick={(e) => e.stopPropagation()}
+                                    />
+                                  </div>
+                                </div>
+                                {guid && (
+                                  <SelectItem value="__clear__" className="text-muted-foreground text-xs">
+                                    ✕ Verwijder selectie
+                                  </SelectItem>
+                                )}
+                                {filteredVideos.map((v) => (
+                                  <SelectItem key={v.guid} value={v.guid} className="text-sm">
+                                    <div className="flex items-center justify-between w-full gap-2">
+                                      <span className="truncate">{v.title}</span>
+                                      <span className="text-xs text-muted-foreground shrink-0">
+                                        {formatDuration(v.length)}
+                                      </span>
+                                    </div>
+                                  </SelectItem>
+                                ))}
+                                {filteredVideos.length === 0 && (
+                                  <div className="py-4 text-center text-xs text-muted-foreground">
+                                    Geen video's gevonden
+                                  </div>
+                                )}
+                              </SelectContent>
+                            </Select>
+                          ) : (
+                            <Input
+                              placeholder="Video GUID (bijv. a1b2c3d4-...)"
+                              value={guid}
+                              onChange={(e) => setGuids((prev) => ({ ...prev, [key]: e.target.value }))}
+                              className="flex-1 text-sm h-9 font-mono"
+                            />
+                          )}
+
                           {isSaved && <Check className="h-4 w-4 text-primary shrink-0" />}
                         </div>
                       );
