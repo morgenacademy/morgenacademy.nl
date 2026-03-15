@@ -96,7 +96,16 @@ const Checkout = () => {
 
     setLoading(true);
     try {
+      const trimmedEmail = email.trim().toLowerCase();
       const redirectUrl = `${window.location.origin}/betaling?course=${course.id}`;
+
+      // Save newsletter signup if opted in
+      if (newsletter) {
+        await supabase.from("newsletter_signups").upsert(
+          { email: trimmedEmail, first_name: firstName.trim() || null },
+          { onConflict: "email" }
+        );
+      }
 
       const { data, error } = await supabase.functions.invoke(
         "create-mollie-payment",
@@ -105,7 +114,9 @@ const Checkout = () => {
             courseId: course.id,
             courseTitle: course.title,
             amount: price,
-            email: email.trim().toLowerCase(),
+            email: trimmedEmail,
+            firstName: firstName.trim(),
+            lastName: lastName.trim(),
             redirectUrl,
           },
         }

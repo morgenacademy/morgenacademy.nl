@@ -1,23 +1,58 @@
 import { useState, useEffect } from "react";
-import { useParams, Link } from "react-router-dom";
+import { useParams, Link, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { ArrowLeft, FileText, ExternalLink } from "lucide-react";
+import { ArrowLeft, FileText, ExternalLink, Lock } from "lucide-react";
 import VideoPlayer from "@/components/VideoPlayer";
 import LessonList from "@/components/LessonList";
 import { courses, getAllLessons } from "@/data/courses";
 import { supabase } from "@/integrations/supabase/client";
+import { Button } from "@/components/ui/button";
 
 const CourseDetail = () => {
   const { courseId } = useParams();
+  const navigate = useNavigate();
   const course = courses.find((c) => c.id === courseId);
   const allLessons = course ? getAllLessons(course) : [];
   const [activeLessonId, setActiveLessonId] = useState(allLessons[0]?.id || "");
   const activeLesson = allLessons.find((l) => l.id === activeLessonId) || allLessons[0];
   const [videoUrl, setVideoUrl] = useState("");
+  const [enrolled, setEnrolled] = useState<boolean | null>(null);
+
+  // Check enrollment
+  useEffect(() => {
+    if (!courseId) return;
+    const checkEnrollment = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+
+      // Admins always have access
+      const { data: adminRole } = await supabase
+        .from("user_roles")
+        .select("role")
+        .eq("user_id", user.id)
+        .eq("role", "admin")
+        .maybeSingle();
+
+      if (adminRole) {
+        setEnrolled(true);
+        return;
+      }
+
+      const { data } = await supabase
+        .from("course_enrollments")
+        .select("id")
+        .eq("user_id", user.id)
+        .eq("course_id", courseId)
+        .maybeSingle();
+
+      setEnrolled(!!data);
+    };
+    checkEnrollment();
+  }, [courseId]);
 
   // Fetch Bunny Stream URL from database
   useEffect(() => {
-    if (!course || !activeLesson) return;
+    if (!course || !activeLesson || !enrolled) return;
     const fetchUrl = async () => {
       const { data } = await supabase
         .from("lesson_videos")
@@ -29,12 +64,46 @@ const CourseDetail = () => {
       setVideoUrl(data?.video_url || activeLesson.videoUrl || "");
     };
     fetchUrl();
-  }, [activeLessonId, course?.id, activeLesson?.id, activeLesson?.videoUrl]);
+  }, [activeLessonId, course?.id, activeLesson?.id, activeLesson?.videoUrl, enrolled]);
 
   if (!course || !activeLesson) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-background">
         <p className="text-muted-foreground">Cursus niet gevonden</p>
+      </div>
+    );
+  }
+
+  // Loading enrollment check
+  if (enrolled === null) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-background">
+        <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />
+      </div>
+    );
+  }
+
+  // No access
+  if (!enrolled) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-background px-6">
+        <div className="max-w-md text-center space-y-4">
+          <Lock className="h-12 w-12 text-muted-foreground mx-auto" />
+          <h1 className="font-display text-2xl font-semibold text-foreground">
+            Geen toegang
+          </h1>
+          <p className="text-muted-foreground">
+            Je hebt nog geen toegang tot deze training. Koop de training om te beginnen.
+          </p>
+          <div className="flex gap-3 justify-center">
+            <Button variant="outline" onClick={() => navigate("/dashboard")}>
+              Terug naar dashboard
+            </Button>
+            <Button onClick={() => navigate(`/checkout/${courseId}`)}>
+              Training kopen
+            </Button>
+          </div>
+        </div>
       </div>
     );
   }

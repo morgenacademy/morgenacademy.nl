@@ -14,6 +14,30 @@ export type Database = {
   }
   public: {
     Tables: {
+      course_enrollments: {
+        Row: {
+          id: string
+          user_id: string
+          course_id: string
+          enrolled_at: string
+          payment_id: string | null
+        }
+        Insert: {
+          id?: string
+          user_id: string
+          course_id: string
+          enrolled_at?: string
+          payment_id?: string | null
+        }
+        Update: {
+          id?: string
+          user_id?: string
+          course_id?: string
+          enrolled_at?: string
+          payment_id?: string | null
+        }
+        Relationships: []
+      }
       contact_requests: {
         Row: {
           created_at: string

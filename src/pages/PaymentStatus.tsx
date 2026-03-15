@@ -62,11 +62,16 @@ const PaymentStatus = () => {
               Betaling geslaagd!
             </h1>
             <p className="mt-2 text-muted-foreground">
-              Je hebt nu toegang tot de training. Log in om te beginnen.
+              Je hebt nu toegang tot de training. Maak een account aan of log in om te beginnen.
             </p>
-            <Link to="/login" className="mt-6 inline-block">
-              <Button size="lg">Naar inloggen</Button>
-            </Link>
+            <div className="mt-6 flex gap-3 justify-center">
+              <Link to="/registreren">
+                <Button size="lg">Account aanmaken</Button>
+              </Link>
+              <Link to="/login">
+                <Button size="lg" variant="outline">Inloggen</Button>
+              </Link>
+            </div>
           </>
         )}
 

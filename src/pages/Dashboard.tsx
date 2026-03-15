@@ -1,3 +1,4 @@
+import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import { LogOut } from "lucide-react";
@@ -8,6 +9,35 @@ import { courses } from "@/data/courses";
 
 const Dashboard = () => {
   const navigate = useNavigate();
+  const [enrolledCourseIds, setEnrolledCourseIds] = useState<string[]>([]);
+
+  useEffect(() => {
+    const fetchEnrollments = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+
+      // Check if admin (admins see all courses as enrolled)
+      const { data: adminRole } = await supabase
+        .from("user_roles")
+        .select("role")
+        .eq("user_id", user.id)
+        .eq("role", "admin")
+        .maybeSingle();
+
+      if (adminRole) {
+        setEnrolledCourseIds(courses.filter((c) => !c.comingSoon).map((c) => c.id));
+        return;
+      }
+
+      const { data } = await supabase
+        .from("course_enrollments")
+        .select("course_id")
+        .eq("user_id", user.id);
+
+      setEnrolledCourseIds(data?.map((e) => e.course_id) || []);
+    };
+    fetchEnrollments();
+  }, []);
 
   const handleLogout = async () => {
     await supabase.auth.signOut();
@@ -57,7 +87,12 @@ const Dashboard = () => {
       <section className="mx-auto max-w-6xl px-6 pb-20">
         <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
           {courses.map((course, index) => (
-            <CourseCard key={course.id} course={course} index={index} />
+            <CourseCard
+              key={course.id}
+              course={course}
+              index={index}
+              enrolled={enrolledCourseIds.includes(course.id)}
+            />
           ))}
         </div>
       </section>
