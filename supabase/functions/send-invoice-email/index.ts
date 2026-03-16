@@ -36,10 +36,9 @@ Deno.serve(async (req) => {
       });
     }
 
-    const mjApiKey = Deno.env.get("MAILJET_API_KEY");
-    const mjSecretKey = Deno.env.get("MAILJET_SECRET_KEY");
-    if (!mjApiKey || !mjSecretKey) {
-      console.error("Mailjet keys not configured");
+    const resendKey = Deno.env.get("RESEND_API_KEY");
+    if (!resendKey) {
+      console.error("RESEND_API_KEY not configured");
       return new Response(JSON.stringify({ error: "Email not configured" }), {
         status: 500,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
@@ -212,29 +211,25 @@ KVK: [KVK nummer]
 BTW: [BTW nummer]
 totmorgen@morgenacademy.nl`;
 
-    const res = await fetch("https://api.mailjet.com/v3.1/send", {
+    const res = await fetch("https://api.resend.com/emails", {
       method: "POST",
       headers: {
-        Authorization: "Basic " + btoa(`${mjApiKey}:${mjSecretKey}`),
+        Authorization: `Bearer ${resendKey}`,
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        Messages: [
-          {
-            From: { Email: "totmorgen@morgenacademy.nl", Name: "Morgen Academy" },
-            To: [{ Email: email, Name: name }],
-            Subject: `Betaalbewijs ${invoiceNumber} - Morgen Academy`,
-            HTMLPart: invoiceHtml,
-            TextPart: textBody,
-          },
-        ],
+        from: "Morgen Academy <totmorgen@morgenacademy.nl>",
+        to: [email],
+        subject: `Betaalbewijs ${invoiceNumber} - Morgen Academy`,
+        html: invoiceHtml,
+        text: textBody,
       }),
     });
 
     const result = await res.json();
 
     if (!res.ok) {
-      console.error("Mailjet error:", result);
+      console.error("Resend error:", result);
       return new Response(JSON.stringify({ error: "Failed to send invoice", details: result }), {
         status: 500,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
@@ -244,7 +239,7 @@ totmorgen@morgenacademy.nl`;
     console.log(`Invoice email sent to ${email}: ${invoiceNumber}`);
 
     return new Response(
-      JSON.stringify({ success: true, invoiceNumber, messageId: result.Messages?.[0]?.To?.[0]?.MessageID }),
+      JSON.stringify({ success: true, invoiceNumber, id: result.id }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   } catch (error) {

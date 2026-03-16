@@ -19,10 +19,9 @@ Deno.serve(async (req) => {
       });
     }
 
-    const mjApiKey = Deno.env.get("MAILJET_API_KEY");
-    const mjSecretKey = Deno.env.get("MAILJET_SECRET_KEY");
-    if (!mjApiKey || !mjSecretKey) {
-      console.error("Mailjet keys not configured");
+    const resendKey = Deno.env.get("RESEND_API_KEY");
+    if (!resendKey) {
+      console.error("RESEND_API_KEY not configured");
       return new Response(JSON.stringify({ error: "Email not configured" }), {
         status: 500,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
@@ -184,29 +183,25 @@ Vragen? Mail ons op totmorgen@morgenacademy.nl
 
 Morgen Academy - Een initiatief van Morgen Company`;
 
-    const res = await fetch("https://api.mailjet.com/v3.1/send", {
+    const res = await fetch("https://api.resend.com/emails", {
       method: "POST",
       headers: {
-        Authorization: "Basic " + btoa(`${mjApiKey}:${mjSecretKey}`),
+        Authorization: `Bearer ${resendKey}`,
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        Messages: [
-          {
-            From: { Email: "totmorgen@morgenacademy.nl", Name: "Morgen Academy" },
-            To: [{ Email: email, Name: firstName || "" }],
-            Subject: `Welkom bij de ${courseTitle}!`,
-            HTMLPart: htmlBody,
-            TextPart: textBody,
-          },
-        ],
+        from: "Morgen Academy <totmorgen@morgenacademy.nl>",
+        to: [email],
+        subject: `Welkom bij de ${courseTitle}!`,
+        html: htmlBody,
+        text: textBody,
       }),
     });
 
     const result = await res.json();
 
     if (!res.ok) {
-      console.error("Mailjet error:", result);
+      console.error("Resend error:", result);
       return new Response(JSON.stringify({ error: "Failed to send email", details: result }), {
         status: 500,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
@@ -215,7 +210,7 @@ Morgen Academy - Een initiatief van Morgen Company`;
 
     console.log(`Payment email sent to ${email} for course ${courseTitle}`);
 
-    return new Response(JSON.stringify({ success: true, messageId: result.Messages?.[0]?.To?.[0]?.MessageID }), {
+    return new Response(JSON.stringify({ success: true, id: result.id }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   } catch (error) {
