@@ -1,16 +1,17 @@
 import { motion } from "framer-motion";
-import { Play, Lock, ShoppingCart } from "lucide-react";
+import { Play, Lock, ShoppingCart, Bell } from "lucide-react";
 import { Link } from "react-router-dom";
+import { Button } from "@/components/ui/button";
 import type { Course } from "@/data/courses";
 
 interface CourseCardProps {
   course: Course;
   index: number;
   enrolled?: boolean;
+  onWaitlist?: () => void;
 }
 
-const CourseCard = ({ course, index, enrolled = false }: CourseCardProps) => {
-  const isLocked = !enrolled && !course.comingSoon;
+const CourseCard = ({ course, index, enrolled = false, onWaitlist }: CourseCardProps) => {
   const Wrapper = course.comingSoon ? "div" : Link;
   const wrapperProps = course.comingSoon
     ? {}
@@ -28,7 +29,7 @@ const CourseCard = ({ course, index, enrolled = false }: CourseCardProps) => {
         {...(wrapperProps as any)}
         className={`group block overflow-hidden rounded-xl bg-card border border-border transition-all duration-300 ${
           course.comingSoon
-            ? "cursor-default opacity-70"
+            ? "opacity-75"
             : "hover:border-primary/30 hover:shadow-[0_0_40px_-10px_hsl(var(--primary)/0.15)]"
         }`}
       >
@@ -78,8 +79,19 @@ const CourseCard = ({ course, index, enrolled = false }: CourseCardProps) => {
 
           {/* Progress bar or meta */}
           {course.comingSoon ? (
-            <div className="mt-4 text-xs text-muted-foreground">
-              <span>In ontwikkeling</span>
+            <div className="mt-4 flex items-center justify-between">
+              <span className="text-xs text-muted-foreground">In ontwikkeling</span>
+              {onWaitlist && (
+                <Button
+                  size="sm"
+                  variant="outline"
+                  className="h-7 gap-1.5 text-xs px-3"
+                  onClick={(e) => { e.preventDefault(); e.stopPropagation(); onWaitlist(); }}
+                >
+                  <Bell className="h-3 w-3" />
+                  Wachtlijst
+                </Button>
+              )}
             </div>
           ) : enrolled ? (
             <div className="mt-4 space-y-2">

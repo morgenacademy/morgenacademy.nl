@@ -5,11 +5,13 @@ import { LogOut } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import CourseCard from "@/components/CourseCard";
+import WaitlistDialog from "@/components/WaitlistDialog";
 import { courses } from "@/data/courses";
 
 const Dashboard = () => {
   const navigate = useNavigate();
   const [enrolledCourseIds, setEnrolledCourseIds] = useState<string[]>([]);
+  const [waitlistCourse, setWaitlistCourse] = useState<{ id: string; title: string } | null>(null);
 
   useEffect(() => {
     const fetchEnrollments = async () => {
@@ -92,10 +94,18 @@ const Dashboard = () => {
               course={course}
               index={index}
               enrolled={enrolledCourseIds.includes(course.id)}
+              onWaitlist={course.comingSoon ? () => setWaitlistCourse({ id: course.id, title: course.title }) : undefined}
             />
           ))}
         </div>
       </section>
+
+      <WaitlistDialog
+        open={!!waitlistCourse}
+        onOpenChange={(open) => !open && setWaitlistCourse(null)}
+        courseId={waitlistCourse?.id || ""}
+        courseTitle={waitlistCourse?.title || ""}
+      />
 
       {/* Footer */}
       <footer className="border-t border-border/50 py-8">

@@ -1,5 +1,6 @@
 import course1 from "@/assets/course-1.jpg";
 import course2 from "@/assets/course-2.jpg";
+import course3 from "@/assets/course-3.jpg";
 
 export interface Lesson {
   id: string;
@@ -354,6 +355,16 @@ export const courses: Course[] = [
     title: "Automatiseren kun je leren",
     subtitle: "Van handmatig werk naar slimme automatiseringen",
     thumbnail: course2,
+    totalLessons: 0,
+    totalDuration: "Binnenkort beschikbaar",
+    comingSoon: true,
+    modules: [],
+  },
+  {
+    id: "vibecoden",
+    title: "Vibecoden",
+    subtitle: "Maak je eigen app of website met AI — zonder te kunnen programmeren",
+    thumbnail: course3,
     totalLessons: 0,
     totalDuration: "Binnenkort beschikbaar",
     comingSoon: true,
