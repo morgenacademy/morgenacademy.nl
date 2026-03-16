@@ -133,15 +133,36 @@ const AdminUpload = () => {
     localStorage.setItem(LIBRARY_ID_KEY, val);
   };
 
+  // Hulpfunctie: geeft true als de les een article-type is
+  const isArticleLesson = (course_id: string, lesson_id: string) => {
+    const course = courses.find((c) => c.id === course_id);
+    const lesson = course?.modules.flatMap((m) => m.lessons).find((l) => l.id === lesson_id);
+    return lesson?.type === "article";
+  };
+
   const handleSaveAll = async () => {
-    if (!libraryId.trim()) { toast.error("Vul eerst je Bunny Library ID in"); return; }
+    // Library ID alleen vereist als er video-lessen opgeslagen worden
+    const hasVideoLessons = Object.entries(guids)
+      .filter(([, v]) => v.trim() !== "")
+      .some(([key]) => {
+        const [cid, lid] = key.split("/");
+        return !isArticleLesson(cid, lid);
+      });
+    if (hasVideoLessons && !libraryId.trim()) {
+      toast.error("Vul eerst je Bunny Library ID in");
+      return;
+    }
     setSaving("all");
 
     const rows = Object.entries(guids)
       .filter(([, guid]) => guid.trim() !== "")
       .map(([key, guid]) => {
         const [course_id, lesson_id] = key.split("/");
-        return { course_id, lesson_id, video_url: buildUrl(guid.trim()), updated_at: new Date().toISOString() };
+        // Artikel-lessen: sla de URL direct op; video-lessen: bouw Bunny embed-URL
+        const video_url = isArticleLesson(course_id, lesson_id)
+          ? guid.trim()
+          : buildUrl(guid.trim());
+        return { course_id, lesson_id, video_url, updated_at: new Date().toISOString() };
       });
 
     if (rows.length === 0) { setSaving(null); return; }

@@ -283,34 +283,6 @@ export const courses: Course[] = [
         ],
       },
       {
-        id: "vibecoden",
-        title: "Vibecoden: maak je eigen app of website met AI",
-        comingSoon: true,
-        lessons: [
-          {
-            id: "vibecoden-intro",
-            title: "Introductie vibecoden",
-            duration: "",
-            videoUrl: "",
-            description: "Binnenkort beschikbaar.",
-          },
-          {
-            id: "vibecoden-je-eerste-app",
-            title: "Bouw je eerste app",
-            duration: "",
-            videoUrl: "",
-            description: "Binnenkort beschikbaar.",
-          },
-          {
-            id: "vibecoden-publiceren",
-            title: "Publiceren en delen",
-            duration: "",
-            videoUrl: "",
-            description: "Binnenkort beschikbaar.",
-          },
-        ],
-      },
-      {
         id: "downloads",
         title: "Downloads",
         lessons: [
