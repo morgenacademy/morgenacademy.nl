@@ -218,7 +218,7 @@ totmorgen@morgenacademy.nl`;
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        from: "Morgen Academy <totmorgen@morgenacademy.nl>",
+        from: "Morgen Academy <totmorgen@courses.morgenacademy.nl>",
         to: [email],
         subject: `Betaalbewijs ${invoiceNumber} - Morgen Academy`,
         html: invoiceHtml,
