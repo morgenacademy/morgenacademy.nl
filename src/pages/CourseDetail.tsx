@@ -1,12 +1,16 @@
 import { useState, useEffect } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { ArrowLeft, FileText, ExternalLink, Lock } from "lucide-react";
+import { ArrowLeft, FileText, ExternalLink, Lock, Bell, CheckCircle, X } from "lucide-react";
 import VideoPlayer from "@/components/VideoPlayer";
 import LessonList from "@/components/LessonList";
 import { courses, getAllLessons } from "@/data/courses";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+
+// Coming-soon cursussen die als kaart getoond worden onderaan de sidebar
+const comingSoonCourses = courses.filter((c) => c.comingSoon);
 
 const CourseDetail = () => {
   const { courseId } = useParams();
@@ -18,12 +22,22 @@ const CourseDetail = () => {
   const [videoUrl, setVideoUrl] = useState("");
   const [enrolled, setEnrolled] = useState<boolean | null>(null);
 
+  // Wachtlijst modal state
+  const [waitlistModal, setWaitlistModal] = useState<{ id: string; title: string } | null>(null);
+  const [waitlistName, setWaitlistName] = useState("");
+  const [waitlistEmail, setWaitlistEmail] = useState("");
+  const [waitlistLoading, setWaitlistLoading] = useState(false);
+  const [waitlistDone, setWaitlistDone] = useState(false);
+
   // Check enrollment
   useEffect(() => {
     if (!courseId) return;
     const checkEnrollment = async () => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
+
+      // Pre-fill email for waitlist
+      setWaitlistEmail(user.email || "");
 
       // Admins always have access
       const { data: adminRole } = await supabase
@@ -65,6 +79,27 @@ const CourseDetail = () => {
     };
     fetchUrl();
   }, [activeLessonId, course?.id, activeLesson?.id, activeLesson?.videoUrl, enrolled]);
+
+  // Wachtlijst aanmelden
+  const handleWaitlistSubmit = async () => {
+    if (!waitlistModal || !waitlistName.trim() || !waitlistEmail.trim()) return;
+    setWaitlistLoading(true);
+    const { error } = await supabase.from("waitlist").insert({
+      course_id: waitlistModal.id,
+      first_name: waitlistName.trim(),
+      email: waitlistEmail.trim(),
+    });
+    setWaitlistLoading(false);
+    if (!error) {
+      setWaitlistDone(true);
+    }
+  };
+
+  const closeModal = () => {
+    setWaitlistModal(null);
+    setWaitlistDone(false);
+    setWaitlistName("");
+  };
 
   if (!course || !activeLesson) {
     return (
@@ -202,20 +237,126 @@ const CourseDetail = () => {
             </div>
           </motion.div>
 
+          {/* Sidebar: lessenlijst + coming-soon cursussen */}
           <div className="w-full lg:w-80 shrink-0">
-            <div className="sticky top-8">
-              <h3 className="text-xs uppercase tracking-[0.2em] text-muted-foreground mb-4 px-1">
+            <div className="sticky top-8 space-y-4">
+              <h3 className="text-xs uppercase tracking-[0.2em] text-muted-foreground px-1">
                 Lessen ({allLessons.length})
               </h3>
               <LessonList
                 modules={course.modules}
                 activeLesson={activeLessonId}
                 onSelectLesson={setActiveLessonId}
+                onWaitlist={(id, title) => {
+                  setWaitlistDone(false);
+                  setWaitlistName("");
+                  setWaitlistModal({ id, title });
+                }}
               />
+
+              {/* Coming-soon cursussen */}
+              {comingSoonCourses.length > 0 && (
+                <div className="space-y-2 pt-2">
+                  <h3 className="text-xs uppercase tracking-[0.2em] text-muted-foreground px-1">
+                    Andere trainingen
+                  </h3>
+                  {comingSoonCourses.map((c) => (
+                    <button
+                      key={c.id}
+                      onClick={() => {
+                        setWaitlistDone(false);
+                        setWaitlistName("");
+                        setWaitlistModal({ id: c.id, title: c.title });
+                      }}
+                      className="w-full rounded-lg border border-dashed border-border bg-secondary/20 p-4 text-left transition-all duration-200 hover:bg-secondary/40 hover:border-primary/30 group"
+                    >
+                      <div className="flex items-center gap-3">
+                        <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-secondary text-muted-foreground group-hover:bg-primary/10 group-hover:text-primary transition-colors">
+                          <Lock className="h-3.5 w-3.5" />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-semibold text-foreground truncate">{c.title}</p>
+                          <p className="text-xs text-muted-foreground mt-0.5">Binnenkort beschikbaar</p>
+                        </div>
+                        <span className="shrink-0 inline-flex items-center gap-1 rounded-full bg-primary/10 px-2.5 py-1 text-[11px] font-medium text-primary group-hover:bg-primary group-hover:text-primary-foreground transition-colors">
+                          <Bell className="h-2.5 w-2.5" />
+                          Aanmelden
+                        </span>
+                      </div>
+                    </button>
+                  ))}
+                </div>
+              )}
             </div>
           </div>
         </div>
       </div>
+
+      {/* Wachtlijst modal */}
+      {waitlistModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
+          <div className="w-full max-w-md rounded-2xl bg-background border border-border shadow-xl p-6 space-y-5">
+            <div className="flex items-start justify-between gap-3">
+              <div>
+                <h2 className="font-display text-lg font-semibold text-foreground">
+                  Zet me op de wachtlijst
+                </h2>
+                <p className="text-sm text-muted-foreground mt-1">
+                  {waitlistModal.title}
+                </p>
+              </div>
+              <button onClick={closeModal} className="text-muted-foreground hover:text-foreground transition-colors mt-0.5">
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+
+            {waitlistDone ? (
+              <div className="flex flex-col items-center gap-3 py-4 text-center">
+                <CheckCircle className="h-12 w-12 text-primary" />
+                <p className="font-semibold text-foreground">Je staat op de lijst!</p>
+                <p className="text-sm text-muted-foreground">
+                  We sturen je een berichtje zodra de training beschikbaar is.
+                </p>
+                <Button onClick={closeModal} className="mt-2">Sluiten</Button>
+              </div>
+            ) : (
+              <>
+                <div className="space-y-3">
+                  <div>
+                    <label className="text-sm font-medium text-foreground mb-1.5 block">Voornaam</label>
+                    <Input
+                      placeholder="Jouw voornaam"
+                      value={waitlistName}
+                      onChange={(e) => setWaitlistName(e.target.value)}
+                      onKeyDown={(e) => e.key === "Enter" && handleWaitlistSubmit()}
+                    />
+                  </div>
+                  <div>
+                    <label className="text-sm font-medium text-foreground mb-1.5 block">E-mailadres</label>
+                    <Input
+                      type="email"
+                      placeholder="jouw@email.nl"
+                      value={waitlistEmail}
+                      onChange={(e) => setWaitlistEmail(e.target.value)}
+                      onKeyDown={(e) => e.key === "Enter" && handleWaitlistSubmit()}
+                    />
+                  </div>
+                </div>
+                <div className="flex gap-3 pt-1">
+                  <Button variant="outline" onClick={closeModal} className="flex-1">Annuleren</Button>
+                  <Button
+                    onClick={handleWaitlistSubmit}
+                    disabled={waitlistLoading || !waitlistName.trim() || !waitlistEmail.trim()}
+                    className="flex-1"
+                  >
+                    {waitlistLoading ? "Aanmelden..." : "Aanmelden"}
+                  </Button>
+                </div>
+              </>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   );
 };
