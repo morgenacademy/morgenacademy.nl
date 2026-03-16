@@ -12,7 +12,7 @@ Deno.serve(async (req) => {
   }
 
   try {
-    const { courseId, courseTitle, amount, email, redirectUrl } = await req.json();
+    const { courseId, courseTitle, amount, email, firstName, lastName, redirectUrl } = await req.json();
 
     if (!courseId || !amount || !email || !redirectUrl) {
       return new Response(
@@ -53,7 +53,10 @@ Deno.serve(async (req) => {
         webhookUrl,
         metadata: {
           courseId,
+          courseTitle: courseTitle || "",
           email,
+          firstName: firstName || "",
+          lastName: lastName || "",
         },
       }),
     });
