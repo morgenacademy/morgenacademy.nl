@@ -92,10 +92,12 @@ Deno.serve(async (req) => {
 
         const lastName = payment.metadata?.lastName || "";
 
+        const authHeader = { "Content-Type": "application/json", "Authorization": `Bearer ${supabaseServiceKey}` };
+
         // Email 1: Welcome email with login instructions
         await fetch(`${supabaseFunctionsUrl}/send-payment-email`, {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
+          headers: authHeader,
           body: JSON.stringify({
             email: paymentRow.user_email,
             firstName,
@@ -107,7 +109,7 @@ Deno.serve(async (req) => {
         // Email 2: Invoice / payment receipt
         await fetch(`${supabaseFunctionsUrl}/send-invoice-email`, {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
+          headers: authHeader,
           body: JSON.stringify({
             email: paymentRow.user_email,
             firstName,

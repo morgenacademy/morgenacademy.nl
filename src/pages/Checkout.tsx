@@ -325,12 +325,10 @@ const Checkout = () => {
                   <h2 className="font-display text-xl text-foreground mb-3">
                     Betaal direct met
                   </h2>
-                  <div className="grid grid-cols-4 gap-2">
+                  <div className="grid grid-cols-2 gap-2">
                     {[
                       { name: "iDEAL", icon: "https://www.mollie.com/external/icons/payment-methods/ideal.svg" },
                       { name: "Creditcard", icon: "https://www.mollie.com/external/icons/payment-methods/creditcard.svg" },
-                      { name: "Klarna", icon: "https://www.mollie.com/external/icons/payment-methods/klarna.svg" },
-                      { name: "in3", icon: "https://www.mollie.com/external/icons/payment-methods/in3.svg" },
                     ].map((method) => (
                       <button
                         key={method.name}
@@ -360,15 +358,14 @@ const Checkout = () => {
 
                 {/* Checkboxes */}
                 <div className="space-y-3">
-                  <label className="flex items-start gap-2.5 cursor-pointer">
+                  <label className={`flex items-start gap-2.5 cursor-pointer rounded-lg p-2 transition-colors ${!agree ? "bg-primary/5 border border-primary/20" : ""}`}>
                     <Checkbox
                       checked={agree}
                       onCheckedChange={(checked) => setAgree(checked === true)}
                       className="mt-0.5"
-                      required
                     />
                     <span className="text-xs text-muted-foreground leading-relaxed">
-                      Ik bevestig mijn aankoop en gegevens.
+                      Ik bevestig mijn aankoop en ga akkoord met de voorwaarden.
                     </span>
                   </label>
 
