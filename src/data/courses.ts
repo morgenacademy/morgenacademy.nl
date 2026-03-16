@@ -16,6 +16,7 @@ export interface Module {
   id: string;
   title: string;
   lessons: Lesson[];
+  comingSoon?: boolean;
 }
 
 export interface Course {
@@ -47,7 +48,7 @@ export const courses: Course[] = [
     subtitle:
       "Leer de fundamenten van kunstmatige intelligentie en pas het direct toe",
     thumbnail: course1,
-    totalLessons: 31,
+    totalLessons: 30,
     totalDuration: "3u 30min",
     progress: 0,
     price: "49.00",
@@ -139,13 +140,6 @@ export const courses: Course[] = [
         id: "lets-go-prompting",
         title: "Let's go prompting",
         lessons: [
-          {
-            id: "prompten-in-ai",
-            title: "Prompten in AI",
-            duration: "8:00",
-            videoUrl: placeholderVideo,
-            description: "Introductie in het prompten van AI-systemen.",
-          },
           {
             id: "prompten",
             title: "Prompten",
@@ -308,6 +302,34 @@ export const courses: Course[] = [
             type: "article",
             videoUrl: "",
             description: "Versnel je content met Opus.",
+          },
+        ],
+      },
+      {
+        id: "vibecoden",
+        title: "Vibecoden: maak je eigen app of website met AI",
+        comingSoon: true,
+        lessons: [
+          {
+            id: "vibecoden-intro",
+            title: "Introductie vibecoden",
+            duration: "",
+            videoUrl: "",
+            description: "Binnenkort beschikbaar.",
+          },
+          {
+            id: "vibecoden-je-eerste-app",
+            title: "Bouw je eerste app",
+            duration: "",
+            videoUrl: "",
+            description: "Binnenkort beschikbaar.",
+          },
+          {
+            id: "vibecoden-publiceren",
+            title: "Publiceren en delen",
+            duration: "",
+            videoUrl: "",
+            description: "Binnenkort beschikbaar.",
           },
         ],
       },

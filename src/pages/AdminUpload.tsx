@@ -5,7 +5,7 @@ import { courses } from "@/data/courses";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
-import { ArrowLeft, Save, Check, Video, Settings, RefreshCw, Search } from "lucide-react";
+import { ArrowLeft, Save, Check, Video, FileText, Settings, RefreshCw, Search } from "lucide-react";
 import {
   Select,
   SelectContent,
@@ -233,29 +233,42 @@ const AdminUpload = () => {
           <div key={course.id}>
             <h2 className="font-display text-lg font-semibold text-foreground mb-4">{course.title}</h2>
             {course.modules.map((mod) => {
-              const videoLessons = mod.lessons.filter((l) => l.type !== "article");
-              if (videoLessons.length === 0) return null;
+              // Skip coming-soon modules — content bestaat nog niet
+              if (mod.comingSoon) return null;
+              if (mod.lessons.length === 0) return null;
 
               return (
                 <div key={mod.id} className="mb-6">
                   <h3 className="text-sm font-medium text-muted-foreground mb-3 px-1">{mod.title}</h3>
                   <div className="space-y-2">
-                    {videoLessons.map((lesson) => {
+                    {mod.lessons.map((lesson) => {
                       const key = `${course.id}/${lesson.id}`;
-                      const guid = guids[key] || "";
-                      const isSaved = savedGuids[key] === guid && guid !== "";
-                      const selectedVideo = bunnyVideos.find((v) => v.guid === guid);
+                      const value = guids[key] || "";
+                      const isSaved = savedGuids[key] === value && value !== "";
+                      const isArticle = lesson.type === "article";
+                      const selectedVideo = !isArticle ? bunnyVideos.find((v) => v.guid === value) : null;
 
                       return (
                         <div key={lesson.id} className="flex items-center gap-3 rounded-lg bg-secondary/50 p-3">
-                          <Video className="h-4 w-4 text-muted-foreground shrink-0" />
+                          {isArticle
+                            ? <FileText className="h-4 w-4 text-muted-foreground shrink-0" />
+                            : <Video className="h-4 w-4 text-muted-foreground shrink-0" />
+                          }
                           <span className="text-sm text-foreground min-w-[180px] shrink-0 truncate" title={lesson.title}>
                             {lesson.title}
                           </span>
 
-                          {bunnyVideos.length > 0 ? (
+                          {isArticle ? (
+                            // Article: simpel URL-veld voor link naar PDF / externe tool
+                            <Input
+                              placeholder="URL (bijv. https://drive.google.com/...)"
+                              value={value}
+                              onChange={(e) => setGuids((prev) => ({ ...prev, [key]: e.target.value }))}
+                              className="flex-1 text-sm h-9"
+                            />
+                          ) : bunnyVideos.length > 0 ? (
                             <Select
-                              value={guid || undefined}
+                              value={value || undefined}
                               onValueChange={(val) =>
                                 setGuids((prev) => ({ ...prev, [key]: val === "__clear__" ? "" : val }))
                               }
@@ -264,8 +277,8 @@ const AdminUpload = () => {
                                 <SelectValue placeholder="Selecteer een video...">
                                   {selectedVideo
                                     ? `${selectedVideo.title} (${formatDuration(selectedVideo.length)})`
-                                    : guid
-                                    ? `GUID: ${guid.substring(0, 12)}...`
+                                    : value
+                                    ? `GUID: ${value.substring(0, 12)}...`
                                     : "Selecteer een video..."}
                                 </SelectValue>
                               </SelectTrigger>
@@ -282,7 +295,7 @@ const AdminUpload = () => {
                                     />
                                   </div>
                                 </div>
-                                {guid && (
+                                {value && (
                                   <SelectItem value="__clear__" className="text-muted-foreground text-xs">
                                     ✕ Verwijder selectie
                                   </SelectItem>
@@ -307,7 +320,7 @@ const AdminUpload = () => {
                           ) : (
                             <Input
                               placeholder="Video GUID (bijv. a1b2c3d4-...)"
-                              value={guid}
+                              value={value}
                               onChange={(e) => setGuids((prev) => ({ ...prev, [key]: e.target.value }))}
                               className="flex-1 text-sm h-9 font-mono"
                             />

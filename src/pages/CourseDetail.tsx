@@ -139,7 +139,7 @@ const CourseDetail = () => {
           >
             {isArticle ? (
               <div className="rounded-xl bg-secondary/50 border border-border flex items-center justify-center min-h-[200px] p-10">
-                <div className="text-center space-y-3">
+                <div className="text-center space-y-4">
                   <FileText className="h-12 w-12 mx-auto text-primary" />
                   <h3 className="text-lg font-semibold text-foreground">
                     {activeLesson.title}
@@ -147,6 +147,18 @@ const CourseDetail = () => {
                   <p className="text-muted-foreground text-sm max-w-md">
                     {activeLesson.description}
                   </p>
+                  {videoUrl && (
+                    <a
+                      href={videoUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      <Button className="mt-2 gap-2">
+                        <ExternalLink className="h-4 w-4" />
+                        Openen
+                      </Button>
+                    </a>
+                  )}
                 </div>
               </div>
             ) : (
