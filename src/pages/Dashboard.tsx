@@ -113,7 +113,7 @@ const Dashboard = () => {
           <p className="text-sm text-muted-foreground">
             Een initiatief van{" "}
             <a
-              href="https://morgencompany.nl"
+              href="https://www.morgencompany.com"
               target="_blank"
               rel="noopener noreferrer"
               className="text-primary hover:underline"

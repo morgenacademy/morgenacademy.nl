@@ -50,7 +50,7 @@ Deno.serve(async (req) => {
             email: payment.user_email,
             firstName: "",
             courseTitle,
-            siteUrl: "https://morgenacademy.nl",
+            siteUrl: "https://www.morgenacademy.nl",
           }),
         });
 

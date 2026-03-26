@@ -29,8 +29,8 @@ Deno.serve(async (req) => {
     }
 
     const name = firstName || "daar";
-    const registerUrl = `${siteUrl || "https://morgenacademy.nl"}/registreren`;
-    const loginUrl = `${siteUrl || "https://morgenacademy.nl"}/login`;
+    const registerUrl = `${siteUrl || "https://www.morgenacademy.nl"}/registreren`;
+    const loginUrl = `${siteUrl || "https://www.morgenacademy.nl"}/login`;
 
     const htmlBody = `
 <!DOCTYPE html>

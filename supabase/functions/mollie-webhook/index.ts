@@ -102,7 +102,7 @@ Deno.serve(async (req) => {
             email: paymentRow.user_email,
             firstName,
             courseTitle,
-            siteUrl: "https://morgenacademy.nl",
+            siteUrl: "https://www.morgenacademy.nl",
           }),
         });
 

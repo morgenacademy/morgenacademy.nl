@@ -124,7 +124,7 @@ const Login = () => {
         <p className="mt-12 text-center text-xs text-muted-foreground/60">
           Een initiatief van{" "}
           <a
-            href="https://morgencompany.nl"
+            href="https://www.morgencompany.com"
             target="_blank"
             rel="noopener noreferrer"
             className="text-primary/60 hover:text-primary hover:underline"
