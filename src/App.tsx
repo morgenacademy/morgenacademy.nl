@@ -12,6 +12,8 @@ import CourseDetail from "./pages/CourseDetail";
 import ProtectedRoute from "./components/ProtectedRoute";
 import PaymentStatus from "./pages/PaymentStatus";
 import AdminUpload from "./pages/AdminUpload";
+import AdminPortal from "./pages/AdminPortal";
+import CompanyPortal from "./pages/CompanyPortal";
 import Checkout from "./pages/Checkout";
 import Privacy from "./pages/Privacy";
 import NotFound from "./pages/NotFound";
@@ -53,6 +55,15 @@ const App = () => (
             element={
               <ProtectedRoute>
                 <CourseDetail />
+              </ProtectedRoute>
+            }
+          />
+          <Route path="/portal/:companySlug" element={<CompanyPortal />} />
+          <Route
+            path="/admin/portal"
+            element={
+              <ProtectedRoute>
+                <AdminPortal />
               </ProtectedRoute>
             }
           />
