@@ -15,7 +15,6 @@ interface Training {
   training_dates: string[] | null;
   slide_storage_path: string | null;
   slide_filename: string | null;
-  slide_external_url: string | null;
 }
 
 interface PortalTrainingCardProps {
@@ -39,16 +38,9 @@ const PortalTrainingCard = ({ training, companyId, slug, password, index }: Port
     ? dates.map((d) => new Date(d).toLocaleDateString("nl-NL", { day: "numeric", month: "long", year: "numeric" })).join(", ")
     : null;
 
-  const hasSlide = !!(training.slide_storage_path || training.slide_external_url);
+  const hasSlide = !!training.slide_storage_path;
 
   const handleDownload = async () => {
-    // External URL: just open in new tab
-    if (training.slide_external_url) {
-      window.open(training.slide_external_url, "_blank", "noopener,noreferrer");
-      return;
-    }
-
-    // Storage file: get signed URL
     setDownloading(true);
     try {
       const { data, error } = await supabase.functions.invoke("portal-download", {

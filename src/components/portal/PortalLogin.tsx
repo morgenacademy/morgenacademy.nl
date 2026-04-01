@@ -117,18 +117,6 @@ const PortalLogin = ({ slug, onSuccess }: PortalLoginProps) => {
             Neem contact op
           </a>
         </p>
-        <p className="mt-3 text-center text-xs text-muted-foreground/70">
-          Dit klantportaal hoort bij{" "}
-          <a
-            href="https://www.morgencompany.com"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="text-primary/80 transition-colors hover:text-primary hover:underline"
-          >
-            Morgen Company
-          </a>
-          .
-        </p>
       </motion.div>
     </div>
   );

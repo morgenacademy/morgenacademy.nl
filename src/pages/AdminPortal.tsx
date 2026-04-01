@@ -37,7 +37,6 @@ interface Training {
   training_dates: string[] | null;
   slide_storage_path: string | null;
   slide_filename: string | null;
-  slide_external_url: string | null;
   is_active: boolean;
 }
 
@@ -494,8 +493,8 @@ const AdminPortal = () => {
                             .map((d) => new Date(d).toLocaleDateString("nl-NL", { day: "numeric", month: "long", year: "numeric" }))
                             .join(", ") || "Geen datum"
                           }
-                          {(training.slide_filename || training.slide_external_url) && (
-                            <span className="ml-2 text-success">· {training.slide_filename || "Externe link"}</span>
+                          {training.slide_filename && (
+                            <span className="ml-2 text-success">· {training.slide_filename}</span>
                           )}
                         </p>
                       </div>
@@ -512,7 +511,7 @@ const AdminPortal = () => {
                           {uploadingFor === training.id
                             ? <Loader2 className="h-3.5 w-3.5 animate-spin" />
                             : <Upload className="h-3.5 w-3.5" />}
-                          {training.slide_storage_path ? "Vervangen" : "Upload (<50MB)"}
+                          {training.slide_storage_path ? "Vervangen" : "Upload slides"}
                         </Button>
                       <Button
                         variant="ghost" size="icon"
@@ -529,35 +528,6 @@ const AdminPortal = () => {
                         <Trash2 className="h-4 w-4 text-destructive" />
                       </Button>
                       </div>
-                    </div>
-                    {/* External URL input for large files */}
-                    <div className="flex items-center gap-2">
-                      <Input
-                        placeholder="Of plak een download-link (Google Drive, Dropbox, WeTransfer...)"
-                        defaultValue={training.slide_external_url ?? ""}
-                        className="text-xs h-8"
-                        onBlur={async (e) => {
-                          const url = e.target.value.trim();
-                          if (url === (training.slide_external_url ?? "")) return;
-                          const { error } = await supabase
-                            .from("portal_trainings")
-                            .update({ slide_external_url: url || null })
-                            .eq("id", training.id);
-                          if (error) {
-                            toast.error("Link opslaan mislukt", { duration: Infinity });
-                          } else {
-                            setTrainings((prev) =>
-                              prev.map((t) => t.id === training.id ? { ...t, slide_external_url: url || null } : t)
-                            );
-                            if (url) toast.success("Download-link opgeslagen", { duration: 4000 });
-                          }
-                        }}
-                      />
-                      {training.slide_external_url && (
-                        <a href={training.slide_external_url} target="_blank" rel="noopener noreferrer">
-                          <ExternalLink className="h-4 w-4 text-primary shrink-0" />
-                        </a>
-                      )}
                     </div>
                   </div>
                 ))}
