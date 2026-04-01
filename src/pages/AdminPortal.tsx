@@ -8,7 +8,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
 import {
   ArrowLeft, Plus, Copy, Check, ToggleLeft, ToggleRight,
-  Star, Loader2, Upload, Trash2, ExternalLink, Pencil,
+  Star, Loader2, Upload, Trash2, ExternalLink, Pencil, Download,
 } from "lucide-react";
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle,
@@ -362,6 +362,54 @@ const AdminPortal = () => {
     }
   };
 
+  // ---- Feedback actions ----
+
+  const handleDeleteFeedback = async (id: string) => {
+    const { error } = await supabase.from("portal_feedback").delete().eq("id", id);
+    if (error) {
+      toast.error("Verwijderen mislukt", { duration: Infinity });
+    } else {
+      setFeedback((prev) => prev.filter((f) => f.id !== id));
+      toast.success("Feedback verwijderd");
+    }
+  };
+
+  const handleExportFeedback = () => {
+    if (!feedback.length) return;
+    const tempoLabel = (t: string | null) =>
+      t === "slow" ? "Te langzaam" : t === "balanced" ? "Goed" : t === "fast" ? "Te snel" : "";
+    const escape = (v: string | null | undefined) => {
+      if (!v) return "";
+      const s = v.replace(/"/g, '""');
+      return s.includes(",") || s.includes('"') || s.includes("\n") ? `"${s}"` : s;
+    };
+
+    const headers = ["Naam", "Functie", "Overall", "Relevantie", "Toepasbaarheid", "Tempo", "Takeaways", "Meest waardevol", "Verbeteren", "E-mail", "Datum"];
+    const rows = feedback.map((r) => [
+      escape(r.respondent_name),
+      escape(r.respondent_function),
+      r.rating_overall,
+      r.rating_relevance ?? "",
+      r.rating_applicability ?? "",
+      tempoLabel(r.rating_tempo),
+      escape(r.takeaways?.join("; ")),
+      escape(r.feedback_liked),
+      escape(r.feedback_improve),
+      escape(r.feedback_other),
+      new Date(r.created_at).toLocaleDateString("nl-NL"),
+    ]);
+
+    const csv = [headers.join(","), ...rows.map((r) => r.join(","))].join("\n");
+    const blob = new Blob(["\uFEFF" + csv], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    const training = feedbackTrainings.find((t) => t.id === feedbackTrainingId);
+    a.download = `feedback-${training?.title ?? "export"}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
   // ---- Render helpers ----
 
   const avgRating = (rows: FeedbackRow[]) => {
@@ -601,10 +649,16 @@ const AdminPortal = () => {
                   <p className="text-sm text-muted-foreground">Nog geen feedback voor deze training.</p>
                 ) : (
                   <>
-                    <div className="mb-4 flex items-center gap-2 rounded-xl border border-border bg-card px-5 py-3">
-                      <Star className="h-5 w-5 fill-amber-400 text-amber-400" />
-                      <span className="text-lg font-semibold text-foreground">{avgRating(feedback)}</span>
-                      <span className="text-sm text-muted-foreground">gemiddeld ({feedback.length} {feedback.length === 1 ? "reactie" : "reacties"})</span>
+                    <div className="mb-4 flex items-center justify-between rounded-xl border border-border bg-card px-5 py-3">
+                      <div className="flex items-center gap-2">
+                        <Star className="h-5 w-5 fill-amber-400 text-amber-400" />
+                        <span className="text-lg font-semibold text-foreground">{avgRating(feedback)}</span>
+                        <span className="text-sm text-muted-foreground">gemiddeld ({feedback.length} {feedback.length === 1 ? "reactie" : "reacties"})</span>
+                      </div>
+                      <Button variant="outline" size="sm" onClick={handleExportFeedback} className="gap-1.5 text-xs">
+                        <Download className="h-3.5 w-3.5" />
+                        CSV
+                      </Button>
                     </div>
 
                     <div className="space-y-4">
@@ -619,9 +673,20 @@ const AdminPortal = () => {
                                 <p className="text-xs text-muted-foreground">{row.respondent_function}</p>
                               )}
                             </div>
-                            <p className="text-xs text-muted-foreground">
-                              {new Date(row.created_at).toLocaleDateString("nl-NL")}
-                            </p>
+                            <div className="flex items-center gap-2">
+                              <p className="text-xs text-muted-foreground">
+                                {new Date(row.created_at).toLocaleDateString("nl-NL")}
+                              </p>
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                className="h-7 w-7"
+                                onClick={() => handleDeleteFeedback(row.id)}
+                                title="Verwijder feedback"
+                              >
+                                <Trash2 className="h-3.5 w-3.5 text-destructive" />
+                              </Button>
+                            </div>
                           </div>
                           <div className="mb-3 grid grid-cols-2 gap-2 text-sm sm:grid-cols-4">
                             <div><p className="text-xs text-muted-foreground">Overall</p><Stars value={row.rating_overall} /></div>
