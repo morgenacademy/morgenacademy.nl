@@ -219,10 +219,31 @@ const AdminPortal = () => {
       const ext = file.name.split(".").pop() ?? "pdf";
       const path = `${trainingId}/slides.${ext}`;
 
-      const { error: uploadError } = await supabase.storage
+      // Use createSignedUploadUrl + uploadToSignedUrl for large files (>50MB)
+      const { data: signedData, error: signedError } = await supabase.storage
         .from("portal-slides")
-        .upload(path, file, { upsert: true });
-      if (uploadError) throw uploadError;
+        .createSignedUploadUrl(path);
+      if (signedError) {
+        // If file already exists, remove it first then retry
+        if (signedError.message?.includes("already exists")) {
+          await supabase.storage.from("portal-slides").remove([path]);
+          const { data: retryData, error: retryError } = await supabase.storage
+            .from("portal-slides")
+            .createSignedUploadUrl(path);
+          if (retryError) throw retryError;
+          const { error: uploadError } = await supabase.storage
+            .from("portal-slides")
+            .uploadToSignedUrl(path, retryData!.token, file);
+          if (uploadError) throw uploadError;
+        } else {
+          throw signedError;
+        }
+      } else {
+        const { error: uploadError } = await supabase.storage
+          .from("portal-slides")
+          .uploadToSignedUrl(path, signedData!.token, file);
+        if (uploadError) throw uploadError;
+      }
 
       const { error: updateError } = await supabase
         .from("portal_trainings")
