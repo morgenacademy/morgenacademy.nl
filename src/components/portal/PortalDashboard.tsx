@@ -10,6 +10,7 @@ interface Training {
   title: string;
   description: string | null;
   training_date: string | null;
+  training_dates: string[] | null;
   slide_storage_path: string | null;
   slide_filename: string | null;
 }
@@ -108,26 +109,6 @@ const PortalDashboard = ({ session, slug, onLogout }: PortalDashboardProps) => {
             ))}
           </div>
         )}
-
-        <motion.div
-          initial={{ opacity: 0, y: 8 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.65 }}
-          className="mt-8 rounded-xl border border-border/50 bg-card px-6 py-5"
-        >
-          <p className="text-sm leading-relaxed text-muted-foreground">
-            Meer halen uit AI binnen je team of organisatie?{" "}
-            <a
-              href="https://www.morgencompany.com"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="font-medium text-primary hover:underline"
-            >
-              Bekijk wat Morgen Company daarnaast doet
-            </a>
-            .
-          </p>
-        </motion.div>
 
         {/* Google Review CTA */}
         <motion.div

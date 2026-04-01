@@ -12,6 +12,7 @@ interface Training {
   title: string;
   description: string | null;
   training_date: string | null;
+  training_dates: string[] | null;
   slide_storage_path: string | null;
   slide_filename: string | null;
 }
@@ -30,12 +31,11 @@ const PortalTrainingCard = ({ training, companyId, slug, password, index }: Port
   const [feedbackSubmitted, setFeedbackSubmitted] = useState(false);
   const { toast } = useToast();
 
-  const formattedDate = training.training_date
-    ? new Date(training.training_date).toLocaleDateString("nl-NL", {
-        day: "numeric",
-        month: "long",
-        year: "numeric",
-      })
+  const dates = training.training_dates?.length
+    ? training.training_dates
+    : training.training_date ? [training.training_date] : [];
+  const formattedDate = dates.length > 0
+    ? dates.map((d) => new Date(d).toLocaleDateString("nl-NL", { day: "numeric", month: "long", year: "numeric" })).join(", ")
     : null;
 
   const handleDownload = async () => {

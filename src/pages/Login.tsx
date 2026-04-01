@@ -122,7 +122,7 @@ const Login = () => {
         </p>
 
         <p className="mt-12 text-center text-xs text-muted-foreground/60">
-          Morgen Academy is het trainingsplatform van{" "}
+          Een initiatief van{" "}
           <a
             href="https://www.morgencompany.com"
             target="_blank"

@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
+import * as tus from "tus-js-client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -33,6 +34,7 @@ interface Training {
   title: string;
   description: string | null;
   training_date: string | null;
+  training_dates: string[] | null;
   slide_storage_path: string | null;
   slide_filename: string | null;
   is_active: boolean;
@@ -76,7 +78,7 @@ const AdminPortal = () => {
   const [trainingDialogOpen, setTrainingDialogOpen] = useState(false);
   const [newTrainingTitle, setNewTrainingTitle] = useState("");
   const [newTrainingDesc, setNewTrainingDesc] = useState("");
-  const [newTrainingDate, setNewTrainingDate] = useState("");
+  const [newTrainingDates, setNewTrainingDates] = useState<string[]>([""]);
   const [newTrainingCompany, setNewTrainingCompany] = useState("");
   const [savingTraining, setSavingTraining] = useState(false);
   const [uploadingFor, setUploadingFor] = useState<string | null>(null);
@@ -88,7 +90,7 @@ const AdminPortal = () => {
   const [editTraining, setEditTraining] = useState<Training | null>(null);
   const [editTitle, setEditTitle] = useState("");
   const [editDesc, setEditDesc] = useState("");
-  const [editDate, setEditDate] = useState("");
+  const [editDates, setEditDates] = useState<string[]>([]);
   const [savingEdit, setSavingEdit] = useState(false);
 
   // Feedback state
@@ -198,13 +200,15 @@ const AdminPortal = () => {
     if (!newTrainingTitle || !newTrainingCompany) return;
     setSavingTraining(true);
     try {
+      const filteredDates = newTrainingDates.filter(Boolean);
       const { data: training, error } = await supabase
         .from("portal_trainings")
         .insert({
           company_id: newTrainingCompany,
           title: newTrainingTitle,
           description: newTrainingDesc || null,
-          training_date: newTrainingDate || null,
+          training_date: filteredDates[0] || null,
+          training_dates: filteredDates.length > 0 ? filteredDates : null,
         })
         .select()
         .single();
@@ -213,7 +217,7 @@ const AdminPortal = () => {
         setTrainings((prev) => [training as Training, ...prev]);
       }
       setTrainingDialogOpen(false);
-      setNewTrainingTitle(""); setNewTrainingDesc(""); setNewTrainingDate(""); setNewTrainingCompany("");
+      setNewTrainingTitle(""); setNewTrainingDesc(""); setNewTrainingDates([""]); setNewTrainingCompany("");
       toast.success("Training aangemaakt", { duration: Infinity });
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : "Onbekende fout";
@@ -225,55 +229,75 @@ const AdminPortal = () => {
 
   const handleUploadSlide = async (trainingId: string, file: File) => {
     setUploadingFor(trainingId);
-    try {
-      const ext = file.name.split(".").pop() ?? "pdf";
-      const path = `${trainingId}/slides.${ext}`;
+    const ext = file.name.split(".").pop() ?? "pdf";
+    const path = `${trainingId}/slides.${ext}`;
+    const bucketName = "portal-slides";
 
-      // Use createSignedUploadUrl + uploadToSignedUrl for large files (>50MB)
-      const { data: signedData, error: signedError } = await supabase.storage
-        .from("portal-slides")
-        .createSignedUploadUrl(path);
-      if (signedError) {
-        // If file already exists, remove it first then retry
-        if (signedError.message?.includes("already exists")) {
-          await supabase.storage.from("portal-slides").remove([path]);
-          const { data: retryData, error: retryError } = await supabase.storage
-            .from("portal-slides")
-            .createSignedUploadUrl(path);
-          if (retryError) throw retryError;
-          const { error: uploadError } = await supabase.storage
-            .from("portal-slides")
-            .uploadToSignedUrl(path, retryData!.token, file);
-          if (uploadError) throw uploadError;
-        } else {
-          throw signedError;
-        }
-      } else {
-        const { error: uploadError } = await supabase.storage
-          .from("portal-slides")
-          .uploadToSignedUrl(path, signedData!.token, file);
-        if (uploadError) throw uploadError;
-      }
+    // Remove existing file first (TUS doesn't support upsert)
+    await supabase.storage.from(bucketName).remove([path]);
 
-      const { error: updateError } = await supabase
-        .from("portal_trainings")
-        .update({ slide_storage_path: path, slide_filename: file.name })
-        .eq("id", trainingId);
-      if (updateError) throw updateError;
-
-      setTrainings((prev) =>
-        prev.map((t) =>
-          t.id === trainingId ? { ...t, slide_storage_path: path, slide_filename: file.name } : t
-        )
-      );
-      toast.success("Slides geüpload", { duration: Infinity });
-    } catch (err: unknown) {
-      const msg = err instanceof Error ? err.message : "Onbekende fout";
-      toast.error(`Upload mislukt: ${msg}`, { duration: Infinity });
-    } finally {
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session) {
+      toast.error("Niet ingelogd", { duration: Infinity });
       setUploadingFor(null);
-      setUploadTarget(null);
+      return;
     }
+
+    const projectUrl = import.meta.env.VITE_SUPABASE_URL;
+
+    return new Promise<void>((resolve) => {
+      const upload = new tus.Upload(file, {
+        endpoint: `${projectUrl}/storage/v1/upload/resumable`,
+        retryDelays: [0, 1000, 3000, 5000],
+        headers: {
+          authorization: `Bearer ${session.access_token}`,
+          "x-upsert": "true",
+        },
+        uploadDataDuringCreation: true,
+        removeFingerprintOnSuccess: true,
+        metadata: {
+          bucketName,
+          objectName: path,
+          contentType: file.type || "application/octet-stream",
+        },
+        chunkSize: 6 * 1024 * 1024, // 6MB chunks
+        onError: (error: Error) => {
+          toast.error(`Upload mislukt: ${error.message}`, { duration: Infinity });
+          setUploadingFor(null);
+          setUploadTarget(null);
+          resolve();
+        },
+        onSuccess: async () => {
+          try {
+            const { error: updateError } = await supabase
+              .from("portal_trainings")
+              .update({ slide_storage_path: path, slide_filename: file.name })
+              .eq("id", trainingId);
+            if (updateError) throw updateError;
+
+            setTrainings((prev) =>
+              prev.map((t) =>
+                t.id === trainingId ? { ...t, slide_storage_path: path, slide_filename: file.name } : t
+              )
+            );
+            toast.success(`Slides geüpload: ${file.name}`, { duration: Infinity });
+          } catch (err: unknown) {
+            const msg = err instanceof Error ? err.message : "Onbekende fout";
+            toast.error(`Upload gelukt maar opslaan mislukt: ${msg}`, { duration: Infinity });
+          } finally {
+            setUploadingFor(null);
+            setUploadTarget(null);
+            resolve();
+          }
+        },
+      });
+
+      // Check for previous uploads to resume
+      upload.findPreviousUploads().then((prev) => {
+        if (prev.length > 0) upload.resumeFromPreviousUpload(prev[0]);
+        upload.start();
+      });
+    });
   };
 
   const handleDeleteTraining = async (trainingId: string) => {
@@ -286,7 +310,10 @@ const AdminPortal = () => {
     setEditTraining(training);
     setEditTitle(training.title);
     setEditDesc(training.description ?? "");
-    setEditDate(training.training_date ?? "");
+    const dates = training.training_dates?.length
+      ? training.training_dates
+      : training.training_date ? [training.training_date] : [];
+    setEditDates(dates);
     setEditDialogOpen(true);
   };
 
@@ -294,20 +321,22 @@ const AdminPortal = () => {
     e.preventDefault();
     if (!editTraining || !editTitle) return;
     setSavingEdit(true);
+    const filteredDates = editDates.filter(Boolean);
     try {
       const { error } = await supabase
         .from("portal_trainings")
         .update({
           title: editTitle,
           description: editDesc || null,
-          training_date: editDate || null,
+          training_date: filteredDates[0] || null,
+          training_dates: filteredDates.length > 0 ? filteredDates : null,
         })
         .eq("id", editTraining.id);
       if (error) throw error;
       setTrainings((prev) =>
         prev.map((t) =>
           t.id === editTraining.id
-            ? { ...t, title: editTitle, description: editDesc || null, training_date: editDate || null }
+            ? { ...t, title: editTitle, description: editDesc || null, training_date: filteredDates[0] || null, training_dates: filteredDates.length > 0 ? filteredDates : null }
             : t
         )
       );
@@ -459,9 +488,9 @@ const AdminPortal = () => {
                     <div className="flex-1 min-w-0">
                       <p className="font-medium text-foreground">{training.title}</p>
                       <p className="mt-0.5 text-xs text-muted-foreground">
-                        {training.training_date
-                          ? new Date(training.training_date).toLocaleDateString("nl-NL", { day: "numeric", month: "long", year: "numeric" })
-                          : "Geen datum"
+                        {(training.training_dates?.length ? training.training_dates : training.training_date ? [training.training_date] : [])
+                          .map((d) => new Date(d).toLocaleDateString("nl-NL", { day: "numeric", month: "long", year: "numeric" }))
+                          .join(", ") || "Geen datum"
                         }
                         {training.slide_filename && (
                           <span className="ml-2 text-success">· {training.slide_filename}</span>
@@ -725,12 +754,28 @@ const AdminPortal = () => {
               />
             </div>
             <div className="space-y-1.5">
-              <label className="text-sm font-medium text-foreground">Datum <span className="text-muted-foreground font-normal">(optioneel)</span></label>
-              <Input
-                type="date"
-                value={newTrainingDate}
-                onChange={(e) => setNewTrainingDate(e.target.value)}
-              />
+              <label className="text-sm font-medium text-foreground">Data <span className="text-muted-foreground font-normal">(optioneel)</span></label>
+              {newTrainingDates.map((d, i) => (
+                <div key={i} className="flex gap-2">
+                  <Input
+                    type="date"
+                    value={d}
+                    onChange={(e) => {
+                      const updated = [...newTrainingDates];
+                      updated[i] = e.target.value;
+                      setNewTrainingDates(updated);
+                    }}
+                  />
+                  {newTrainingDates.length > 1 && (
+                    <Button type="button" variant="ghost" size="icon" onClick={() => setNewTrainingDates(newTrainingDates.filter((_, j) => j !== i))}>
+                      <Trash2 className="h-3.5 w-3.5 text-muted-foreground" />
+                    </Button>
+                  )}
+                </div>
+              ))}
+              <Button type="button" variant="outline" size="sm" onClick={() => setNewTrainingDates([...newTrainingDates, ""])} className="gap-1.5 text-xs">
+                <Plus className="h-3.5 w-3.5" /> Datum toevoegen
+              </Button>
             </div>
             <Button type="submit" className="w-full" disabled={savingTraining}>
               {savingTraining ? <Loader2 className="h-4 w-4 animate-spin" /> : "Aanmaken"}
@@ -762,12 +807,33 @@ const AdminPortal = () => {
               />
             </div>
             <div className="space-y-1.5">
-              <label className="text-sm font-medium text-foreground">Datum <span className="text-muted-foreground font-normal">(optioneel)</span></label>
-              <Input
-                type="date"
-                value={editDate}
-                onChange={(e) => setEditDate(e.target.value)}
-              />
+              <label className="text-sm font-medium text-foreground">Data <span className="text-muted-foreground font-normal">(optioneel)</span></label>
+              {editDates.length === 0 && (
+                <Button type="button" variant="outline" size="sm" onClick={() => setEditDates([""])} className="gap-1.5 text-xs">
+                  <Plus className="h-3.5 w-3.5" /> Datum toevoegen
+                </Button>
+              )}
+              {editDates.map((d, i) => (
+                <div key={i} className="flex gap-2">
+                  <Input
+                    type="date"
+                    value={d}
+                    onChange={(e) => {
+                      const updated = [...editDates];
+                      updated[i] = e.target.value;
+                      setEditDates(updated);
+                    }}
+                  />
+                  <Button type="button" variant="ghost" size="icon" onClick={() => setEditDates(editDates.filter((_, j) => j !== i))}>
+                    <Trash2 className="h-3.5 w-3.5 text-muted-foreground" />
+                  </Button>
+                </div>
+              ))}
+              {editDates.length > 0 && (
+                <Button type="button" variant="outline" size="sm" onClick={() => setEditDates([...editDates, ""])} className="gap-1.5 text-xs">
+                  <Plus className="h-3.5 w-3.5" /> Datum toevoegen
+                </Button>
+              )}
             </div>
             <Button type="submit" className="w-full" disabled={savingEdit}>
               {savingEdit ? <Loader2 className="h-4 w-4 animate-spin" /> : "Opslaan"}
