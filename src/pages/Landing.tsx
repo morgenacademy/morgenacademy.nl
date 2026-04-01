@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { Play, Lock, ArrowRight, Sparkles, Bell, Users, Clock, Mail } from "lucide-react";
+import { Lock, ArrowRight, Sparkles, Bell, Users, Clock, Mail } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { courses } from "@/data/courses";
@@ -25,6 +25,14 @@ const Landing = () => {
             Morgen <span className="text-primary">Academy</span>
           </h2>
           <div className="flex items-center gap-3">
+            <a
+              href="https://www.morgencompany.com"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="hidden text-xs uppercase tracking-wider text-muted-foreground transition-colors hover:text-primary sm:inline-flex"
+            >
+              Morgen Company
+            </a>
             <Button
               variant="ghost"
               size="sm"
@@ -206,6 +214,18 @@ const Landing = () => {
                 Boek een incompany training en leer samen met je team werken met AI.
                 In twee uur krijgt je team een praktische, interactieve sessie op locatie of online.
               </p>
+              <p className="mb-8 text-sm leading-relaxed text-muted-foreground">
+                Meer weten over onze bredere aanpak voor teams en organisaties?{" "}
+                <a
+                  href="https://www.morgencompany.com"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="font-medium text-primary hover:underline"
+                >
+                  Bekijk Morgen Company
+                </a>
+                .
+              </p>
 
               <div className="mb-8 flex flex-wrap gap-6">
                 <div className="flex items-center gap-2 text-sm text-muted-foreground">
@@ -255,7 +275,7 @@ const Landing = () => {
       <footer className="border-t border-border/50 py-8">
         <div className="mx-auto flex max-w-6xl flex-col items-center justify-between gap-4 px-6 sm:flex-row">
           <p className="text-sm text-muted-foreground">
-            Een initiatief van{" "}
+            Morgen Academy is het trainingsplatform van{" "}
             <a
               href="https://www.morgencompany.com"
               target="_blank"
@@ -295,4 +315,3 @@ const Landing = () => {
 };
 
 export default Landing;
-

@@ -111,7 +111,7 @@ const Dashboard = () => {
       <footer className="border-t border-border/50 py-8">
         <div className="mx-auto max-w-6xl px-6 text-center">
           <p className="text-sm text-muted-foreground">
-            Een initiatief van{" "}
+            Morgen Academy is het trainingsplatform van{" "}
             <a
               href="https://www.morgencompany.com"
               target="_blank"
