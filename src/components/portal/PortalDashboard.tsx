@@ -109,12 +109,33 @@ const PortalDashboard = ({ session, slug, onLogout }: PortalDashboardProps) => {
           </div>
         )}
 
+        {/* Google Review CTA */}
+        <motion.div
+          initial={{ opacity: 0, y: 8 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.8 }}
+          className="mt-12 rounded-xl border border-border/50 bg-card/50 px-6 py-5 text-center"
+        >
+          <p className="text-sm text-muted-foreground leading-relaxed">
+            Heb je echt iets aan de training gehad?{" "}
+            <a
+              href="https://g.page/r/Cdz-0WCIxls3EBM/review"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-primary font-medium hover:underline"
+            >
+              Laat een Google review achter
+            </a>{" "}
+            — dat helpt ons enorm om meer professionals te bereiken.
+          </p>
+        </motion.div>
+
         {/* Footer */}
         <motion.p
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          transition={{ delay: 0.6 }}
-          className="mt-12 text-center text-xs text-muted-foreground"
+          transition={{ delay: 1.0 }}
+          className="mt-6 text-center text-xs text-muted-foreground"
         >
           Vragen? Mail naar{" "}
           <a href="mailto:totmorgen@morgenacademy.nl" className="text-primary hover:underline">

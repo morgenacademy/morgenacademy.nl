@@ -7,7 +7,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
 import {
   ArrowLeft, Plus, Copy, Check, ToggleLeft, ToggleRight,
-  Star, Loader2, Upload, Trash2, ExternalLink,
+  Star, Loader2, Upload, Trash2, ExternalLink, Pencil,
 } from "lucide-react";
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle,
@@ -42,13 +42,15 @@ interface FeedbackRow {
   id: string;
   training_id: string;
   respondent_name: string | null;
+  respondent_function: string | null;
   rating_overall: number;
-  rating_content: number | null;
-  rating_trainer: number | null;
-  rating_practical: number | null;
+  rating_relevance: number | null;
+  takeaways: string[] | null;
+  rating_applicability: number | null;
+  rating_tempo: string | null;
   feedback_liked: string | null;
   feedback_improve: string | null;
-  feedback_apply: string | null;
+  feedback_other: string | null;
   created_at: string;
 }
 
@@ -80,6 +82,14 @@ const AdminPortal = () => {
   const [uploadingFor, setUploadingFor] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [uploadTarget, setUploadTarget] = useState<string | null>(null);
+
+  // Edit training state
+  const [editDialogOpen, setEditDialogOpen] = useState(false);
+  const [editTraining, setEditTraining] = useState<Training | null>(null);
+  const [editTitle, setEditTitle] = useState("");
+  const [editDesc, setEditDesc] = useState("");
+  const [editDate, setEditDate] = useState("");
+  const [savingEdit, setSavingEdit] = useState(false);
 
   // Feedback state
   const [feedback, setFeedback] = useState<FeedbackRow[]>([]);
@@ -159,10 +169,10 @@ const AdminPortal = () => {
       setCompanies((prev) => [company as Company, ...prev]);
       setCompanyDialogOpen(false);
       setNewName(""); setNewSlug(""); setNewPassword("");
-      toast.success(`Bedrijf ${newName} aangemaakt`);
+      toast.success(`Bedrijf ${newName} aangemaakt`, { duration: Infinity });
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : "Onbekende fout";
-      toast.error(`Aanmaken mislukt: ${msg}`);
+      toast.error(`Aanmaken mislukt: ${msg}`, { duration: Infinity });
     } finally {
       setSavingCompany(false);
     }
@@ -204,10 +214,10 @@ const AdminPortal = () => {
       }
       setTrainingDialogOpen(false);
       setNewTrainingTitle(""); setNewTrainingDesc(""); setNewTrainingDate(""); setNewTrainingCompany("");
-      toast.success("Training aangemaakt");
+      toast.success("Training aangemaakt", { duration: Infinity });
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : "Onbekende fout";
-      toast.error(`Aanmaken mislukt: ${msg}`);
+      toast.error(`Aanmaken mislukt: ${msg}`, { duration: Infinity });
     } finally {
       setSavingTraining(false);
     }
@@ -256,10 +266,10 @@ const AdminPortal = () => {
           t.id === trainingId ? { ...t, slide_storage_path: path, slide_filename: file.name } : t
         )
       );
-      toast.success("Slides geüpload");
+      toast.success("Slides geüpload", { duration: Infinity });
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : "Onbekende fout";
-      toast.error(`Upload mislukt: ${msg}`);
+      toast.error(`Upload mislukt: ${msg}`, { duration: Infinity });
     } finally {
       setUploadingFor(null);
       setUploadTarget(null);
@@ -269,7 +279,46 @@ const AdminPortal = () => {
   const handleDeleteTraining = async (trainingId: string) => {
     await supabase.from("portal_trainings").update({ is_active: false }).eq("id", trainingId);
     setTrainings((prev) => prev.filter((t) => t.id !== trainingId));
-    toast.success("Training verwijderd");
+    toast.success("Training verwijderd", { duration: Infinity });
+  };
+
+  const openEditDialog = (training: Training) => {
+    setEditTraining(training);
+    setEditTitle(training.title);
+    setEditDesc(training.description ?? "");
+    setEditDate(training.training_date ?? "");
+    setEditDialogOpen(true);
+  };
+
+  const handleEditTraining = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editTraining || !editTitle) return;
+    setSavingEdit(true);
+    try {
+      const { error } = await supabase
+        .from("portal_trainings")
+        .update({
+          title: editTitle,
+          description: editDesc || null,
+          training_date: editDate || null,
+        })
+        .eq("id", editTraining.id);
+      if (error) throw error;
+      setTrainings((prev) =>
+        prev.map((t) =>
+          t.id === editTraining.id
+            ? { ...t, title: editTitle, description: editDesc || null, training_date: editDate || null }
+            : t
+        )
+      );
+      setEditDialogOpen(false);
+      toast.success("Training bijgewerkt", { duration: Infinity });
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : "Onbekende fout";
+      toast.error(`Bijwerken mislukt: ${msg}`, { duration: Infinity });
+    } finally {
+      setSavingEdit(false);
+    }
   };
 
   // ---- Render helpers ----
@@ -436,6 +485,13 @@ const AdminPortal = () => {
                       </Button>
                       <Button
                         variant="ghost" size="icon"
+                        onClick={() => openEditDialog(training)}
+                        title="Bewerk training"
+                      >
+                        <Pencil className="h-4 w-4" />
+                      </Button>
+                      <Button
+                        variant="ghost" size="icon"
                         onClick={() => handleDeleteTraining(training.id)}
                         title="Verwijder training"
                       >
@@ -521,19 +577,37 @@ const AdminPortal = () => {
                       {feedback.map((row) => (
                         <div key={row.id} className="rounded-xl border border-border bg-card p-5">
                           <div className="mb-3 flex items-center justify-between">
-                            <p className="font-medium text-foreground">
-                              {row.respondent_name ?? "Anoniem"}
-                            </p>
+                            <div>
+                              <p className="font-medium text-foreground">
+                                {row.respondent_name ?? "Anoniem"}
+                              </p>
+                              {row.respondent_function && (
+                                <p className="text-xs text-muted-foreground">{row.respondent_function}</p>
+                              )}
+                            </div>
                             <p className="text-xs text-muted-foreground">
                               {new Date(row.created_at).toLocaleDateString("nl-NL")}
                             </p>
                           </div>
                           <div className="mb-3 grid grid-cols-2 gap-2 text-sm sm:grid-cols-4">
                             <div><p className="text-xs text-muted-foreground">Overall</p><Stars value={row.rating_overall} /></div>
-                            <div><p className="text-xs text-muted-foreground">Inhoud</p><Stars value={row.rating_content} /></div>
-                            <div><p className="text-xs text-muted-foreground">Trainer</p><Stars value={row.rating_trainer} /></div>
-                            <div><p className="text-xs text-muted-foreground">Praktijk</p><Stars value={row.rating_practical} /></div>
+                            <div><p className="text-xs text-muted-foreground">Relevantie</p><Stars value={row.rating_relevance} /></div>
+                            <div><p className="text-xs text-muted-foreground">Toepasbaarheid</p><Stars value={row.rating_applicability} /></div>
+                            <div>
+                              <p className="text-xs text-muted-foreground">Tempo</p>
+                              <p className="text-xs text-foreground mt-0.5">
+                                {row.rating_tempo === "slow" ? "Te langzaam" : row.rating_tempo === "balanced" ? "Goed" : row.rating_tempo === "fast" ? "Te snel" : "—"}
+                              </p>
+                            </div>
                           </div>
+                          {row.takeaways && row.takeaways.length > 0 && (
+                            <div className="mb-2">
+                              <p className="text-xs text-muted-foreground">Na deze sessie...</p>
+                              <ul className="mt-0.5 text-sm text-foreground list-disc list-inside">
+                                {row.takeaways.map((t, i) => <li key={i}>{t}</li>)}
+                              </ul>
+                            </div>
+                          )}
                           {row.feedback_liked && (
                             <div className="mb-2">
                               <p className="text-xs text-muted-foreground">Meest waardevol</p>
@@ -546,10 +620,10 @@ const AdminPortal = () => {
                               <p className="mt-0.5 text-sm text-foreground">{row.feedback_improve}</p>
                             </div>
                           )}
-                          {row.feedback_apply && (
+                          {row.feedback_other && (
                             <div>
-                              <p className="text-xs text-muted-foreground">Morgen anders doen</p>
-                              <p className="mt-0.5 text-sm text-foreground">{row.feedback_apply}</p>
+                              <p className="text-xs text-muted-foreground">Overig</p>
+                              <p className="mt-0.5 text-sm text-foreground">{row.feedback_other}</p>
                             </div>
                           )}
                         </div>
@@ -660,6 +734,43 @@ const AdminPortal = () => {
             </div>
             <Button type="submit" className="w-full" disabled={savingTraining}>
               {savingTraining ? <Loader2 className="h-4 w-4 animate-spin" /> : "Aanmaken"}
+            </Button>
+          </form>
+        </DialogContent>
+      </Dialog>
+      {/* Edit Training Dialog */}
+      <Dialog open={editDialogOpen} onOpenChange={setEditDialogOpen}>
+        <DialogContent className="sm:max-w-md bg-card border-border">
+          <DialogHeader>
+            <DialogTitle className="font-display text-xl">Training bewerken</DialogTitle>
+          </DialogHeader>
+          <form onSubmit={handleEditTraining} className="space-y-4 pt-2">
+            <div className="space-y-1.5">
+              <label className="text-sm font-medium text-foreground">Titel</label>
+              <Input
+                value={editTitle}
+                onChange={(e) => setEditTitle(e.target.value)}
+                required
+              />
+            </div>
+            <div className="space-y-1.5">
+              <label className="text-sm font-medium text-foreground">Omschrijving <span className="text-muted-foreground font-normal">(optioneel)</span></label>
+              <Textarea
+                value={editDesc}
+                onChange={(e) => setEditDesc(e.target.value)}
+                rows={2}
+              />
+            </div>
+            <div className="space-y-1.5">
+              <label className="text-sm font-medium text-foreground">Datum <span className="text-muted-foreground font-normal">(optioneel)</span></label>
+              <Input
+                type="date"
+                value={editDate}
+                onChange={(e) => setEditDate(e.target.value)}
+              />
+            </div>
+            <Button type="submit" className="w-full" disabled={savingEdit}>
+              {savingEdit ? <Loader2 className="h-4 w-4 animate-spin" /> : "Opslaan"}
             </Button>
           </form>
         </DialogContent>
