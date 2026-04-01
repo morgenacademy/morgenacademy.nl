@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { useNavigate } from "react-router-dom";
-import { LogOut, ArrowRight } from "lucide-react";
+import { useNavigate, Link } from "react-router-dom";
+import { LogOut, ArrowRight, Settings } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import CourseCard from "@/components/CourseCard";
@@ -11,6 +11,7 @@ import { courses } from "@/data/courses";
 const Dashboard = () => {
   const navigate = useNavigate();
   const [enrolledCourseIds, setEnrolledCourseIds] = useState<string[]>([]);
+  const [isAdmin, setIsAdmin] = useState(false);
   const [waitlistCourse, setWaitlistCourse] = useState<{ id: string; title: string } | null>(null);
 
   useEffect(() => {
@@ -27,6 +28,7 @@ const Dashboard = () => {
         .maybeSingle();
 
       if (adminRole) {
+        setIsAdmin(true);
         setEnrolledCourseIds(courses.filter((c) => !c.comingSoon).map((c) => c.id));
         return;
       }
@@ -54,15 +56,25 @@ const Dashboard = () => {
           <h2 className="font-display text-xl font-semibold text-foreground tracking-tight">
             Morgen <span className="text-primary">Academy</span>
           </h2>
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={handleLogout}
-            className="text-muted-foreground hover:text-foreground gap-2"
-          >
-            <LogOut className="h-4 w-4" />
-            <span className="hidden sm:inline">Uitloggen</span>
-          </Button>
+          <div className="flex items-center gap-2">
+            {isAdmin && (
+              <Link to="/admin/portal">
+                <Button variant="ghost" size="sm" className="text-muted-foreground hover:text-foreground gap-2">
+                  <Settings className="h-4 w-4" />
+                  <span className="hidden sm:inline">Portaal</span>
+                </Button>
+              </Link>
+            )}
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={handleLogout}
+              className="text-muted-foreground hover:text-foreground gap-2"
+            >
+              <LogOut className="h-4 w-4" />
+              <span className="hidden sm:inline">Uitloggen</span>
+            </Button>
+          </div>
         </div>
       </header>
 

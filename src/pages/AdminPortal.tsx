@@ -97,6 +97,7 @@ const AdminPortal = () => {
   const [feedback, setFeedback] = useState<FeedbackRow[]>([]);
   const [feedbackCompanyId, setFeedbackCompanyId] = useState<string>("");
   const [feedbackTrainingId, setFeedbackTrainingId] = useState<string>("");
+  const [feedbackTrainings, setFeedbackTrainings] = useState<Training[]>([]);
   const [loadingFeedback, setLoadingFeedback] = useState(false);
 
   // Admin check
@@ -132,6 +133,17 @@ const AdminPortal = () => {
       .order("training_date", { ascending: false })
       .then(({ data }) => setTrainings((data as Training[]) ?? []));
   }, [isAdmin, selectedCompanyId]);
+
+  // Load trainings for feedback tab
+  useEffect(() => {
+    if (!isAdmin || !feedbackCompanyId) { setFeedbackTrainings([]); return; }
+    supabase.from("portal_trainings")
+      .select("*")
+      .eq("company_id", feedbackCompanyId)
+      .eq("is_active", true)
+      .order("training_date", { ascending: false })
+      .then(({ data }) => setFeedbackTrainings((data as Training[]) ?? []));
+  }, [isAdmin, feedbackCompanyId]);
 
   // Load feedback
   useEffect(() => {
@@ -373,9 +385,6 @@ const AdminPortal = () => {
     );
   };
 
-  const feedbackTrainings = feedbackCompanyId
-    ? trainings.filter((t) => t.company_id === feedbackCompanyId)
-    : [];
 
   return (
     <div className="min-h-screen bg-background">
@@ -570,15 +579,9 @@ const AdminPortal = () => {
                     <SelectValue placeholder="Training..." />
                   </SelectTrigger>
                   <SelectContent>
-                    {companies
-                      .filter((c) => c.id === feedbackCompanyId)
-                      .flatMap(() =>
-                        trainings
-                          .filter((t) => t.company_id === feedbackCompanyId)
-                          .map((t) => (
-                            <SelectItem key={t.id} value={t.id}>{t.title}</SelectItem>
-                          ))
-                      )}
+                    {feedbackTrainings.map((t) => (
+                      <SelectItem key={t.id} value={t.id}>{t.title}</SelectItem>
+                    ))}
                   </SelectContent>
                 </Select>
               )}
