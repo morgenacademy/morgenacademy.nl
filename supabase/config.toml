@@ -8,3 +8,6 @@ verify_jwt = false
 
 [functions.bunny-videos]
 verify_jwt = false
+
+[functions.portal-download]
+verify_jwt = false

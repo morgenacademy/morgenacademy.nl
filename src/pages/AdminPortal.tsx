@@ -1,0 +1,650 @@
+import { useState, useEffect, useRef } from "react";
+import { useNavigate } from "react-router-dom";
+import { supabase } from "@/integrations/supabase/client";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { toast } from "sonner";
+import {
+  ArrowLeft, Plus, Copy, Check, ToggleLeft, ToggleRight,
+  Star, Loader2, Upload, Trash2, ExternalLink,
+} from "lucide-react";
+import {
+  Dialog, DialogContent, DialogHeader, DialogTitle,
+} from "@/components/ui/dialog";
+import {
+  Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
+} from "@/components/ui/select";
+import {
+  Tabs, TabsContent, TabsList, TabsTrigger,
+} from "@/components/ui/tabs";
+
+interface Company {
+  id: string;
+  slug: string;
+  name: string;
+  is_active: boolean;
+  created_at: string;
+}
+
+interface Training {
+  id: string;
+  company_id: string;
+  title: string;
+  description: string | null;
+  training_date: string | null;
+  slide_storage_path: string | null;
+  slide_filename: string | null;
+  is_active: boolean;
+}
+
+interface FeedbackRow {
+  id: string;
+  training_id: string;
+  respondent_name: string | null;
+  rating_overall: number;
+  rating_content: number | null;
+  rating_trainer: number | null;
+  rating_practical: number | null;
+  feedback_liked: string | null;
+  feedback_improve: string | null;
+  feedback_apply: string | null;
+  created_at: string;
+}
+
+const slugify = (s: string) =>
+  s.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
+
+const AdminPortal = () => {
+  const navigate = useNavigate();
+  const [isAdmin, setIsAdmin] = useState<boolean | null>(null);
+
+  // Companies state
+  const [companies, setCompanies] = useState<Company[]>([]);
+  const [companyDialogOpen, setCompanyDialogOpen] = useState(false);
+  const [newName, setNewName] = useState("");
+  const [newSlug, setNewSlug] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [savingCompany, setSavingCompany] = useState(false);
+  const [copiedSlug, setCopiedSlug] = useState<string | null>(null);
+
+  // Trainings state
+  const [trainings, setTrainings] = useState<Training[]>([]);
+  const [selectedCompanyId, setSelectedCompanyId] = useState<string>("");
+  const [trainingDialogOpen, setTrainingDialogOpen] = useState(false);
+  const [newTrainingTitle, setNewTrainingTitle] = useState("");
+  const [newTrainingDesc, setNewTrainingDesc] = useState("");
+  const [newTrainingDate, setNewTrainingDate] = useState("");
+  const [newTrainingCompany, setNewTrainingCompany] = useState("");
+  const [savingTraining, setSavingTraining] = useState(false);
+  const [uploadingFor, setUploadingFor] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [uploadTarget, setUploadTarget] = useState<string | null>(null);
+
+  // Feedback state
+  const [feedback, setFeedback] = useState<FeedbackRow[]>([]);
+  const [feedbackCompanyId, setFeedbackCompanyId] = useState<string>("");
+  const [feedbackTrainingId, setFeedbackTrainingId] = useState<string>("");
+  const [loadingFeedback, setLoadingFeedback] = useState(false);
+
+  // Admin check
+  useEffect(() => {
+    const check = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) { navigate("/login"); return; }
+      const { data } = await supabase
+        .from("user_roles")
+        .select("role")
+        .eq("user_id", user.id)
+        .eq("role", "admin")
+        .maybeSingle();
+      if (!data) { navigate("/dashboard"); return; }
+      setIsAdmin(true);
+    };
+    check();
+  }, [navigate]);
+
+  // Load companies
+  useEffect(() => {
+    if (!isAdmin) return;
+    supabase.from("portal_companies").select("*").order("created_at", { ascending: false })
+      .then(({ data }) => setCompanies((data as Company[]) ?? []));
+  }, [isAdmin]);
+
+  // Load trainings when company filter changes
+  useEffect(() => {
+    if (!isAdmin || !selectedCompanyId) { setTrainings([]); return; }
+    supabase.from("portal_trainings")
+      .select("*")
+      .eq("company_id", selectedCompanyId)
+      .order("training_date", { ascending: false })
+      .then(({ data }) => setTrainings((data as Training[]) ?? []));
+  }, [isAdmin, selectedCompanyId]);
+
+  // Load feedback
+  useEffect(() => {
+    if (!isAdmin || !feedbackTrainingId) { setFeedback([]); return; }
+    setLoadingFeedback(true);
+    supabase.from("portal_feedback")
+      .select("*")
+      .eq("training_id", feedbackTrainingId)
+      .order("created_at", { ascending: false })
+      .then(({ data }) => {
+        setFeedback((data as FeedbackRow[]) ?? []);
+        setLoadingFeedback(false);
+      });
+  }, [isAdmin, feedbackTrainingId]);
+
+  if (isAdmin === null) return null;
+
+  // ---- Companies ----
+
+  const handleCreateCompany = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newName || !newSlug || !newPassword) return;
+    setSavingCompany(true);
+    try {
+      const { data: company, error } = await supabase
+        .from("portal_companies")
+        .insert({ slug: newSlug, name: newName, password_hash: "placeholder" })
+        .select()
+        .single();
+      if (error) throw error;
+
+      await supabase.rpc("portal_set_password", {
+        _company_id: company.id,
+        _password: newPassword,
+      });
+
+      setCompanies((prev) => [company as Company, ...prev]);
+      setCompanyDialogOpen(false);
+      setNewName(""); setNewSlug(""); setNewPassword("");
+      toast.success(`Bedrijf ${newName} aangemaakt`);
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : "Onbekende fout";
+      toast.error(`Aanmaken mislukt: ${msg}`);
+    } finally {
+      setSavingCompany(false);
+    }
+  };
+
+  const handleToggleCompany = async (company: Company) => {
+    await supabase.from("portal_companies")
+      .update({ is_active: !company.is_active })
+      .eq("id", company.id);
+    setCompanies((prev) => prev.map((c) => c.id === company.id ? { ...c, is_active: !c.is_active } : c));
+  };
+
+  const handleCopyUrl = (slug: string) => {
+    navigator.clipboard.writeText(`${window.location.origin}/portal/${slug}`);
+    setCopiedSlug(slug);
+    setTimeout(() => setCopiedSlug(null), 2000);
+  };
+
+  // ---- Trainings ----
+
+  const handleCreateTraining = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newTrainingTitle || !newTrainingCompany) return;
+    setSavingTraining(true);
+    try {
+      const { data: training, error } = await supabase
+        .from("portal_trainings")
+        .insert({
+          company_id: newTrainingCompany,
+          title: newTrainingTitle,
+          description: newTrainingDesc || null,
+          training_date: newTrainingDate || null,
+        })
+        .select()
+        .single();
+      if (error) throw error;
+      if (selectedCompanyId === newTrainingCompany) {
+        setTrainings((prev) => [training as Training, ...prev]);
+      }
+      setTrainingDialogOpen(false);
+      setNewTrainingTitle(""); setNewTrainingDesc(""); setNewTrainingDate(""); setNewTrainingCompany("");
+      toast.success("Training aangemaakt");
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : "Onbekende fout";
+      toast.error(`Aanmaken mislukt: ${msg}`);
+    } finally {
+      setSavingTraining(false);
+    }
+  };
+
+  const handleUploadSlide = async (trainingId: string, file: File) => {
+    setUploadingFor(trainingId);
+    try {
+      const ext = file.name.split(".").pop() ?? "pdf";
+      const path = `${trainingId}/slides.${ext}`;
+
+      const { error: uploadError } = await supabase.storage
+        .from("portal-slides")
+        .upload(path, file, { upsert: true });
+      if (uploadError) throw uploadError;
+
+      const { error: updateError } = await supabase
+        .from("portal_trainings")
+        .update({ slide_storage_path: path, slide_filename: file.name })
+        .eq("id", trainingId);
+      if (updateError) throw updateError;
+
+      setTrainings((prev) =>
+        prev.map((t) =>
+          t.id === trainingId ? { ...t, slide_storage_path: path, slide_filename: file.name } : t
+        )
+      );
+      toast.success("Slides geüpload");
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : "Onbekende fout";
+      toast.error(`Upload mislukt: ${msg}`);
+    } finally {
+      setUploadingFor(null);
+      setUploadTarget(null);
+    }
+  };
+
+  const handleDeleteTraining = async (trainingId: string) => {
+    await supabase.from("portal_trainings").update({ is_active: false }).eq("id", trainingId);
+    setTrainings((prev) => prev.filter((t) => t.id !== trainingId));
+    toast.success("Training verwijderd");
+  };
+
+  // ---- Render helpers ----
+
+  const avgRating = (rows: FeedbackRow[]) => {
+    if (!rows.length) return null;
+    const sum = rows.reduce((acc, r) => acc + r.rating_overall, 0);
+    return (sum / rows.length).toFixed(1);
+  };
+
+  const Stars = ({ value }: { value: number | null }) => {
+    if (!value) return <span className="text-muted-foreground">—</span>;
+    return (
+      <span className="flex items-center gap-0.5">
+        {Array.from({ length: 5 }, (_, i) => (
+          <Star
+            key={i}
+            className={`h-3.5 w-3.5 ${i < value ? "fill-amber-400 text-amber-400" : "text-muted-foreground/30"}`}
+          />
+        ))}
+        <span className="ml-1 text-xs text-muted-foreground">{value}</span>
+      </span>
+    );
+  };
+
+  const feedbackTrainings = feedbackCompanyId
+    ? trainings.filter((t) => t.company_id === feedbackCompanyId)
+    : [];
+
+  return (
+    <div className="min-h-screen bg-background">
+      <header className="border-b border-border/50">
+        <div className="mx-auto flex max-w-5xl items-center gap-4 px-6 py-5">
+          <Button variant="ghost" size="sm" onClick={() => navigate("/admin/upload")} className="gap-1.5 text-muted-foreground">
+            <ArrowLeft className="h-4 w-4" />
+            Terug
+          </Button>
+          <h1 className="font-display text-xl font-semibold text-foreground">
+            Klantportaal beheer
+          </h1>
+        </div>
+      </header>
+
+      <main className="mx-auto max-w-5xl px-6 py-8">
+        <Tabs defaultValue="companies">
+          <TabsList className="mb-6">
+            <TabsTrigger value="companies">Bedrijven</TabsTrigger>
+            <TabsTrigger value="trainings">Trainingen</TabsTrigger>
+            <TabsTrigger value="feedback">Feedback</TabsTrigger>
+          </TabsList>
+
+          {/* ---- COMPANIES TAB ---- */}
+          <TabsContent value="companies">
+            <div className="mb-4 flex items-center justify-between">
+              <h2 className="font-display text-lg font-semibold text-foreground">Bedrijven</h2>
+              <Button size="sm" onClick={() => setCompanyDialogOpen(true)} className="gap-1.5">
+                <Plus className="h-4 w-4" /> Nieuw bedrijf
+              </Button>
+            </div>
+
+            {companies.length === 0 ? (
+              <p className="text-sm text-muted-foreground">Nog geen bedrijven aangemaakt.</p>
+            ) : (
+              <div className="divide-y divide-border rounded-xl border border-border bg-card">
+                {companies.map((company) => (
+                  <div key={company.id} className="flex items-center gap-4 px-5 py-4">
+                    <div className="flex-1 min-w-0">
+                      <p className="font-medium text-foreground">{company.name}</p>
+                      <p className="mt-0.5 truncate text-xs text-muted-foreground">
+                        /portal/{company.slug}
+                      </p>
+                    </div>
+                    <div className="flex items-center gap-2 shrink-0">
+                      <span className={`rounded-full px-2 py-0.5 text-xs ${company.is_active ? "bg-success/10 text-success" : "bg-muted text-muted-foreground"}`}>
+                        {company.is_active ? "Actief" : "Inactief"}
+                      </span>
+                      <Button
+                        variant="ghost" size="icon"
+                        onClick={() => handleCopyUrl(company.slug)}
+                        title="Kopieer portaal-URL"
+                      >
+                        {copiedSlug === company.slug ? <Check className="h-4 w-4 text-success" /> : <Copy className="h-4 w-4" />}
+                      </Button>
+                      <Button
+                        variant="ghost" size="icon"
+                        onClick={() => handleToggleCompany(company)}
+                        title={company.is_active ? "Deactiveren" : "Activeren"}
+                      >
+                        {company.is_active
+                          ? <ToggleRight className="h-5 w-5 text-primary" />
+                          : <ToggleLeft className="h-5 w-5 text-muted-foreground" />}
+                      </Button>
+                      <Button
+                        variant="ghost" size="icon" asChild
+                        title="Open portaal"
+                      >
+                        <a href={`/portal/${company.slug}`} target="_blank" rel="noopener noreferrer">
+                          <ExternalLink className="h-4 w-4" />
+                        </a>
+                      </Button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </TabsContent>
+
+          {/* ---- TRAININGS TAB ---- */}
+          <TabsContent value="trainings">
+            <div className="mb-4 flex items-center justify-between">
+              <h2 className="font-display text-lg font-semibold text-foreground">Trainingen</h2>
+              <Button size="sm" onClick={() => setTrainingDialogOpen(true)} className="gap-1.5">
+                <Plus className="h-4 w-4" /> Nieuwe training
+              </Button>
+            </div>
+
+            <div className="mb-4">
+              <Select value={selectedCompanyId} onValueChange={setSelectedCompanyId}>
+                <SelectTrigger className="w-64">
+                  <SelectValue placeholder="Kies een bedrijf..." />
+                </SelectTrigger>
+                <SelectContent>
+                  {companies.map((c) => (
+                    <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            {!selectedCompanyId ? (
+              <p className="text-sm text-muted-foreground">Selecteer een bedrijf om trainingen te zien.</p>
+            ) : trainings.length === 0 ? (
+              <p className="text-sm text-muted-foreground">Nog geen trainingen voor dit bedrijf.</p>
+            ) : (
+              <div className="divide-y divide-border rounded-xl border border-border bg-card">
+                {trainings.map((training) => (
+                  <div key={training.id} className="flex items-center gap-4 px-5 py-4">
+                    <div className="flex-1 min-w-0">
+                      <p className="font-medium text-foreground">{training.title}</p>
+                      <p className="mt-0.5 text-xs text-muted-foreground">
+                        {training.training_date
+                          ? new Date(training.training_date).toLocaleDateString("nl-NL", { day: "numeric", month: "long", year: "numeric" })
+                          : "Geen datum"
+                        }
+                        {training.slide_filename && (
+                          <span className="ml-2 text-success">· {training.slide_filename}</span>
+                        )}
+                      </p>
+                    </div>
+                    <div className="flex items-center gap-2 shrink-0">
+                      <Button
+                        variant="outline" size="sm"
+                        disabled={uploadingFor === training.id}
+                        onClick={() => {
+                          setUploadTarget(training.id);
+                          fileInputRef.current?.click();
+                        }}
+                        className="gap-1.5 text-xs"
+                      >
+                        {uploadingFor === training.id
+                          ? <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                          : <Upload className="h-3.5 w-3.5" />}
+                        {training.slide_storage_path ? "Vervangen" : "Slides uploaden"}
+                      </Button>
+                      <Button
+                        variant="ghost" size="icon"
+                        onClick={() => handleDeleteTraining(training.id)}
+                        title="Verwijder training"
+                      >
+                        <Trash2 className="h-4 w-4 text-destructive" />
+                      </Button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {/* Hidden file input */}
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept=".pdf,.pptx,.ppt"
+              className="hidden"
+              onChange={(e) => {
+                const file = e.target.files?.[0];
+                if (file && uploadTarget) handleUploadSlide(uploadTarget, file);
+                e.target.value = "";
+              }}
+            />
+          </TabsContent>
+
+          {/* ---- FEEDBACK TAB ---- */}
+          <TabsContent value="feedback">
+            <h2 className="mb-4 font-display text-lg font-semibold text-foreground">Feedback</h2>
+
+            <div className="mb-4 flex gap-3">
+              <Select value={feedbackCompanyId} onValueChange={(v) => { setFeedbackCompanyId(v); setFeedbackTrainingId(""); }}>
+                <SelectTrigger className="w-56">
+                  <SelectValue placeholder="Bedrijf..." />
+                </SelectTrigger>
+                <SelectContent>
+                  {companies.map((c) => (
+                    <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+
+              {feedbackCompanyId && (
+                <Select value={feedbackTrainingId} onValueChange={setFeedbackTrainingId}>
+                  <SelectTrigger className="w-64">
+                    <SelectValue placeholder="Training..." />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {companies
+                      .filter((c) => c.id === feedbackCompanyId)
+                      .flatMap(() =>
+                        trainings
+                          .filter((t) => t.company_id === feedbackCompanyId)
+                          .map((t) => (
+                            <SelectItem key={t.id} value={t.id}>{t.title}</SelectItem>
+                          ))
+                      )}
+                  </SelectContent>
+                </Select>
+              )}
+            </div>
+
+            {feedbackCompanyId && !feedbackTrainingId && (
+              <p className="text-sm text-muted-foreground">Selecteer een training om feedback te zien.</p>
+            )}
+
+            {feedbackTrainingId && (
+              <>
+                {loadingFeedback ? (
+                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                    <Loader2 className="h-4 w-4 animate-spin" /> Laden...
+                  </div>
+                ) : feedback.length === 0 ? (
+                  <p className="text-sm text-muted-foreground">Nog geen feedback voor deze training.</p>
+                ) : (
+                  <>
+                    <div className="mb-4 flex items-center gap-2 rounded-xl border border-border bg-card px-5 py-3">
+                      <Star className="h-5 w-5 fill-amber-400 text-amber-400" />
+                      <span className="text-lg font-semibold text-foreground">{avgRating(feedback)}</span>
+                      <span className="text-sm text-muted-foreground">gemiddeld ({feedback.length} {feedback.length === 1 ? "reactie" : "reacties"})</span>
+                    </div>
+
+                    <div className="space-y-4">
+                      {feedback.map((row) => (
+                        <div key={row.id} className="rounded-xl border border-border bg-card p-5">
+                          <div className="mb-3 flex items-center justify-between">
+                            <p className="font-medium text-foreground">
+                              {row.respondent_name ?? "Anoniem"}
+                            </p>
+                            <p className="text-xs text-muted-foreground">
+                              {new Date(row.created_at).toLocaleDateString("nl-NL")}
+                            </p>
+                          </div>
+                          <div className="mb-3 grid grid-cols-2 gap-2 text-sm sm:grid-cols-4">
+                            <div><p className="text-xs text-muted-foreground">Overall</p><Stars value={row.rating_overall} /></div>
+                            <div><p className="text-xs text-muted-foreground">Inhoud</p><Stars value={row.rating_content} /></div>
+                            <div><p className="text-xs text-muted-foreground">Trainer</p><Stars value={row.rating_trainer} /></div>
+                            <div><p className="text-xs text-muted-foreground">Praktijk</p><Stars value={row.rating_practical} /></div>
+                          </div>
+                          {row.feedback_liked && (
+                            <div className="mb-2">
+                              <p className="text-xs text-muted-foreground">Meest waardevol</p>
+                              <p className="mt-0.5 text-sm text-foreground">{row.feedback_liked}</p>
+                            </div>
+                          )}
+                          {row.feedback_improve && (
+                            <div className="mb-2">
+                              <p className="text-xs text-muted-foreground">Verbeteren</p>
+                              <p className="mt-0.5 text-sm text-foreground">{row.feedback_improve}</p>
+                            </div>
+                          )}
+                          {row.feedback_apply && (
+                            <div>
+                              <p className="text-xs text-muted-foreground">Morgen anders doen</p>
+                              <p className="mt-0.5 text-sm text-foreground">{row.feedback_apply}</p>
+                            </div>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  </>
+                )}
+              </>
+            )}
+          </TabsContent>
+        </Tabs>
+      </main>
+
+      {/* Create Company Dialog */}
+      <Dialog open={companyDialogOpen} onOpenChange={setCompanyDialogOpen}>
+        <DialogContent className="sm:max-w-md bg-card border-border">
+          <DialogHeader>
+            <DialogTitle className="font-display text-xl">Nieuw bedrijf</DialogTitle>
+          </DialogHeader>
+          <form onSubmit={handleCreateCompany} className="space-y-4 pt-2">
+            <div className="space-y-1.5">
+              <label className="text-sm font-medium text-foreground">Bedrijfsnaam</label>
+              <Input
+                placeholder="Pink Roccade"
+                value={newName}
+                onChange={(e) => {
+                  setNewName(e.target.value);
+                  setNewSlug(slugify(e.target.value));
+                }}
+                required
+              />
+            </div>
+            <div className="space-y-1.5">
+              <label className="text-sm font-medium text-foreground">URL-slug</label>
+              <div className="flex items-center gap-2">
+                <span className="text-sm text-muted-foreground whitespace-nowrap">/portal/</span>
+                <Input
+                  placeholder="pink-roccade"
+                  value={newSlug}
+                  onChange={(e) => setNewSlug(slugify(e.target.value))}
+                  required
+                />
+              </div>
+            </div>
+            <div className="space-y-1.5">
+              <label className="text-sm font-medium text-foreground">Wachtwoord</label>
+              <Input
+                type="text"
+                placeholder="Kies een wachtwoord voor dit bedrijf"
+                value={newPassword}
+                onChange={(e) => setNewPassword(e.target.value)}
+                required
+              />
+              <p className="text-xs text-muted-foreground">Deel dit met de deelnemers van de training.</p>
+            </div>
+            <Button type="submit" className="w-full" disabled={savingCompany}>
+              {savingCompany ? <Loader2 className="h-4 w-4 animate-spin" /> : "Aanmaken"}
+            </Button>
+          </form>
+        </DialogContent>
+      </Dialog>
+
+      {/* Create Training Dialog */}
+      <Dialog open={trainingDialogOpen} onOpenChange={setTrainingDialogOpen}>
+        <DialogContent className="sm:max-w-md bg-card border-border">
+          <DialogHeader>
+            <DialogTitle className="font-display text-xl">Nieuwe training</DialogTitle>
+          </DialogHeader>
+          <form onSubmit={handleCreateTraining} className="space-y-4 pt-2">
+            <div className="space-y-1.5">
+              <label className="text-sm font-medium text-foreground">Bedrijf</label>
+              <Select value={newTrainingCompany} onValueChange={setNewTrainingCompany} required>
+                <SelectTrigger>
+                  <SelectValue placeholder="Kies een bedrijf..." />
+                </SelectTrigger>
+                <SelectContent>
+                  {companies.map((c) => (
+                    <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-1.5">
+              <label className="text-sm font-medium text-foreground">Titel</label>
+              <Input
+                placeholder="AI Basistraining"
+                value={newTrainingTitle}
+                onChange={(e) => setNewTrainingTitle(e.target.value)}
+                required
+              />
+            </div>
+            <div className="space-y-1.5">
+              <label className="text-sm font-medium text-foreground">Omschrijving <span className="text-muted-foreground font-normal">(optioneel)</span></label>
+              <Textarea
+                placeholder="Korte omschrijving van de training..."
+                value={newTrainingDesc}
+                onChange={(e) => setNewTrainingDesc(e.target.value)}
+                rows={2}
+              />
+            </div>
+            <div className="space-y-1.5">
+              <label className="text-sm font-medium text-foreground">Datum <span className="text-muted-foreground font-normal">(optioneel)</span></label>
+              <Input
+                type="date"
+                value={newTrainingDate}
+                onChange={(e) => setNewTrainingDate(e.target.value)}
+              />
+            </div>
+            <Button type="submit" className="w-full" disabled={savingTraining}>
+              {savingTraining ? <Loader2 className="h-4 w-4 animate-spin" /> : "Aanmaken"}
+            </Button>
+          </form>
+        </DialogContent>
+      </Dialog>
+    </div>
+  );
+};
+
+export default AdminPortal;
