@@ -50,9 +50,9 @@ const PortalDashboard = ({ session, slug, onLogout }: PortalDashboardProps) => {
       {/* Header */}
       <header className="border-b border-border/50">
         <div className="mx-auto flex max-w-3xl items-center justify-between px-6 py-5">
-          <h2 className="font-display text-xl font-semibold text-foreground tracking-tight">
+          <a href="https://morgencompany.com/academy" target="_blank" rel="noopener noreferrer" className="font-display text-xl font-semibold text-foreground tracking-tight hover:opacity-80 transition-opacity">
             Morgen <span className="text-primary">Academy</span>
-          </h2>
+          </a>
           <Button
             variant="ghost"
             size="sm"
@@ -117,7 +117,7 @@ const PortalDashboard = ({ session, slug, onLogout }: PortalDashboardProps) => {
             initial={{ opacity: 0, y: 16 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.4, delay: trainings.length * 0.1 + 0.1 }}
-            className="mt-4"
+            className="mt-8"
           >
             <Card className="border-border bg-card">
               <CardContent className="flex items-center justify-center py-6">
