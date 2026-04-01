@@ -1,18 +1,41 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { Play, Lock, ArrowRight, Sparkles, Bell, Users, Clock, Mail } from "lucide-react";
+import { Lock, ArrowRight, Sparkles, Bell, Users, Clock } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { courses } from "@/data/courses";
 import WaitlistDialog from "@/components/WaitlistDialog";
-import IncompanyDialog from "@/components/IncompanyDialog";
 import ContactDialog from "@/components/ContactDialog";
 import NewsletterDialog from "@/components/NewsletterDialog";
+import { cn } from "@/lib/utils";
+
+const headerLinks = [
+  {
+    label: "Online trainingen",
+    href: "/",
+    active: true,
+  },
+  {
+    label: "Incompany trainingen",
+    href: "https://morgencompany.com/academy",
+  },
+  {
+    label: "Consultancy",
+    href: "https://morgencompany.com/consultancy",
+  },
+  {
+    label: "Technology",
+    href: "https://morgencompany.com/technology",
+  },
+  {
+    label: "Company",
+    href: "https://morgencompany.com/company",
+  },
+] as const;
 
 const Landing = () => {
   const navigate = useNavigate();
   const [waitlistCourse, setWaitlistCourse] = useState<{ id: string; title: string } | null>(null);
-  const [incompanyOpen, setIncompanyOpen] = useState(false);
   const [contactOpen, setContactOpen] = useState(false);
   const [newsletterOpen, setNewsletterOpen] = useState(false);
 
@@ -20,24 +43,55 @@ const Landing = () => {
     <div className="min-h-screen bg-background">
       {/* Header */}
       <header className="border-b border-border/50">
-        <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-5">
-          <h2 className="font-display text-xl font-semibold text-foreground tracking-tight">
-            Morgen <span className="text-primary">Academy</span>
-          </h2>
-          <div className="flex items-center gap-3">
-            <Button
-              variant="ghost"
-              size="sm"
-              className="text-xs uppercase tracking-wider"
-              onClick={() => setContactOpen(true)}
-            >
-              Contact
-            </Button>
-            <Link to="/login">
-              <Button variant="outline" size="sm" className="text-xs uppercase tracking-wider">
-                Inloggen
+        <div className="border-b border-white/5 bg-[radial-gradient(circle_at_top,_rgba(200,80,216,0.16),_transparent_42%),linear-gradient(180deg,#120818_0%,#140a1c_42%,#100814_100%)]">
+          <div className="mx-auto max-w-7xl px-6">
+            <nav className="flex min-h-[84px] items-center justify-start gap-x-8 gap-y-3 overflow-x-auto py-5 text-nowrap lg:justify-center lg:gap-x-12">
+              {headerLinks.map((item) => {
+                const classes = cn(
+                  "text-[1.05rem] font-medium tracking-[0.08em] transition-colors hover:text-foreground lg:text-[1.2rem]",
+                  item.active ? "text-foreground" : "text-[#d3cfe3]",
+                );
+
+                return item.active ? (
+                  <Link key={item.label} to={item.href} className={classes} aria-current="page">
+                    {item.label}
+                  </Link>
+                ) : (
+                  <a key={item.label} href={item.href} className={classes}>
+                    {item.label}
+                  </a>
+                );
+              })}
+            </nav>
+          </div>
+        </div>
+
+        <div className="mx-auto max-w-6xl px-6 py-4">
+          <div className="flex items-center justify-between gap-4">
+            <div>
+              <p className="font-display text-xl font-semibold tracking-tight text-foreground">
+                Morgen <span className="text-primary">Academy</span>
+              </p>
+              <p className="mt-1 text-xs uppercase tracking-[0.24em] text-muted-foreground">
+                Online trainingen
+              </p>
+            </div>
+
+            <div className="flex items-center gap-3">
+              <Button
+                variant="ghost"
+                size="sm"
+                className="hidden text-xs uppercase tracking-wider sm:inline-flex"
+                onClick={() => setContactOpen(true)}
+              >
+                Contact
               </Button>
-            </Link>
+              <Link to="/login">
+                <Button variant="outline" size="sm" className="text-xs uppercase tracking-wider">
+                  Inloggen
+                </Button>
+              </Link>
+            </div>
           </div>
         </div>
       </header>
@@ -206,6 +260,18 @@ const Landing = () => {
                 Boek een incompany training en leer samen met je team werken met AI.
                 In twee uur krijgt je team een praktische, interactieve sessie op locatie of online.
               </p>
+              <p className="mb-8 text-sm leading-relaxed text-muted-foreground">
+                Meer weten over onze bredere aanpak voor teams en organisaties?{" "}
+                <a
+                  href="https://www.morgencompany.com"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="font-medium text-primary hover:underline"
+                >
+                  Bekijk Morgen Company
+                </a>
+                .
+              </p>
 
               <div className="mb-8 flex flex-wrap gap-6">
                 <div className="flex items-center gap-2 text-sm text-muted-foreground">
@@ -225,16 +291,14 @@ const Landing = () => {
             </div>
 
             <div className="w-full shrink-0 flex-col gap-3 md:w-auto md:pt-10 flex">
-              <Button
-                size="lg"
-                className="w-full gap-2 text-sm uppercase tracking-wider"
-                onClick={() => setIncompanyOpen(true)}
-              >
-                <Mail className="h-4 w-4" />
-                Training aanvragen
+              <Button asChild size="lg" className="w-full gap-2 text-sm uppercase tracking-wider">
+                <a href="https://morgencompany.com/academy">
+                  Bekijk incompany trainingen
+                  <ArrowRight className="h-4 w-4" />
+                </a>
               </Button>
               <p className="text-center text-xs text-muted-foreground">
-                We nemen binnen 1 werkdag contact op
+                Voor teams, organisaties en maatwerktrajecten
               </p>
             </div>
           </div>
@@ -247,7 +311,6 @@ const Landing = () => {
         courseId={waitlistCourse?.id || ""}
         courseTitle={waitlistCourse?.title || ""}
       />
-      <IncompanyDialog open={incompanyOpen} onOpenChange={setIncompanyOpen} />
       <ContactDialog open={contactOpen} onOpenChange={setContactOpen} />
       <NewsletterDialog open={newsletterOpen} onOpenChange={setNewsletterOpen} />
 
@@ -255,7 +318,7 @@ const Landing = () => {
       <footer className="border-t border-border/50 py-8">
         <div className="mx-auto flex max-w-6xl flex-col items-center justify-between gap-4 px-6 sm:flex-row">
           <p className="text-sm text-muted-foreground">
-            Een initiatief van{" "}
+            Morgen Academy is het trainingsplatform van{" "}
             <a
               href="https://www.morgencompany.com"
               target="_blank"
@@ -295,4 +358,3 @@ const Landing = () => {
 };
 
 export default Landing;
-
