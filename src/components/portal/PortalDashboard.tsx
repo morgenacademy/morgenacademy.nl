@@ -13,6 +13,7 @@ interface Training {
   training_dates: string[] | null;
   slide_storage_path: string | null;
   slide_filename: string | null;
+  slide_external_url: string | null;
 }
 
 interface PortalSession {
@@ -110,39 +111,32 @@ const PortalDashboard = ({ session, slug, onLogout }: PortalDashboardProps) => {
           </div>
         )}
 
-        {/* Google Review CTA */}
+        {/* Footer */}
         <motion.div
-          initial={{ opacity: 0, y: 8 }}
-          animate={{ opacity: 1, y: 0 }}
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
           transition={{ delay: 0.8 }}
-          className="mt-12 rounded-xl border border-border/50 bg-card/50 px-6 py-5 text-center"
+          className="mt-12 space-y-3 text-center"
         >
-          <p className="text-sm text-muted-foreground leading-relaxed">
-            Heb je echt iets aan de training gehad?{" "}
+          <p className="text-xs text-muted-foreground/70">
+            Blij met de training?{" "}
             <a
               href="https://g.page/r/Cdz-0WCIxls3EBM/review"
               target="_blank"
               rel="noopener noreferrer"
-              className="text-primary font-medium hover:underline"
+              className="inline-flex items-center gap-1 text-muted-foreground hover:text-foreground transition-colors"
             >
-              Laat een Google review achter
-            </a>{" "}
-            — dat helpt ons enorm om meer professionals te bereiken.
+              <img src="https://cdn.prod.website-files.com/603459ac924304747737f3ab/603459ac924304141037f63c_google-review.jpg" alt="" className="h-3.5 w-3.5 rounded-sm inline" />
+              Laat een review achter
+            </a>
+          </p>
+          <p className="text-xs text-muted-foreground/50">
+            Vragen? Mail naar{" "}
+            <a href="mailto:totmorgen@morgenacademy.nl" className="hover:text-muted-foreground transition-colors">
+              totmorgen@morgenacademy.nl
+            </a>
           </p>
         </motion.div>
-
-        {/* Footer */}
-        <motion.p
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 1.0 }}
-          className="mt-6 text-center text-xs text-muted-foreground"
-        >
-          Vragen? Mail naar{" "}
-          <a href="mailto:totmorgen@morgenacademy.nl" className="text-primary hover:underline">
-            totmorgen@morgenacademy.nl
-          </a>
-        </motion.p>
       </main>
     </div>
   );

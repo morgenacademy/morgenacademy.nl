@@ -15,6 +15,7 @@ interface Training {
   training_dates: string[] | null;
   slide_storage_path: string | null;
   slide_filename: string | null;
+  slide_external_url: string | null;
 }
 
 interface PortalTrainingCardProps {
@@ -38,7 +39,16 @@ const PortalTrainingCard = ({ training, companyId, slug, password, index }: Port
     ? dates.map((d) => new Date(d).toLocaleDateString("nl-NL", { day: "numeric", month: "long", year: "numeric" })).join(", ")
     : null;
 
+  const hasSlide = !!(training.slide_storage_path || training.slide_external_url);
+
   const handleDownload = async () => {
+    // External URL: just open in new tab
+    if (training.slide_external_url) {
+      window.open(training.slide_external_url, "_blank", "noopener,noreferrer");
+      return;
+    }
+
+    // Storage file: get signed URL
     setDownloading(true);
     try {
       const { data, error } = await supabase.functions.invoke("portal-download", {
@@ -47,7 +57,6 @@ const PortalTrainingCard = ({ training, companyId, slug, password, index }: Port
 
       if (error || !data?.download_url) throw new Error("Download mislukt");
 
-      // Trigger download
       const a = document.createElement("a");
       a.href = data.download_url;
       a.download = data.filename || "slides.pdf";
@@ -97,7 +106,7 @@ const PortalTrainingCard = ({ training, companyId, slug, password, index }: Port
           </CardHeader>
 
           <CardContent className="flex flex-col gap-2.5 sm:flex-row">
-            {training.slide_storage_path && (
+            {hasSlide && (
               <Button
                 onClick={handleDownload}
                 disabled={downloading}
