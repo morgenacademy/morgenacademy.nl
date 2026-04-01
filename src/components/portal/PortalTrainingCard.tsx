@@ -41,6 +41,9 @@ const PortalTrainingCard = ({ training, companyId, slug, password, index }: Port
   const hasSlide = !!training.slide_storage_path;
 
   const handleDownload = async () => {
+    // Open window synchronously on user click to avoid popup blockers (especially mobile Safari)
+    const downloadWindow = window.open("about:blank", "_blank");
+
     setDownloading(true);
     try {
       const { data, error } = await supabase.functions.invoke("portal-download", {
@@ -49,8 +52,14 @@ const PortalTrainingCard = ({ training, companyId, slug, password, index }: Port
 
       if (error || !data?.download_url) throw new Error("Download mislukt");
 
-      window.open(data.download_url, "_blank", "noopener,noreferrer");
+      if (downloadWindow) {
+        downloadWindow.location.href = data.download_url;
+      } else {
+        // Fallback: direct navigation if popup was still blocked
+        window.location.href = data.download_url;
+      }
     } catch {
+      if (downloadWindow) downloadWindow.close();
       toast({
         title: "Download mislukt",
         description: "Probeer het later opnieuw.",

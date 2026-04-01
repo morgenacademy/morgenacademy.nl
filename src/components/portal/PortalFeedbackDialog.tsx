@@ -164,7 +164,7 @@ const PortalFeedbackDialog = ({
                 Hoe was de training?
               </DialogTitle>
               <DialogDescription className="leading-relaxed text-muted-foreground">
-                {trainingTitle} — duurt minder dan 2 minuten en helpt ons enorm.
+                {trainingTitle}, duurt minder dan 2 minuten en helpt ons enorm.
               </DialogDescription>
             </DialogHeader>
 
@@ -344,17 +344,20 @@ const PortalFeedbackDialog = ({
                 />
               </div>
 
-              {/* 8. Other */}
+              {/* 8. Stay informed */}
               <div className="space-y-1.5">
                 <label className="text-sm font-medium text-foreground">
-                  8. Nog iets dat je wilt meegeven?
+                  8. Wil je op de hoogte blijven van AI-trainingen en ontwikkelingen?
                 </label>
-                <Textarea
-                  placeholder="Vrij veld voor overige opmerkingen."
+                <p className="text-xs text-muted-foreground">
+                  Laat je e-mailadres achter en we houden je op de hoogte. Geen spam, beloofd.
+                </p>
+                <Input
+                  type="email"
+                  placeholder="je@email.nl"
                   value={other}
                   onChange={(e) => setOther(e.target.value)}
-                  rows={2}
-                  maxLength={1000}
+                  maxLength={200}
                 />
               </div>
 

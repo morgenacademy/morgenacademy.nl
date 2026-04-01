@@ -81,7 +81,7 @@ const PortalDashboard = ({ session, slug, onLogout }: PortalDashboardProps) => {
             Trainingsmaterialen
           </h1>
           <p className="mt-3 max-w-lg text-base leading-relaxed text-muted-foreground">
-            Download hieronder de slides van je training. We stellen het zeer op prijs als je even een minuutje neemt om feedback te geven — dat helpt ons de training steeds beter te maken.
+            Download hieronder de slides van je training. We stellen het zeer op prijs als je even een minuutje neemt om feedback te geven, dat helpt ons de training steeds beter te maken.
           </p>
         </motion.div>
 
@@ -131,7 +131,7 @@ const PortalDashboard = ({ session, slug, onLogout }: PortalDashboardProps) => {
                     target="_blank"
                     rel="noopener noreferrer"
                   >
-                    Bekijk andere trainingen
+                    Bekijk ons volledige trainingsaanbod
                     <ArrowRight className="h-4 w-4" />
                   </a>
                 </Button>
@@ -171,6 +171,18 @@ const PortalDashboard = ({ session, slug, onLogout }: PortalDashboardProps) => {
             Vragen? Mail naar{" "}
             <a href="mailto:totmorgen@morgenacademy.nl" className="hover:text-muted-foreground transition-colors">
               totmorgen@morgenacademy.nl
+            </a>
+          </p>
+
+          <p className="text-xs text-muted-foreground/40">
+            Morgen Academy is het trainingsplatform van{" "}
+            <a
+              href="https://www.morgencompany.com"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-primary/40 hover:text-primary/70 transition-colors"
+            >
+              Morgen Company
             </a>
           </p>
         </motion.div>

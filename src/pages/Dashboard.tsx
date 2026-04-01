@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
-import { LogOut } from "lucide-react";
+import { LogOut, ArrowRight } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import CourseCard from "@/components/CourseCard";
@@ -98,6 +98,30 @@ const Dashboard = () => {
             />
           ))}
         </div>
+      </section>
+
+      {/* Subtle Morgen Company hint */}
+      <section className="mx-auto max-w-6xl px-6 pb-20">
+        <motion.div
+          initial={{ opacity: 0 }}
+          whileInView={{ opacity: 1 }}
+          viewport={{ once: true }}
+          transition={{ delay: 0.3 }}
+          className="text-center"
+        >
+          <p className="text-sm text-muted-foreground/70">
+            Wist je dat we ook incompany trainingen, consultancy en technische oplossingen bieden?{" "}
+            <a
+              href="https://www.morgencompany.com"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-1 text-primary/70 hover:text-primary transition-colors"
+            >
+              Bekijk Morgen Company
+              <ArrowRight className="h-3 w-3" />
+            </a>
+          </p>
+        </motion.div>
       </section>
 
       <WaitlistDialog

@@ -653,7 +653,7 @@ const AdminPortal = () => {
                           )}
                           {row.feedback_other && (
                             <div>
-                              <p className="text-xs text-muted-foreground">Overig</p>
+                              <p className="text-xs text-muted-foreground">E-mail (op de hoogte blijven)</p>
                               <p className="mt-0.5 text-sm text-foreground">{row.feedback_other}</p>
                             </div>
                           )}

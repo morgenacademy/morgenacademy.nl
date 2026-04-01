@@ -1,6 +1,6 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { Lock, ArrowRight, Sparkles, Bell, Users, Clock } from "lucide-react";
+import { Lock, ArrowRight, Sparkles, Bell, Users, Clock, Menu, X } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { courses } from "@/data/courses";
@@ -38,63 +38,121 @@ const Landing = () => {
   const [waitlistCourse, setWaitlistCourse] = useState<{ id: string; title: string } | null>(null);
   const [contactOpen, setContactOpen] = useState(false);
   const [newsletterOpen, setNewsletterOpen] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
+  const [mobileNavOpen, setMobileNavOpen] = useState(false);
+
+  useEffect(() => {
+    const handleScroll = () => setScrolled(window.scrollY > 20);
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
 
   return (
     <div className="min-h-screen bg-background">
-      {/* Header */}
-      <header className="border-b border-border/50">
-        <div className="border-b border-white/5 bg-[radial-gradient(circle_at_top,_rgba(200,80,216,0.16),_transparent_42%),linear-gradient(180deg,#120818_0%,#140a1c_42%,#100814_100%)]">
-          <div className="mx-auto max-w-7xl px-6">
-            <nav className="flex min-h-[84px] items-center justify-start gap-x-8 gap-y-3 overflow-x-auto py-5 text-nowrap lg:justify-center lg:gap-x-12">
-              {headerLinks.map((item) => {
-                const classes = cn(
-                  "text-[1.05rem] font-medium tracking-[0.08em] transition-colors hover:text-foreground lg:text-[1.2rem]",
-                  item.active ? "text-foreground" : "text-[#d3cfe3]",
-                );
+      {/* Fixed Nav — morgencompany.com style */}
+      <nav
+        className={cn(
+          "fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-6 lg:px-16 transition-all duration-300",
+          scrolled
+            ? "h-16 bg-white/[0.08] backdrop-blur-[40px] backdrop-saturate-200 border-b border-white/[0.18]"
+            : "h-[72px]",
+        )}
+      >
+        {/* Logo */}
+        <Link
+          to="/"
+          className="font-display text-[1.5rem] font-black uppercase tracking-[0.1em] text-white shrink-0"
+        >
+          MORGEN<span className="text-[#d8fe56] font-black not-italic">.</span>
+        </Link>
 
-                return item.active ? (
-                  <Link key={item.label} to={item.href} className={classes} aria-current="page">
-                    {item.label}
-                  </Link>
-                ) : (
-                  <a key={item.label} href={item.href} className={classes}>
-                    {item.label}
-                  </a>
-                );
-              })}
-            </nav>
-          </div>
-        </div>
+        {/* Desktop nav */}
+        <div className="hidden lg:flex items-center gap-7">
+          {headerLinks.map((item) => {
+            const classes = cn(
+              "text-[0.88rem] font-medium tracking-[0.04em] transition-colors duration-200 whitespace-nowrap",
+              item.active ? "text-white" : "text-[#D8CCEC] hover:text-white",
+            );
 
-        <div className="mx-auto max-w-6xl px-6 py-4">
-          <div className="flex items-center justify-between gap-4">
-            <div>
-              <p className="font-display text-xl font-semibold tracking-tight text-foreground">
-                Morgen <span className="text-primary">Academy</span>
-              </p>
-              <p className="mt-1 text-xs uppercase tracking-[0.24em] text-muted-foreground">
-                Online trainingen
-              </p>
-            </div>
-
-            <div className="flex items-center gap-3">
-              <Button
-                variant="ghost"
-                size="sm"
-                className="hidden text-xs uppercase tracking-wider sm:inline-flex"
-                onClick={() => setContactOpen(true)}
-              >
-                Contact
-              </Button>
-              <Link to="/login">
-                <Button variant="outline" size="sm" className="text-xs uppercase tracking-wider">
-                  Inloggen
-                </Button>
+            return item.active ? (
+              <Link key={item.label} to={item.href} className={classes} aria-current="page">
+                {item.label}
               </Link>
-            </div>
-          </div>
+            ) : (
+              <a key={item.label} href={item.href} target="_blank" rel="noopener noreferrer" className={classes}>
+                {item.label}
+              </a>
+            );
+          })}
+
+          <button
+            onClick={() => setContactOpen(true)}
+            className="text-[0.88rem] font-medium tracking-[0.04em] text-[#D8CCEC] hover:text-white transition-colors duration-200"
+          >
+            Contact
+          </button>
+
+          <Link
+            to="/login"
+            className="ml-2 inline-flex items-center rounded-[20px] bg-gradient-to-br from-[#d8fe56] to-[#b8e040] px-5 py-2 text-[0.88rem] font-bold tracking-[0.04em] text-[#1A1A2E] shadow-[0_4px_16px_rgba(216,254,86,0.3)] transition-all duration-200 hover:shadow-[0_6px_24px_rgba(216,254,86,0.45)] hover:-translate-y-px"
+          >
+            Inloggen
+          </Link>
         </div>
-      </header>
+
+        {/* Mobile toggle */}
+        <button
+          onClick={() => setMobileNavOpen(!mobileNavOpen)}
+          className="lg:hidden flex items-center justify-center w-10 h-10 rounded-[20px] border border-white/[0.18] bg-white/[0.08] text-white"
+        >
+          {mobileNavOpen ? <X className="h-4 w-4" /> : <Menu className="h-4 w-4" />}
+        </button>
+
+        {/* Mobile dropdown */}
+        {mobileNavOpen && (
+          <div className="absolute top-full left-4 right-4 mt-2 flex flex-col gap-1 rounded-[20px] border border-white/[0.18] bg-[rgba(12,8,24,0.97)] backdrop-blur-[40px] backdrop-saturate-200 p-4 lg:hidden">
+            {headerLinks.map((item) =>
+              item.active ? (
+                <Link
+                  key={item.label}
+                  to={item.href}
+                  onClick={() => setMobileNavOpen(false)}
+                  className="rounded-lg px-3 py-2.5 text-[0.92rem] font-medium text-white"
+                >
+                  {item.label}
+                </Link>
+              ) : (
+                <a
+                  key={item.label}
+                  href={item.href}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  onClick={() => setMobileNavOpen(false)}
+                  className="rounded-lg px-3 py-2.5 text-[0.92rem] font-medium text-[#D8CCEC] hover:text-white transition-colors"
+                >
+                  {item.label}
+                </a>
+              ),
+            )}
+            <button
+              onClick={() => { setContactOpen(true); setMobileNavOpen(false); }}
+              className="rounded-lg px-3 py-2.5 text-left text-[0.92rem] font-medium text-[#D8CCEC] hover:text-white transition-colors"
+            >
+              Contact
+            </button>
+            <Link
+              to="/login"
+              onClick={() => setMobileNavOpen(false)}
+              className="mt-1 flex items-center justify-center rounded-[20px] bg-gradient-to-br from-[#d8fe56] to-[#b8e040] px-5 py-2.5 text-[0.88rem] font-bold text-[#1A1A2E]"
+            >
+              Inloggen
+            </Link>
+          </div>
+        )}
+      </nav>
+
+      {/* Spacer for fixed nav */}
+      <div className="h-[72px]" />
 
       {/* Hero */}
       <section className="mx-auto max-w-6xl px-6 pt-20 pb-16">
