@@ -43,20 +43,13 @@ const Landing = () => {
     <div className="min-h-screen bg-background">
       {/* Header */}
       <header className="border-b border-border/50">
-        <div className="fixed inset-x-0 top-0 z-50 border-b border-white/10 bg-[rgba(12,8,24,0.82)] backdrop-blur-[24px]">
-          <div className="mx-auto flex max-w-7xl items-center justify-between gap-6 px-6 py-4">
-            <Link
-              to="/"
-              className="shrink-0 font-['Barlow'] text-[1.45rem] font-black uppercase tracking-[0.14em] text-white"
-            >
-              MORGEN<span className="text-[#d8fe56]">.</span>
-            </Link>
-
-            <nav className="hidden min-h-[40px] flex-1 items-center justify-center gap-x-8 xl:flex">
+        <div className="border-b border-white/5 bg-[radial-gradient(circle_at_top,_rgba(200,80,216,0.16),_transparent_42%),linear-gradient(180deg,#120818_0%,#140a1c_42%,#100814_100%)]">
+          <div className="mx-auto max-w-7xl px-6">
+            <nav className="flex min-h-[84px] items-center justify-start gap-x-8 gap-y-3 overflow-x-auto py-5 text-nowrap lg:justify-center lg:gap-x-12">
               {headerLinks.map((item) => {
                 const classes = cn(
-                  "font-['Barlow'] text-[0.95rem] font-medium tracking-[0.04em] transition-colors hover:text-white",
-                  item.active ? "text-white" : "text-[#d8ccec]",
+                  "text-[1.05rem] font-medium tracking-[0.08em] transition-colors hover:text-foreground lg:text-[1.2rem]",
+                  item.active ? "text-foreground" : "text-[#d3cfe3]",
                 );
 
                 return item.active ? (
@@ -70,12 +63,25 @@ const Landing = () => {
                 );
               })}
             </nav>
+          </div>
+        </div>
+
+        <div className="mx-auto max-w-6xl px-6 py-4">
+          <div className="flex items-center justify-between gap-4">
+            <div>
+              <p className="font-display text-xl font-semibold tracking-tight text-foreground">
+                Morgen <span className="text-primary">Academy</span>
+              </p>
+              <p className="mt-1 text-xs uppercase tracking-[0.24em] text-muted-foreground">
+                Online trainingen
+              </p>
+            </div>
 
             <div className="flex items-center gap-3">
               <Button
                 variant="ghost"
                 size="sm"
-                className="hidden text-xs uppercase tracking-wider lg:inline-flex"
+                className="hidden text-xs uppercase tracking-wider sm:inline-flex"
                 onClick={() => setContactOpen(true)}
               >
                 Contact
@@ -87,47 +93,6 @@ const Landing = () => {
               </Link>
             </div>
           </div>
-
-          <div className="border-t border-white/5 xl:hidden">
-            <div className="mx-auto max-w-7xl overflow-x-auto px-6 py-3">
-              <nav className="flex items-center gap-6 text-nowrap">
-                {headerLinks.map((item) => {
-                  const classes = cn(
-                    "font-['Barlow'] text-[0.92rem] font-medium tracking-[0.04em] transition-colors hover:text-white",
-                    item.active ? "text-white" : "text-[#d8ccec]",
-                  );
-
-                  return item.active ? (
-                    <Link key={item.label} to={item.href} className={classes} aria-current="page">
-                      {item.label}
-                    </Link>
-                  ) : (
-                    <a key={item.label} href={item.href} className={classes}>
-                      {item.label}
-                    </a>
-                  );
-                })}
-              </nav>
-            </div>
-          </div>
-        </div>
-
-        <div className="mx-auto flex max-w-6xl items-center justify-between gap-4 px-6 pb-4 pt-[6.5rem] xl:pt-[5.5rem]">
-          <div>
-            <p className="font-display text-xl font-semibold tracking-tight text-foreground">
-              Morgen <span className="text-primary">Academy</span>
-            </p>
-            <p className="mt-1 text-xs uppercase tracking-[0.24em] text-muted-foreground">
-              Online trainingen
-            </p>
-          </div>
-
-          <a
-            href="https://morgencompany.com/academy"
-            className="hidden text-sm text-muted-foreground transition-colors hover:text-primary md:inline"
-          >
-            Toch liever incompany?
-          </a>
         </div>
       </header>
 
@@ -174,16 +139,6 @@ const Landing = () => {
           <p className="mt-5 max-w-xl text-sm leading-relaxed text-muted-foreground">
             Onze nieuwsbrief zit boordevol praktische tips die je AI-gebruik echt een boost geven.
             Geen spam, geen reclame. Wel waarde.
-          </p>
-          <p className="mt-4 text-sm leading-relaxed text-muted-foreground">
-            Toch liever samen met je team aan de slag?{" "}
-            <a
-              href="https://morgencompany.com/academy"
-              className="font-medium text-primary hover:underline"
-            >
-              Bekijk onze incompany trainingen
-            </a>
-            .
           </p>
         </motion.div>
       </section>

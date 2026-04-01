@@ -157,7 +157,7 @@ const Register = () => {
         </p>
 
         <p className="mt-12 text-center text-xs text-muted-foreground/60">
-          Een initiatief van{" "}
+          Morgen Academy is het trainingsplatform van{" "}
           <a
             href="https://www.morgencompany.com"
             target="_blank"
