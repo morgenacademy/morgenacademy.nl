@@ -1,7 +1,8 @@
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
-import { Sparkles, LogOut } from "lucide-react";
+import { Sparkles, LogOut, ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
 import { supabase } from "@/integrations/supabase/client";
 import PortalTrainingCard from "./PortalTrainingCard";
 
@@ -108,6 +109,35 @@ const PortalDashboard = ({ session, slug, onLogout }: PortalDashboardProps) => {
               />
             ))}
           </div>
+        )}
+
+        {/* Other trainings CTA */}
+        {!loading && trainings.length > 0 && (
+          <motion.div
+            initial={{ opacity: 0, y: 16 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.4, delay: trainings.length * 0.1 + 0.1 }}
+            className="mt-4"
+          >
+            <Card className="border-border bg-card">
+              <CardContent className="flex items-center justify-center py-6">
+                <Button
+                  variant="outline"
+                  asChild
+                  className="gap-2"
+                >
+                  <a
+                    href="https://morgencompany.com/academy"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    Bekijk andere trainingen
+                    <ArrowRight className="h-4 w-4" />
+                  </a>
+                </Button>
+              </CardContent>
+            </Card>
+          </motion.div>
         )}
 
         {/* Google Review + Footer */}

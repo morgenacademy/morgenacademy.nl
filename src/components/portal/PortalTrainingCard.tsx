@@ -49,12 +49,7 @@ const PortalTrainingCard = ({ training, companyId, slug, password, index }: Port
 
       if (error || !data?.download_url) throw new Error("Download mislukt");
 
-      const a = document.createElement("a");
-      a.href = data.download_url;
-      a.download = data.filename || "slides.pdf";
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
+      window.open(data.download_url, "_blank", "noopener,noreferrer");
     } catch {
       toast({
         title: "Download mislukt",
