@@ -117,8 +117,8 @@ const PortalDashboard = ({ session, slug, onLogout }: PortalDashboardProps) => {
           className="mt-12 text-center text-xs text-muted-foreground"
         >
           Vragen? Mail naar{" "}
-          <a href="mailto:info@morgenacademy.nl" className="text-primary hover:underline">
-            info@morgenacademy.nl
+          <a href="mailto:totmorgen@morgenacademy.nl" className="text-primary hover:underline">
+            totmorgen@morgenacademy.nl
           </a>
         </motion.p>
       </main>

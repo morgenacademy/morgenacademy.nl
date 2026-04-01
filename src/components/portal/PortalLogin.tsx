@@ -90,7 +90,7 @@ const PortalLogin = ({ slug, onSuccess }: PortalLoginProps) => {
           </div>
 
           <h1 className="font-display text-xl font-semibold text-foreground">
-            Welkom terug
+            Welkom bij Morgen
           </h1>
           <p className="mt-1.5 text-sm leading-relaxed text-muted-foreground">
             Voer het wachtwoord in dat je van de trainer hebt ontvangen om de trainingsmaterialen te bekijken.
@@ -113,7 +113,7 @@ const PortalLogin = ({ slug, onSuccess }: PortalLoginProps) => {
 
         <p className="mt-6 text-center text-xs text-muted-foreground">
           Geen wachtwoord ontvangen?{" "}
-          <a href="mailto:info@morgenacademy.nl" className="text-primary hover:underline">
+          <a href="mailto:totmorgen@morgenacademy.nl" className="text-primary hover:underline">
             Neem contact op
           </a>
         </p>
