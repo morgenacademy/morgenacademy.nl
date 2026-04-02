@@ -99,44 +99,45 @@ const PortalTrainingCard = ({ training, companyId, slug, password, index }: Port
             )}
           </CardHeader>
 
-          <CardContent className="flex flex-col gap-2.5 sm:flex-row">
-            {hasSlide && (
-              <Button
-                onClick={handleDownload}
-                disabled={downloading}
-                className="flex-1 gap-2"
-              >
-                {downloading ? (
-                  <Loader2 className="h-4 w-4 animate-spin" />
-                ) : (
-                  <FileDown className="h-4 w-4" />
-                )}
-                {downloading ? "Bezig..." : "Slides downloaden"}
-              </Button>
-            )}
-
+          <CardContent className="space-y-3">
             {hasResources && (
-              <Button
-                variant="outline"
+              <button
                 onClick={() => setResourcesOpen(true)}
-                className="flex-1 gap-2"
+                className="flex items-center gap-1.5 text-sm text-primary hover:text-primary/80 transition-colors"
               >
-                <BookOpen className="h-4 w-4" />
+                <BookOpen className="h-3.5 w-3.5" />
                 Materialen bekijken
-              </Button>
+              </button>
             )}
 
-            {showFeedback && (
-              <Button
-                variant={feedbackSubmitted ? "outline" : "secondary"}
-                onClick={() => setFeedbackOpen(true)}
-                disabled={feedbackSubmitted}
-                className="flex-1 gap-2"
-              >
-                <MessageSquare className="h-4 w-4" />
-                {feedbackSubmitted ? "Feedback verstuurd" : "Geef feedback"}
-              </Button>
-            )}
+            <div className="flex flex-col gap-2.5 sm:flex-row">
+              {hasSlide && (
+                <Button
+                  onClick={handleDownload}
+                  disabled={downloading}
+                  className="flex-1 gap-2"
+                >
+                  {downloading ? (
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                  ) : (
+                    <FileDown className="h-4 w-4" />
+                  )}
+                  {downloading ? "Bezig..." : "Slides downloaden"}
+                </Button>
+              )}
+
+              {showFeedback && (
+                <Button
+                  variant={feedbackSubmitted ? "outline" : "secondary"}
+                  onClick={() => setFeedbackOpen(true)}
+                  disabled={feedbackSubmitted}
+                  className="flex-1 gap-2"
+                >
+                  <MessageSquare className="h-4 w-4" />
+                  {feedbackSubmitted ? "Feedback verstuurd" : "Geef feedback"}
+                </Button>
+              )}
+            </div>
           </CardContent>
         </Card>
       </motion.div>
