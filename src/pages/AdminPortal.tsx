@@ -37,6 +37,7 @@ interface Training {
   training_dates: string[] | null;
   slide_storage_path: string | null;
   slide_filename: string | null;
+  resources: { label: string; value: string }[] | null;
   is_active: boolean;
 }
 
@@ -80,6 +81,7 @@ const AdminPortal = () => {
   const [newTrainingDesc, setNewTrainingDesc] = useState("");
   const [newTrainingDates, setNewTrainingDates] = useState<string[]>([""]);
   const [newTrainingCompany, setNewTrainingCompany] = useState("");
+  const [newTrainingResources, setNewTrainingResources] = useState<{label: string; value: string}[]>([]);
   const [savingTraining, setSavingTraining] = useState(false);
   const [uploadingFor, setUploadingFor] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -91,6 +93,7 @@ const AdminPortal = () => {
   const [editTitle, setEditTitle] = useState("");
   const [editDesc, setEditDesc] = useState("");
   const [editDates, setEditDates] = useState<string[]>([]);
+  const [editResources, setEditResources] = useState<{label: string; value: string}[]>([]);
   const [savingEdit, setSavingEdit] = useState(false);
 
   // Feedback state
@@ -221,6 +224,9 @@ const AdminPortal = () => {
           description: newTrainingDesc || null,
           training_date: filteredDates[0] || null,
           training_dates: filteredDates.length > 0 ? filteredDates : null,
+          resources: newTrainingResources.filter(r => r.label && r.value).length > 0
+            ? newTrainingResources.filter(r => r.label && r.value)
+            : null,
         })
         .select()
         .single();
@@ -229,7 +235,7 @@ const AdminPortal = () => {
         setTrainings((prev) => [training as Training, ...prev]);
       }
       setTrainingDialogOpen(false);
-      setNewTrainingTitle(""); setNewTrainingDesc(""); setNewTrainingDates([""]); setNewTrainingCompany("");
+      setNewTrainingTitle(""); setNewTrainingDesc(""); setNewTrainingDates([""]); setNewTrainingCompany(""); setNewTrainingResources([]);
       toast.success("Training aangemaakt", { duration: Infinity });
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : "Onbekende fout";
@@ -326,6 +332,7 @@ const AdminPortal = () => {
       ? training.training_dates
       : training.training_date ? [training.training_date] : [];
     setEditDates(dates);
+    setEditResources(training.resources ?? []);
     setEditDialogOpen(true);
   };
 
@@ -342,13 +349,17 @@ const AdminPortal = () => {
           description: editDesc || null,
           training_date: filteredDates[0] || null,
           training_dates: filteredDates.length > 0 ? filteredDates : null,
+          resources: editResources.filter(r => r.label && r.value).length > 0
+            ? editResources.filter(r => r.label && r.value)
+            : null,
         })
         .eq("id", editTraining.id);
       if (error) throw error;
+      const filteredResources = editResources.filter(r => r.label && r.value);
       setTrainings((prev) =>
         prev.map((t) =>
           t.id === editTraining.id
-            ? { ...t, title: editTitle, description: editDesc || null, training_date: filteredDates[0] || null, training_dates: filteredDates.length > 0 ? filteredDates : null }
+            ? { ...t, title: editTitle, description: editDesc || null, training_date: filteredDates[0] || null, training_dates: filteredDates.length > 0 ? filteredDates : null, resources: filteredResources.length > 0 ? filteredResources : null }
             : t
         )
       );
@@ -553,6 +564,9 @@ const AdminPortal = () => {
                           {training.slide_filename && (
                             <span className="ml-2 text-success">· {training.slide_filename}</span>
                           )}
+                          {training.resources?.length ? (
+                            <span className="ml-2 text-primary">· {training.resources.length} resource{training.resources.length !== 1 ? "s" : ""}</span>
+                          ) : null}
                         </p>
                       </div>
                       <div className="flex items-center gap-2 shrink-0">
@@ -787,7 +801,7 @@ const AdminPortal = () => {
 
       {/* Create Training Dialog */}
       <Dialog open={trainingDialogOpen} onOpenChange={setTrainingDialogOpen}>
-        <DialogContent className="sm:max-w-md bg-card border-border">
+        <DialogContent className="sm:max-w-lg bg-card border-border">
           <DialogHeader>
             <DialogTitle className="font-display text-xl">Nieuwe training</DialogTitle>
           </DialogHeader>
@@ -847,6 +861,40 @@ const AdminPortal = () => {
                 <Plus className="h-3.5 w-3.5" /> Datum toevoegen
               </Button>
             </div>
+            <div className="space-y-1.5">
+              <label className="text-sm font-medium text-foreground">Resources <span className="text-muted-foreground font-normal">(optioneel)</span></label>
+              {newTrainingResources.map((r, i) => (
+                <div key={i} className="flex gap-2">
+                  <Input
+                    placeholder="Label, bijv. API Key"
+                    value={r.label}
+                    onChange={(e) => {
+                      const updated = [...newTrainingResources];
+                      updated[i] = { ...updated[i], label: e.target.value };
+                      setNewTrainingResources(updated);
+                    }}
+                    className="w-1/3"
+                  />
+                  <Textarea
+                    placeholder="Waarde..."
+                    value={r.value}
+                    onChange={(e) => {
+                      const updated = [...newTrainingResources];
+                      updated[i] = { ...updated[i], value: e.target.value };
+                      setNewTrainingResources(updated);
+                    }}
+                    rows={1}
+                    className="flex-1"
+                  />
+                  <Button type="button" variant="ghost" size="icon" onClick={() => setNewTrainingResources(newTrainingResources.filter((_, j) => j !== i))}>
+                    <Trash2 className="h-3.5 w-3.5 text-muted-foreground" />
+                  </Button>
+                </div>
+              ))}
+              <Button type="button" variant="outline" size="sm" onClick={() => setNewTrainingResources([...newTrainingResources, { label: "", value: "" }])} className="gap-1.5 text-xs">
+                <Plus className="h-3.5 w-3.5" /> Resource toevoegen
+              </Button>
+            </div>
             <Button type="submit" className="w-full" disabled={savingTraining}>
               {savingTraining ? <Loader2 className="h-4 w-4 animate-spin" /> : "Aanmaken"}
             </Button>
@@ -855,7 +903,7 @@ const AdminPortal = () => {
       </Dialog>
       {/* Edit Training Dialog */}
       <Dialog open={editDialogOpen} onOpenChange={setEditDialogOpen}>
-        <DialogContent className="sm:max-w-md bg-card border-border">
+        <DialogContent className="sm:max-w-lg bg-card border-border">
           <DialogHeader>
             <DialogTitle className="font-display text-xl">Training bewerken</DialogTitle>
           </DialogHeader>
@@ -904,6 +952,40 @@ const AdminPortal = () => {
                   <Plus className="h-3.5 w-3.5" /> Datum toevoegen
                 </Button>
               )}
+            </div>
+            <div className="space-y-1.5">
+              <label className="text-sm font-medium text-foreground">Resources <span className="text-muted-foreground font-normal">(optioneel)</span></label>
+              {editResources.map((r, i) => (
+                <div key={i} className="flex gap-2">
+                  <Input
+                    placeholder="Label, bijv. API Key"
+                    value={r.label}
+                    onChange={(e) => {
+                      const updated = [...editResources];
+                      updated[i] = { ...updated[i], label: e.target.value };
+                      setEditResources(updated);
+                    }}
+                    className="w-1/3"
+                  />
+                  <Textarea
+                    placeholder="Waarde..."
+                    value={r.value}
+                    onChange={(e) => {
+                      const updated = [...editResources];
+                      updated[i] = { ...updated[i], value: e.target.value };
+                      setEditResources(updated);
+                    }}
+                    rows={1}
+                    className="flex-1"
+                  />
+                  <Button type="button" variant="ghost" size="icon" onClick={() => setEditResources(editResources.filter((_, j) => j !== i))}>
+                    <Trash2 className="h-3.5 w-3.5 text-muted-foreground" />
+                  </Button>
+                </div>
+              ))}
+              <Button type="button" variant="outline" size="sm" onClick={() => setEditResources([...editResources, { label: "", value: "" }])} className="gap-1.5 text-xs">
+                <Plus className="h-3.5 w-3.5" /> Resource toevoegen
+              </Button>
             </div>
             <Button type="submit" className="w-full" disabled={savingEdit}>
               {savingEdit ? <Loader2 className="h-4 w-4 animate-spin" /> : "Opslaan"}

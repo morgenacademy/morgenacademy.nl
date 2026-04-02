@@ -1,11 +1,12 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { FileDown, MessageSquare, CheckCircle, Loader2, Calendar } from "lucide-react";
+import { FileDown, MessageSquare, CheckCircle, Loader2, Calendar, BookOpen } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import PortalFeedbackDialog from "./PortalFeedbackDialog";
+import PortalResourcesDialog from "./PortalResourcesDialog";
 
 interface Training {
   id: string;
@@ -15,6 +16,7 @@ interface Training {
   training_dates: string[] | null;
   slide_storage_path: string | null;
   slide_filename: string | null;
+  resources: { label: string; value: string }[] | null;
 }
 
 interface PortalTrainingCardProps {
@@ -29,6 +31,7 @@ const PortalTrainingCard = ({ training, companyId, slug, password, index }: Port
   const [downloading, setDownloading] = useState(false);
   const [feedbackOpen, setFeedbackOpen] = useState(false);
   const [feedbackSubmitted, setFeedbackSubmitted] = useState(false);
+  const [resourcesOpen, setResourcesOpen] = useState(false);
   const { toast } = useToast();
 
   const dates = training.training_dates?.length
@@ -39,6 +42,8 @@ const PortalTrainingCard = ({ training, companyId, slug, password, index }: Port
     : null;
 
   const hasSlide = !!training.slide_storage_path;
+  const hasResources = !!training.resources?.length;
+  const showFeedback = hasSlide;
 
   const handleDownload = async () => {
     setDownloading(true);
@@ -110,15 +115,28 @@ const PortalTrainingCard = ({ training, companyId, slug, password, index }: Port
               </Button>
             )}
 
-            <Button
-              variant={feedbackSubmitted ? "outline" : "secondary"}
-              onClick={() => setFeedbackOpen(true)}
-              disabled={feedbackSubmitted}
-              className="flex-1 gap-2"
-            >
-              <MessageSquare className="h-4 w-4" />
-              {feedbackSubmitted ? "Feedback verstuurd" : "Geef feedback"}
-            </Button>
+            {hasResources && (
+              <Button
+                variant="outline"
+                onClick={() => setResourcesOpen(true)}
+                className="flex-1 gap-2"
+              >
+                <BookOpen className="h-4 w-4" />
+                Materialen bekijken
+              </Button>
+            )}
+
+            {showFeedback && (
+              <Button
+                variant={feedbackSubmitted ? "outline" : "secondary"}
+                onClick={() => setFeedbackOpen(true)}
+                disabled={feedbackSubmitted}
+                className="flex-1 gap-2"
+              >
+                <MessageSquare className="h-4 w-4" />
+                {feedbackSubmitted ? "Feedback verstuurd" : "Geef feedback"}
+              </Button>
+            )}
           </CardContent>
         </Card>
       </motion.div>
@@ -131,6 +149,15 @@ const PortalTrainingCard = ({ training, companyId, slug, password, index }: Port
         companyId={companyId}
         onSubmitted={() => setFeedbackSubmitted(true)}
       />
+
+      {hasResources && (
+        <PortalResourcesDialog
+          open={resourcesOpen}
+          onOpenChange={setResourcesOpen}
+          trainingTitle={training.title}
+          resources={training.resources!}
+        />
+      )}
     </>
   );
 };

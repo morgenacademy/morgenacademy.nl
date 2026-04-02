@@ -14,6 +14,7 @@ interface Training {
   training_dates: string[] | null;
   slide_storage_path: string | null;
   slide_filename: string | null;
+  resources: { label: string; value: string }[] | null;
 }
 
 interface PortalSession {
