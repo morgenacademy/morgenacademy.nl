@@ -5,10 +5,11 @@ import * as tus from "tus-js-client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import { courses } from "@/data/courses";
 import { toast } from "sonner";
 import {
   ArrowLeft, Plus, Copy, Check, ToggleLeft, ToggleRight,
-  Star, Loader2, Upload, Trash2, ExternalLink, Pencil, Download,
+  Star, Loader2, Upload, Trash2, ExternalLink, Pencil, Download, Gift,
 } from "lucide-react";
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle,
@@ -102,6 +103,11 @@ const AdminPortal = () => {
   const [feedbackTrainingId, setFeedbackTrainingId] = useState<string>("");
   const [feedbackTrainings, setFeedbackTrainings] = useState<Training[]>([]);
   const [loadingFeedback, setLoadingFeedback] = useState(false);
+
+  // Academy access state
+  const [grantEmail, setGrantEmail] = useState("");
+  const [grantCourseId, setGrantCourseId] = useState(courses[0]?.id ?? "");
+  const [grantingAccess, setGrantingAccess] = useState(false);
 
   // Admin check
   useEffect(() => {
@@ -421,6 +427,39 @@ const AdminPortal = () => {
     URL.revokeObjectURL(url);
   };
 
+  // ---- Academy access actions ----
+
+  const handleGrantCourseAccess = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!grantEmail.trim() || !grantCourseId) return;
+
+    setGrantingAccess(true);
+    try {
+      const { data, error } = await supabase.rpc("admin_grant_course_access", {
+        _email: grantEmail.trim().toLowerCase(),
+        _course_id: grantCourseId,
+      });
+
+      if (error) throw error;
+
+      const result = data?.[0];
+      const courseTitle = courses.find((course) => course.id === grantCourseId)?.title ?? grantCourseId;
+
+      if (result?.created) {
+        toast.success(`${grantEmail.trim()} heeft nu toegang tot ${courseTitle}.`, { duration: Infinity });
+      } else {
+        toast.success(`${grantEmail.trim()} had al toegang tot ${courseTitle}.`, { duration: Infinity });
+      }
+
+      setGrantEmail("");
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : "Onbekende fout";
+      toast.error(`Toegang geven mislukt: ${msg}`, { duration: Infinity });
+    } finally {
+      setGrantingAccess(false);
+    }
+  };
+
   // ---- Render helpers ----
 
   const avgRating = (rows: FeedbackRow[]) => {
@@ -465,6 +504,7 @@ const AdminPortal = () => {
             <TabsTrigger value="companies">Bedrijven</TabsTrigger>
             <TabsTrigger value="trainings">Trainingen</TabsTrigger>
             <TabsTrigger value="feedback">Feedback</TabsTrigger>
+            <TabsTrigger value="academy">Academy</TabsTrigger>
           </TabsList>
 
           {/* ---- COMPANIES TAB ---- */}
@@ -521,6 +561,66 @@ const AdminPortal = () => {
                 ))}
               </div>
             )}
+          </TabsContent>
+
+          {/* ---- ACADEMY TAB ---- */}
+          <TabsContent value="academy">
+            <div className="max-w-2xl rounded-xl border border-border bg-card p-6">
+              <div className="flex items-start gap-3">
+                <div className="rounded-full bg-primary/10 p-2 text-primary">
+                  <Gift className="h-4 w-4" />
+                </div>
+                <div className="flex-1">
+                  <h2 className="font-display text-lg font-semibold text-foreground">
+                    Gratis toegang geven
+                  </h2>
+                  <p className="mt-1 text-sm text-muted-foreground">
+                    Geef iemand direct toegang tot een cursus zonder betaling. De gebruiker moet wel al een account hebben aangemaakt.
+                  </p>
+                </div>
+              </div>
+
+              <form onSubmit={handleGrantCourseAccess} className="mt-6 space-y-4">
+                <div className="space-y-2">
+                  <label htmlFor="grant-email" className="text-sm font-medium text-foreground">
+                    E-mailadres
+                  </label>
+                  <Input
+                    id="grant-email"
+                    type="email"
+                    placeholder="naam@bedrijf.nl"
+                    value={grantEmail}
+                    onChange={(e) => setGrantEmail(e.target.value)}
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <label htmlFor="grant-course" className="text-sm font-medium text-foreground">
+                    Cursus
+                  </label>
+                  <Select value={grantCourseId} onValueChange={setGrantCourseId}>
+                    <SelectTrigger id="grant-course">
+                      <SelectValue placeholder="Kies een cursus..." />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {courses.map((course) => (
+                        <SelectItem key={course.id} value={course.id}>
+                          {course.title}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="flex items-center justify-between gap-4 rounded-lg bg-secondary/50 px-4 py-3 text-sm text-muted-foreground">
+                  <span>Na toekennen ziet de gebruiker de cursus direct in het dashboard.</span>
+                  <Button type="submit" disabled={grantingAccess || !grantEmail.trim() || !grantCourseId} className="gap-2">
+                    {grantingAccess ? <Loader2 className="h-4 w-4 animate-spin" /> : <Gift className="h-4 w-4" />}
+                    Gratis aanmelden
+                  </Button>
+                </div>
+              </form>
+            </div>
           </TabsContent>
 
           {/* ---- TRAININGS TAB ---- */}

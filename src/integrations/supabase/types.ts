@@ -220,6 +220,18 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      admin_grant_course_access: {
+        Args: {
+          _course_id: string
+          _email: string
+        }
+        Returns: {
+          course_id: string
+          created: boolean
+          user_email: string
+          user_id: string
+        }[]
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]

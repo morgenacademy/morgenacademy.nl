@@ -233,11 +233,19 @@ const Landing = () => {
                 <img
                   src={course.thumbnail}
                   alt={course.title}
-                  className={`h-full w-full object-cover ${
-                    course.comingSoon ? "grayscale" : ""
+                  className={`h-full w-full object-cover transition-transform duration-500 ${
+                    course.comingSoon ? "grayscale" : "group-hover:scale-105"
                   }`}
                 />
-                <div className="absolute inset-0 bg-gradient-to-t from-card/80 to-transparent" />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/35 to-black/10" />
+                <div className="absolute inset-x-0 bottom-0 p-6">
+                  <h3 className="font-display text-2xl font-semibold text-white">
+                    {course.title}
+                  </h3>
+                  <p className="mt-2 max-w-[32ch] text-sm leading-relaxed text-white/80">
+                    {course.subtitle}
+                  </p>
+                </div>
                 {course.comingSoon && (
                   <div className="absolute inset-0 flex items-center justify-center">
                     <div className="rounded-full bg-secondary/90 backdrop-blur-sm px-5 py-2.5 flex items-center gap-2">
@@ -251,15 +259,8 @@ const Landing = () => {
               </div>
 
               <div className="p-6">
-                <h3 className="font-display text-2xl font-semibold text-foreground">
-                  {course.title}
-                </h3>
-                <p className="mt-2 text-muted-foreground leading-relaxed">
-                  {course.subtitle}
-                </p>
-
                 {course.comingSoon ? (
-                  <div className="mt-6">
+                  <div>
                     <Button
                       variant="outline"
                       className="gap-2 text-sm w-full"
@@ -270,7 +271,7 @@ const Landing = () => {
                     </Button>
                   </div>
                 ) : (
-                  <div className="mt-6 flex flex-wrap items-center gap-4">
+                  <div className="flex flex-wrap items-center gap-4">
                     <span className="text-xs text-muted-foreground">
                       {course.totalLessons} lessen · {course.totalDuration}
                     </span>

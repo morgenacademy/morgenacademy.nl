@@ -65,7 +65,7 @@ Deno.serve(async (req) => {
       const err = await mollieRes.text();
       console.error("Mollie error:", err);
       return new Response(
-        JSON.stringify({ error: "Payment creation failed" }),
+        JSON.stringify({ error: "Payment creation failed", mollieError: err }),
         { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }

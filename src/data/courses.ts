@@ -329,7 +329,7 @@ export const courses: Course[] = [
     thumbnail: course2,
     totalLessons: 0,
     totalDuration: "Binnenkort beschikbaar",
-    comingSoon: true,
+    price: "49.00",
     modules: [],
   },
   {
@@ -339,7 +339,7 @@ export const courses: Course[] = [
     thumbnail: course3,
     totalLessons: 0,
     totalDuration: "Binnenkort beschikbaar",
-    comingSoon: true,
+    price: "49.00",
     modules: [],
   },
 ];

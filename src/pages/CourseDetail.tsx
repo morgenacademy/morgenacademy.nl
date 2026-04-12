@@ -17,6 +17,7 @@ const CourseDetail = () => {
   const navigate = useNavigate();
   const course = courses.find((c) => c.id === courseId);
   const allLessons = course ? getAllLessons(course) : [];
+  const hasLessons = allLessons.length > 0;
   const [activeLessonId, setActiveLessonId] = useState(allLessons[0]?.id || "");
   const activeLesson = allLessons.find((l) => l.id === activeLessonId) || allLessons[0];
   const [videoUrl, setVideoUrl] = useState("");
@@ -101,7 +102,7 @@ const CourseDetail = () => {
     setWaitlistName("");
   };
 
-  if (!course || !activeLesson) {
+  if (!course) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-background">
         <p className="text-muted-foreground">Cursus niet gevonden</p>
@@ -137,6 +138,46 @@ const CourseDetail = () => {
             <Button onClick={() => navigate(`/checkout/${courseId}`)}>
               Training kopen
             </Button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (!hasLessons) {
+    return (
+      <div className="min-h-screen bg-background">
+        <header className="border-b border-border">
+          <div className="mx-auto flex max-w-7xl items-center gap-4 px-6 py-4">
+            <Link
+              to="/dashboard"
+              className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors"
+            >
+              <ArrowLeft className="h-4 w-4" />
+              <span className="hidden sm:inline">Terug</span>
+            </Link>
+            <div className="h-4 w-px bg-border" />
+            <h2 className="font-display text-lg font-semibold text-foreground truncate">
+              {course.title}
+            </h2>
+          </div>
+        </header>
+
+        <div className="mx-auto flex min-h-[calc(100vh-73px)] max-w-3xl items-center justify-center px-6 py-12">
+          <div className="w-full rounded-2xl border border-border bg-card p-8 text-center shadow-sm">
+            <CheckCircle className="mx-auto h-12 w-12 text-primary" />
+            <h1 className="mt-4 font-display text-3xl font-semibold text-foreground">
+              Je hebt toegang
+            </h1>
+            <p className="mt-3 text-muted-foreground leading-relaxed">
+              Deze training staat al in je account en wordt binnenkort gevuld met de eerste lessen.
+              Zodra de inhoud live staat, vind je die hier terug.
+            </p>
+            <div className="mt-6 flex justify-center">
+              <Button variant="outline" onClick={() => navigate("/dashboard")}>
+                Terug naar dashboard
+              </Button>
+            </div>
           </div>
         </div>
       </div>

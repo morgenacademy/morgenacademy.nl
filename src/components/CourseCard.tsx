@@ -41,7 +41,15 @@ const CourseCard = ({ course, index, enrolled = false, onWaitlist }: CourseCardP
               course.comingSoon ? "grayscale" : "group-hover:scale-105"
             }`}
           />
-          <div className="absolute inset-0 bg-gradient-to-t from-card/80 to-transparent" />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/35 to-black/10" />
+          <div className="absolute inset-x-0 bottom-0 p-5">
+            <h3 className="font-display text-xl font-semibold text-white">
+              {course.title}
+            </h3>
+            <p className="mt-1.5 max-w-[28ch] text-sm leading-relaxed text-white/80">
+              {course.subtitle}
+            </p>
+          </div>
 
           {course.comingSoon ? (
             <div className="absolute inset-0 flex items-center justify-center">
@@ -70,16 +78,9 @@ const CourseCard = ({ course, index, enrolled = false, onWaitlist }: CourseCardP
           )}
         </div>
         <div className="p-5">
-          <h3 className="font-display text-xl font-semibold text-foreground">
-            {course.title}
-          </h3>
-          <p className="mt-1.5 text-sm text-muted-foreground leading-relaxed">
-            {course.subtitle}
-          </p>
-
           {/* Progress bar or meta */}
           {course.comingSoon ? (
-            <div className="mt-4 flex items-center justify-between">
+            <div className="flex items-center justify-between">
               <span className="text-xs text-muted-foreground">In ontwikkeling</span>
               {onWaitlist && (
                 <Button
@@ -94,7 +95,7 @@ const CourseCard = ({ course, index, enrolled = false, onWaitlist }: CourseCardP
               )}
             </div>
           ) : enrolled ? (
-            <div className="mt-4 space-y-2">
+            <div className="space-y-2">
               <div className="flex items-center justify-between text-xs text-muted-foreground">
                 <span>{course.totalLessons} lessen · {course.totalDuration}</span>
                 {course.progress !== undefined && (
@@ -111,7 +112,7 @@ const CourseCard = ({ course, index, enrolled = false, onWaitlist }: CourseCardP
               )}
             </div>
           ) : (
-            <div className="mt-4 flex items-center justify-between">
+            <div className="flex items-center justify-between">
               <span className="text-xs text-muted-foreground">
                 {course.totalLessons} lessen · {course.totalDuration}
               </span>
