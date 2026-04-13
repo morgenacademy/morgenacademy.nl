@@ -1,4 +1,4 @@
-project_id = "fiquwpfscmmeqlpkrjjp"
+project_id = "ktxyniigglouaghzmwyf"
 
 [functions.create-mollie-payment]
 verify_jwt = false

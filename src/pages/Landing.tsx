@@ -1,12 +1,28 @@
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { Lock, ArrowRight, Sparkles, Bell, Users, Clock, Menu, X } from "lucide-react";
+import {
+  Lock,
+  ArrowRight,
+  Sparkles,
+  Bell,
+  Users,
+  Clock,
+  Menu,
+  X,
+  CalendarDays,
+  MapPin,
+  Monitor,
+} from "lucide-react";
+import { format, parseISO } from "date-fns";
+import { nl } from "date-fns/locale";
 import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { courses } from "@/data/courses";
+import { liveSessions, type LiveSession } from "@/data/liveSessions";
 import WaitlistDialog from "@/components/WaitlistDialog";
 import ContactDialog from "@/components/ContactDialog";
 import NewsletterDialog from "@/components/NewsletterDialog";
+import LiveSessionSignupDialog from "@/components/LiveSessionSignupDialog";
 import { cn } from "@/lib/utils";
 
 const headerLinks = [
@@ -14,6 +30,10 @@ const headerLinks = [
     label: "Online trainingen",
     href: "/",
     active: true,
+  },
+  {
+    label: "Live agenda",
+    href: "#live-agenda",
   },
   {
     label: "Incompany trainingen",
@@ -33,9 +53,22 @@ const headerLinks = [
   },
 ] as const;
 
+const formatSessionDate = (startsAt: string, endsAt: string) => {
+  const start = parseISO(startsAt);
+  const end = parseISO(endsAt);
+
+  return {
+    day: format(start, "d", { locale: nl }),
+    month: format(start, "LLL", { locale: nl }),
+    fullDate: format(start, "EEEE d MMMM", { locale: nl }),
+    time: `${format(start, "HH:mm")} - ${format(end, "HH:mm")}`,
+  };
+};
+
 const Landing = () => {
   const navigate = useNavigate();
   const [waitlistCourse, setWaitlistCourse] = useState<{ id: string; title: string } | null>(null);
+  const [selectedLiveSession, setSelectedLiveSession] = useState<LiveSession | null>(null);
   const [contactOpen, setContactOpen] = useState(false);
   const [newsletterOpen, setNewsletterOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
@@ -74,12 +107,30 @@ const Landing = () => {
               item.active ? "text-white" : "text-[#D8CCEC] hover:text-white",
             );
 
-            return item.active ? (
-              <Link key={item.label} to={item.href} className={classes} aria-current="page">
-                {item.label}
-              </Link>
-            ) : (
-              <a key={item.label} href={item.href} target="_blank" rel="noopener noreferrer" className={classes}>
+            if (item.active) {
+              return (
+                <Link key={item.label} to={item.href} className={classes} aria-current="page">
+                  {item.label}
+                </Link>
+              );
+            }
+
+            if (item.href.startsWith("http")) {
+              return (
+                <a
+                  key={item.label}
+                  href={item.href}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className={classes}
+                >
+                  {item.label}
+                </a>
+              );
+            }
+
+            return (
+              <a key={item.label} href={item.href} className={classes}>
                 {item.label}
               </a>
             );
@@ -111,29 +162,46 @@ const Landing = () => {
         {/* Mobile dropdown */}
         {mobileNavOpen && (
           <div className="absolute top-full left-4 right-4 mt-2 flex flex-col gap-1 rounded-[20px] border border-white/[0.18] bg-[rgba(12,8,24,0.97)] backdrop-blur-[40px] backdrop-saturate-200 p-4 lg:hidden">
-            {headerLinks.map((item) =>
-              item.active ? (
-                <Link
-                  key={item.label}
-                  to={item.href}
-                  onClick={() => setMobileNavOpen(false)}
-                  className="rounded-lg px-3 py-2.5 text-[0.92rem] font-medium text-white"
-                >
-                  {item.label}
-                </Link>
-              ) : (
+            {headerLinks.map((item) => {
+              if (item.active) {
+                return (
+                  <Link
+                    key={item.label}
+                    to={item.href}
+                    onClick={() => setMobileNavOpen(false)}
+                    className="rounded-lg px-3 py-2.5 text-[0.92rem] font-medium text-white"
+                  >
+                    {item.label}
+                  </Link>
+                );
+              }
+
+              if (item.href.startsWith("http")) {
+                return (
+                  <a
+                    key={item.label}
+                    href={item.href}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    onClick={() => setMobileNavOpen(false)}
+                    className="rounded-lg px-3 py-2.5 text-[0.92rem] font-medium text-[#D8CCEC] hover:text-white transition-colors"
+                  >
+                    {item.label}
+                  </a>
+                );
+              }
+
+              return (
                 <a
                   key={item.label}
                   href={item.href}
-                  target="_blank"
-                  rel="noopener noreferrer"
                   onClick={() => setMobileNavOpen(false)}
                   className="rounded-lg px-3 py-2.5 text-[0.92rem] font-medium text-[#D8CCEC] hover:text-white transition-colors"
                 >
                   {item.label}
                 </a>
-              ),
-            )}
+              );
+            })}
             <button
               onClick={() => { setContactOpen(true); setMobileNavOpen(false); }}
               className="rounded-lg px-3 py-2.5 text-left text-[0.92rem] font-medium text-[#D8CCEC] hover:text-white transition-colors"
@@ -173,6 +241,16 @@ const Landing = () => {
             Praktische videotrainingen waarmee je direct aan de slag kunt.
             Leer op je eigen tempo, waar en wanneer je wilt.
           </p>
+          <a
+            href="#live-agenda"
+            className="mt-6 inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.03] px-4 py-2 text-xs uppercase tracking-[0.18em] text-[#D8CCEC] transition-colors hover:text-white"
+          >
+            <CalendarDays className="h-3.5 w-3.5 text-primary" />
+            Live agenda
+            <span className="text-white/70">
+              {liveSessions.map((session) => format(parseISO(session.startsAt), "d MMM", { locale: nl })).join(" / ")}
+            </span>
+          </a>
           <div className="mt-8 flex flex-wrap gap-4">
             <a href="#trainingen">
               <Button size="lg" className="gap-2 text-sm uppercase tracking-wider">
@@ -296,6 +374,181 @@ const Landing = () => {
         </div>
       </section>
 
+      {/* Live agenda */}
+      <section id="live-agenda" className="mx-auto max-w-6xl scroll-mt-28 px-6 pb-20">
+        <motion.div
+          initial={{ opacity: 0 }}
+          whileInView={{ opacity: 1 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.5 }}
+          className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between"
+        >
+          <div className="max-w-2xl">
+            <p className="mb-3 text-xs uppercase tracking-[0.25em] text-primary">
+              Live agenda
+            </p>
+            <h2 className="font-display text-3xl font-semibold text-foreground md:text-4xl">
+              Geplande live sessies, zonder dat de homepage volloopt
+            </h2>
+            <p className="mt-4 text-sm leading-relaxed text-muted-foreground md:text-base">
+              De snelste route blijft online: direct starten, eigen tempo, meteen toegang.
+              Voor wie liever op een vast moment instapt, plannen we daarnaast een klein aantal live sessies in.
+            </p>
+          </div>
+          <a
+            href="#trainingen"
+            className="text-sm font-medium text-primary transition-opacity hover:opacity-80"
+          >
+            Liever meteen online beginnen
+          </a>
+        </motion.div>
+
+        <div className="mt-10 grid gap-6 lg:grid-cols-[1.05fr_1.45fr]">
+          <motion.div
+            initial={{ opacity: 0, y: 24 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.5 }}
+            className="relative overflow-hidden rounded-[28px] border border-white/10 bg-[linear-gradient(160deg,rgba(200,80,216,0.18),rgba(21,21,62,0.92)_34%,rgba(14,14,48,1)_100%)] p-7 md:p-8"
+          >
+            <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(216,254,86,0.18),transparent_34%),radial-gradient(circle_at_bottom_left,rgba(124,53,201,0.26),transparent_42%)]" />
+            <div className="relative">
+              <div className="inline-flex items-center rounded-full border border-white/10 bg-white/[0.06] px-3 py-1 text-[0.68rem] font-semibold uppercase tracking-[0.22em] text-[#D8CCEC]">
+                Eerste keuze
+              </div>
+              <h3 className="mt-5 max-w-sm font-display text-3xl font-semibold leading-none text-white">
+                Meeste deelnemers starten nog steeds online
+              </h3>
+              <p className="mt-4 max-w-md text-sm leading-relaxed text-[#D8CCEC]">
+                Rustig leren, direct beginnen en later altijd nog aanschuiven bij live verdieping.
+                Zo blijft de ervaring overzichtelijk en groeit het aanbod mee met de vraag.
+              </p>
+
+              <div className="mt-8 grid gap-3 sm:grid-cols-3">
+                <div className="rounded-2xl border border-white/10 bg-black/10 p-4">
+                  <p className="text-[0.68rem] uppercase tracking-[0.2em] text-[#D8CCEC]">Start</p>
+                  <p className="mt-2 font-display text-2xl text-white">Vandaag</p>
+                  <p className="mt-1 text-xs text-[#D8CCEC]">Direct toegang tot je training</p>
+                </div>
+                <div className="rounded-2xl border border-white/10 bg-black/10 p-4">
+                  <p className="text-[0.68rem] uppercase tracking-[0.2em] text-[#D8CCEC]">Tempo</p>
+                  <p className="mt-2 font-display text-2xl text-white">Eigen</p>
+                  <p className="mt-1 text-xs text-[#D8CCEC]">Kijken wanneer het jou uitkomt</p>
+                </div>
+                <div className="rounded-2xl border border-white/10 bg-black/10 p-4">
+                  <p className="text-[0.68rem] uppercase tracking-[0.2em] text-[#D8CCEC]">Later</p>
+                  <p className="mt-2 font-display text-2xl text-white">Live</p>
+                  <p className="mt-1 text-xs text-[#D8CCEC]">Makkelijk uit te breiden met sessies</p>
+                </div>
+              </div>
+
+              <div className="mt-8 flex flex-wrap gap-3">
+                <Button asChild size="lg" className="gap-2 text-sm uppercase tracking-wider">
+                  <a href="#trainingen">
+                    Bekijk online trainingen
+                    <ArrowRight className="h-4 w-4" />
+                  </a>
+                </Button>
+                <Button
+                  variant="outline"
+                  size="lg"
+                  className="text-sm uppercase tracking-wider"
+                  onClick={() => setNewsletterOpen(true)}
+                >
+                  Blijf op de hoogte
+                </Button>
+              </div>
+            </div>
+          </motion.div>
+
+          <div className="space-y-4">
+            {liveSessions.map((session, index) => {
+              const sessionDate = formatSessionDate(session.startsAt, session.endsAt);
+
+              return (
+                <motion.article
+                  key={session.id}
+                  initial={{ opacity: 0, y: 24 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ duration: 0.45, delay: index * 0.08 }}
+                  className="group rounded-[28px] border border-white/10 bg-card/90 p-5 shadow-[0_24px_80px_-50px_rgba(0,0,0,0.8)] transition-colors hover:border-primary/25"
+                >
+                  <div className="flex flex-col gap-5 md:flex-row md:items-start">
+                    <div className="flex w-fit shrink-0 items-center gap-4 rounded-[22px] border border-white/10 bg-background/60 px-4 py-3">
+                      <div>
+                        <p className="text-[0.68rem] uppercase tracking-[0.25em] text-[#D8CCEC]">
+                          {sessionDate.month}
+                        </p>
+                        <p className="font-display text-4xl leading-none text-white">
+                          {sessionDate.day}
+                        </p>
+                      </div>
+                      <div className="h-10 w-px bg-white/10" />
+                      <div className="text-xs uppercase tracking-[0.2em] text-[#D8CCEC]">
+                        <p>{sessionDate.time}</p>
+                      </div>
+                    </div>
+
+                    <div className="min-w-0 flex-1">
+                      <div className="flex flex-wrap items-center gap-2">
+                        <span className="rounded-full border border-primary/20 bg-primary/10 px-3 py-1 text-[0.68rem] font-semibold uppercase tracking-[0.18em] text-primary">
+                          {session.formatLabel}
+                        </span>
+                        <span className="rounded-full border border-white/10 bg-white/[0.04] px-3 py-1 text-[0.68rem] font-semibold uppercase tracking-[0.18em] text-[#D8CCEC]">
+                          {session.supportLabel}
+                        </span>
+                      </div>
+                      <h3 className="mt-4 text-2xl font-semibold text-white">
+                        {session.title}
+                      </h3>
+                      <p className="mt-2 max-w-[62ch] text-sm leading-relaxed text-muted-foreground">
+                        {session.summary}
+                      </p>
+
+                      <div className="mt-5 flex flex-wrap gap-x-5 gap-y-3 text-xs text-[#D8CCEC]">
+                        <div className="flex items-center gap-2">
+                          <CalendarDays className="h-3.5 w-3.5 text-primary" />
+                          <span className="capitalize">{sessionDate.fullDate}</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <Monitor className="h-3.5 w-3.5 text-primary" />
+                          <span>{session.audience}</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <MapPin className="h-3.5 w-3.5 text-primary" />
+                          <span>{session.location}</span>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="flex w-full shrink-0 flex-col gap-3 md:w-[180px]">
+                      <div className="rounded-[22px] border border-white/10 bg-background/60 px-4 py-3 text-center">
+                        <p className="text-[0.68rem] uppercase tracking-[0.2em] text-[#D8CCEC]">Plekken</p>
+                        <p className="mt-2 font-display text-3xl leading-none text-white">
+                          {session.seatsLeft}
+                        </p>
+                        <p className="mt-2 text-xs text-muted-foreground">{session.priceLabel}</p>
+                      </div>
+                      <Button className="w-full gap-2" onClick={() => setSelectedLiveSession(session)}>
+                        Schrijf je in
+                        <ArrowRight className="h-4 w-4" />
+                      </Button>
+                      <a
+                        href="#trainingen"
+                        className="text-center text-xs font-medium text-muted-foreground transition-colors hover:text-primary"
+                      >
+                        Eerst online kijken
+                      </a>
+                    </div>
+                  </div>
+                </motion.article>
+              );
+            })}
+          </div>
+        </div>
+      </section>
+
       {/* Incompany / Live sectie */}
       <section className="mx-auto max-w-6xl px-6 pb-20">
         <motion.div
@@ -369,6 +622,11 @@ const Landing = () => {
         onOpenChange={(open) => !open && setWaitlistCourse(null)}
         courseId={waitlistCourse?.id || ""}
         courseTitle={waitlistCourse?.title || ""}
+      />
+      <LiveSessionSignupDialog
+        open={!!selectedLiveSession}
+        onOpenChange={(open) => !open && setSelectedLiveSession(null)}
+        session={selectedLiveSession}
       />
       <ContactDialog open={contactOpen} onOpenChange={setContactOpen} />
       <NewsletterDialog open={newsletterOpen} onOpenChange={setNewsletterOpen} />

@@ -92,6 +92,48 @@ export type Database = {
         }
         Relationships: []
       }
+      live_session_registrations: {
+        Row: {
+          company: string | null
+          created_at: string
+          email: string
+          id: string
+          name: string
+          newsletter: boolean
+          notes: string | null
+          scheduled_for: string
+          seats: number
+          session_id: string
+          session_title: string
+        }
+        Insert: {
+          company?: string | null
+          created_at?: string
+          email: string
+          id?: string
+          name: string
+          newsletter?: boolean
+          notes?: string | null
+          scheduled_for: string
+          seats?: number
+          session_id: string
+          session_title: string
+        }
+        Update: {
+          company?: string | null
+          created_at?: string
+          email?: string
+          id?: string
+          name?: string
+          newsletter?: boolean
+          notes?: string | null
+          scheduled_for?: string
+          seats?: number
+          session_id?: string
+          session_title?: string
+        }
+        Relationships: []
+      }
       lesson_videos: {
         Row: {
           course_id: string
@@ -170,6 +212,129 @@ export type Database = {
         }
         Relationships: []
       }
+      portal_companies: {
+        Row: {
+          created_at: string
+          id: string
+          is_active: boolean
+          logo_url: string | null
+          name: string
+          password_hash: string
+          slug: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          logo_url?: string | null
+          name: string
+          password_hash: string
+          slug: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          logo_url?: string | null
+          name?: string
+          password_hash?: string
+          slug?: string
+        }
+        Relationships: []
+      }
+      portal_feedback: {
+        Row: {
+          company_id: string
+          created_at: string
+          feedback_improve: string | null
+          feedback_liked: string | null
+          feedback_other: string | null
+          id: string
+          rating_applicability: number | null
+          rating_overall: number
+          rating_relevance: number | null
+          rating_tempo: string | null
+          respondent_function: string | null
+          respondent_name: string | null
+          takeaways: string[] | null
+          training_id: string
+        }
+        Insert: {
+          company_id: string
+          created_at?: string
+          feedback_improve?: string | null
+          feedback_liked?: string | null
+          feedback_other?: string | null
+          id?: string
+          rating_applicability?: number | null
+          rating_overall: number
+          rating_relevance?: number | null
+          rating_tempo?: string | null
+          respondent_function?: string | null
+          respondent_name?: string | null
+          takeaways?: string[] | null
+          training_id: string
+        }
+        Update: {
+          company_id?: string
+          created_at?: string
+          feedback_improve?: string | null
+          feedback_liked?: string | null
+          feedback_other?: string | null
+          id?: string
+          rating_applicability?: number | null
+          rating_overall?: number
+          rating_relevance?: number | null
+          rating_tempo?: string | null
+          respondent_function?: string | null
+          respondent_name?: string | null
+          takeaways?: string[] | null
+          training_id?: string
+        }
+        Relationships: []
+      }
+      portal_trainings: {
+        Row: {
+          company_id: string
+          created_at: string
+          description: string | null
+          id: string
+          is_active: boolean
+          resources: Json | null
+          slide_filename: string | null
+          slide_storage_path: string | null
+          title: string
+          training_date: string | null
+          training_dates: string[] | null
+        }
+        Insert: {
+          company_id: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          resources?: Json | null
+          slide_filename?: string | null
+          slide_storage_path?: string | null
+          title: string
+          training_date?: string | null
+          training_dates?: string[] | null
+        }
+        Update: {
+          company_id?: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          resources?: Json | null
+          slide_filename?: string | null
+          slide_storage_path?: string | null
+          title?: string
+          training_date?: string | null
+          training_dates?: string[] | null
+        }
+        Relationships: []
+      }
       user_roles: {
         Row: {
           id: string
@@ -238,6 +403,51 @@ export type Database = {
           _user_id: string
         }
         Returns: boolean
+      }
+      portal_get_trainings: {
+        Args: {
+          _company_id: string
+        }
+        Returns: Database["public"]["Tables"]["portal_trainings"]["Row"][]
+      }
+      portal_set_password: {
+        Args: {
+          _company_id: string
+          _password: string
+        }
+        Returns: undefined
+      }
+      portal_submit_feedback: {
+        Args: {
+          _company_id: string
+          _feedback_improve?: string | null
+          _feedback_liked?: string | null
+          _feedback_other?: string | null
+          _rating_applicability?: number | null
+          _rating_overall: number
+          _rating_relevance?: number | null
+          _rating_tempo?: string | null
+          _respondent_function?: string | null
+          _respondent_name?: string | null
+          _takeaways?: string[] | null
+          _training_id: string
+        }
+        Returns: {
+          feedback_id: string
+          success: boolean
+        }[]
+      }
+      portal_verify_password: {
+        Args: {
+          _password: string
+          _slug: string
+        }
+        Returns: {
+          company_id: string | null
+          company_name: string | null
+          logo_url: string | null
+          success: boolean
+        }[]
       }
     }
     Enums: {
