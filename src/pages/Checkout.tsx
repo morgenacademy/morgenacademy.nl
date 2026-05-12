@@ -172,7 +172,7 @@ const Checkout = () => {
             {/* Hero copy */}
             <div>
               <h1 className="font-display text-3xl md:text-4xl text-foreground leading-tight">
-                Win wekelijks 8 uur terug met AI
+                Stap op de AI trein
               </h1>
               <p className="mt-4 text-muted-foreground leading-relaxed">
                 <strong className="text-foreground">

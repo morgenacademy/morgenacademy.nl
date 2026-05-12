@@ -75,6 +75,10 @@
 }
 
 @layer base {
+  html {
+    scroll-behavior: smooth;
+  }
+
   * {
     @apply border-border;
   }
@@ -110,5 +114,11 @@
     background: rgba(200, 80, 216, 0.08);
     padding: 1rem 1.25rem;
     border-radius: var(--radius);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
   }
 }
