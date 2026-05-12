@@ -72,17 +72,19 @@ const footerColumns = [
   {
     title: "Build & Implement",
     links: [
-      { label: "Implement", href: "https://morgencompany.com/consultancy", kind: "external" },
-      { label: "Build", href: "https://morgencompany.com/technology", kind: "external" },
-      { label: "Kennismaking", href: "https://morgencompany.com/#home-aanvraag", kind: "external" },
+      { label: "Digitale oplossingen", href: "https://morgencompany.com/technology/", kind: "external" },
+      { label: "Procesautomatisering", href: "https://morgencompany.com/technology/", kind: "external" },
+      { label: "Digitale strategie", href: "https://morgencompany.com/consultancy/", kind: "external" },
+      { label: "Projecten", href: "https://morgencompany.com/projecten/", kind: "external" },
     ],
   },
   {
     title: "Company & Info",
     links: [
-      { label: "Get inspired", href: "https://morgencompany.com/company", kind: "external" },
+      { label: "Over Morgen.", href: "https://morgencompany.com/about/", kind: "external" },
+      { label: "Keynote boeken", href: "https://morgencompany.com/company/#cp-keynote", kind: "external" },
+      { label: "Podcast, artikelen en boek", href: "https://morgencompany.com/company/#cp-verdieping", kind: "external" },
       { label: "totmorgen@morgenacademy.nl", href: "mailto:totmorgen@morgenacademy.nl", kind: "external" },
-      { label: "Privacybeleid", href: "/privacy", kind: "route" },
     ],
   },
 ] as const;
@@ -218,18 +220,10 @@ const Landing = () => {
 
           <Link
             to="/login"
-            className="ml-1 text-[0.82rem] font-bold uppercase tracking-[0.12em] text-[#D8CCEC] transition-colors duration-200 hover:text-white"
+            className="ml-1 inline-flex items-center rounded-[20px] bg-gradient-to-br from-[#d8fe56] to-[#b8e040] px-5 py-2 text-[0.88rem] font-bold text-[#1A1A2E] shadow-[0_4px_16px_rgba(216,254,86,0.3)] transition-all duration-200 hover:-translate-y-px hover:shadow-[0_6px_24px_rgba(216,254,86,0.45)]"
           >
             Inloggen
           </Link>
-          <a
-            href="https://morgencompany.com/#home-aanvraag"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="ml-1 inline-flex items-center rounded-[20px] bg-gradient-to-br from-[#d8fe56] to-[#b8e040] px-5 py-2 text-[0.88rem] font-bold text-[#1A1A2E] shadow-[0_4px_16px_rgba(216,254,86,0.3)] transition-all duration-200 hover:-translate-y-px hover:shadow-[0_6px_24px_rgba(216,254,86,0.45)]"
-          >
-            Kennismaking
-          </a>
         </div>
 
         {/* Mobile toggle */}
@@ -247,19 +241,10 @@ const Landing = () => {
             <Link
               to="/login"
               onClick={() => setMobileNavOpen(false)}
-              className="rounded-lg px-3 py-2.5 text-[0.82rem] font-bold uppercase tracking-[0.12em] text-[#D8CCEC] transition-colors hover:text-white"
+              className="mt-1 flex items-center justify-center rounded-[20px] bg-gradient-to-br from-[#d8fe56] to-[#b8e040] px-5 py-2.5 text-[0.88rem] font-bold text-[#1A1A2E]"
             >
               Inloggen
             </Link>
-            <a
-              href="https://morgencompany.com/#home-aanvraag"
-              target="_blank"
-              rel="noopener noreferrer"
-              onClick={() => setMobileNavOpen(false)}
-              className="mt-1 flex items-center justify-center rounded-[20px] bg-gradient-to-br from-[#d8fe56] to-[#b8e040] px-5 py-2.5 text-[0.88rem] font-bold text-[#1A1A2E]"
-            >
-              Kennismaking
-            </a>
           </div>
         )}
       </nav>
@@ -710,7 +695,7 @@ const Landing = () => {
       {/* Footer */}
       <footer className="border-t border-white/10 bg-[rgba(6,4,14,0.96)] py-14 text-white">
         <div className="mx-auto max-w-6xl px-6">
-          <div className="grid gap-12 border-b border-white/10 pb-10 md:grid-cols-[1.35fr_1fr_1fr_1fr]">
+          <div className="grid gap-12 border-b border-white/10 pb-10 md:grid-cols-[1.6fr_1fr_1fr_1fr]">
             <div>
               <Link
                 to="/"
@@ -718,16 +703,18 @@ const Landing = () => {
               >
                 MORGEN<span className="text-[#d8fe56] font-black not-italic">.</span>
               </Link>
-              <p className="mt-5 max-w-[26ch] text-sm leading-7 text-[#9F97B9]">
-                Morgen Academy is het trainingsplatform van Morgen Company.
+              <p className="mt-5 max-w-[32ch] text-[0.95rem] leading-7 text-[#9F97B9]">
+                Morgen Academy is het trainingsplatform van{" "}
+                <a
+                  href="https://morgencompany.com"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-white transition-colors hover:text-[#d8fe56]"
+                >
+                  Morgen
+                </a>
+                .
               </p>
-              <button
-                type="button"
-                onClick={() => setContactOpen(true)}
-                className="mt-4 text-sm text-[#d8fe56] transition-colors hover:text-white"
-              >
-                Liever mailen? totmorgen@morgenacademy.nl
-              </button>
             </div>
 
             {footerColumns.map((column) => (
