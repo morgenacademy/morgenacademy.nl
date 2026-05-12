@@ -29,27 +29,61 @@ const headerLinks = [
   {
     label: "Online trainingen",
     href: "/",
+    kind: "route",
     active: true,
   },
   {
     label: "Live agenda",
     href: "#live-agenda",
+    kind: "anchor",
   },
   {
     label: "Incompany trainingen",
     href: "https://morgencompany.com/academy",
+    kind: "external",
   },
   {
-    label: "Consultancy",
+    label: "Implement",
     href: "https://morgencompany.com/consultancy",
+    kind: "external",
   },
   {
-    label: "Technology",
+    label: "Build",
     href: "https://morgencompany.com/technology",
+    kind: "external",
   },
   {
-    label: "Company",
+    label: "Get inspired",
     href: "https://morgencompany.com/company",
+    kind: "external",
+  },
+] as const;
+
+const footerColumns = [
+  {
+    title: "Academy",
+    links: [
+      { label: "Online trainingen", href: "/", kind: "route" },
+      { label: "Live agenda", href: "#live-agenda", kind: "anchor" },
+      { label: "Incompany trainingen", href: "https://morgencompany.com/academy", kind: "external" },
+      { label: "Inloggen", href: "/login", kind: "route" },
+    ],
+  },
+  {
+    title: "Build & Implement",
+    links: [
+      { label: "Implement", href: "https://morgencompany.com/consultancy", kind: "external" },
+      { label: "Build", href: "https://morgencompany.com/technology", kind: "external" },
+      { label: "Kennismaking", href: "https://morgencompany.com/#home-aanvraag", kind: "external" },
+    ],
+  },
+  {
+    title: "Company & Info",
+    links: [
+      { label: "Get inspired", href: "https://morgencompany.com/company", kind: "external" },
+      { label: "totmorgen@morgenacademy.nl", href: "mailto:totmorgen@morgenacademy.nl", kind: "external" },
+      { label: "Privacybeleid", href: "/privacy", kind: "route" },
+    ],
   },
 ] as const;
 
@@ -80,6 +114,85 @@ const Landing = () => {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
+  const renderHeaderLink = (item: typeof headerLinks[number], mobile = false) => {
+    const className = cn(
+      mobile
+        ? "rounded-lg px-3 py-2.5 text-[0.82rem] font-bold uppercase tracking-[0.12em] transition-colors duration-200"
+        : "text-[0.82rem] font-bold uppercase tracking-[0.12em] transition-colors duration-200 whitespace-nowrap",
+      item.active ? "text-white" : "text-[#D8CCEC] hover:text-white",
+    );
+
+    if (item.kind === "route") {
+      return (
+        <Link
+          key={item.label}
+          to={item.href}
+          onClick={mobile ? () => setMobileNavOpen(false) : undefined}
+          className={className}
+          aria-current={item.active ? "page" : undefined}
+        >
+          {item.label}
+        </Link>
+      );
+    }
+
+    if (item.kind === "anchor") {
+      return (
+        <a
+          key={item.label}
+          href={item.href}
+          onClick={mobile ? () => setMobileNavOpen(false) : undefined}
+          className={className}
+        >
+          {item.label}
+        </a>
+      );
+    }
+
+    return (
+      <a
+        key={item.label}
+        href={item.href}
+        target="_blank"
+        rel="noopener noreferrer"
+        onClick={mobile ? () => setMobileNavOpen(false) : undefined}
+        className={className}
+      >
+        {item.label}
+      </a>
+    );
+  };
+
+  const renderFooterLink = (link: typeof footerColumns[number]["links"][number]) => {
+    if (link.kind === "route") {
+      return (
+        <Link
+          key={link.label}
+          to={link.href}
+          className="text-sm text-[#9F97B9] transition-colors hover:text-white"
+        >
+          {link.label}
+        </Link>
+      );
+    }
+
+    const externalProps =
+      link.kind === "external" && !link.href.startsWith("mailto:")
+        ? { target: "_blank", rel: "noopener noreferrer" }
+        : {};
+
+    return (
+      <a
+        key={link.label}
+        href={link.href}
+        className="text-sm text-[#9F97B9] transition-colors hover:text-white"
+        {...externalProps}
+      >
+        {link.label}
+      </a>
+    );
+  };
+
   return (
     <div className="min-h-screen bg-background">
       {/* Fixed Nav — morgencompany.com style */}
@@ -100,55 +213,23 @@ const Landing = () => {
         </Link>
 
         {/* Desktop nav */}
-        <div className="hidden lg:flex items-center gap-7">
-          {headerLinks.map((item) => {
-            const classes = cn(
-              "text-[0.88rem] font-medium tracking-[0.04em] transition-colors duration-200 whitespace-nowrap",
-              item.active ? "text-white" : "text-[#D8CCEC] hover:text-white",
-            );
-
-            if (item.active) {
-              return (
-                <Link key={item.label} to={item.href} className={classes} aria-current="page">
-                  {item.label}
-                </Link>
-              );
-            }
-
-            if (item.href.startsWith("http")) {
-              return (
-                <a
-                  key={item.label}
-                  href={item.href}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className={classes}
-                >
-                  {item.label}
-                </a>
-              );
-            }
-
-            return (
-              <a key={item.label} href={item.href} className={classes}>
-                {item.label}
-              </a>
-            );
-          })}
-
-          <button
-            onClick={() => setContactOpen(true)}
-            className="text-[0.88rem] font-medium tracking-[0.04em] text-[#D8CCEC] hover:text-white transition-colors duration-200"
-          >
-            Contact
-          </button>
+        <div className="hidden lg:flex items-center gap-6">
+          {headerLinks.map((item) => renderHeaderLink(item))}
 
           <Link
             to="/login"
-            className="ml-2 inline-flex items-center rounded-[20px] bg-gradient-to-br from-[#d8fe56] to-[#b8e040] px-5 py-2 text-[0.88rem] font-bold tracking-[0.04em] text-[#1A1A2E] shadow-[0_4px_16px_rgba(216,254,86,0.3)] transition-all duration-200 hover:shadow-[0_6px_24px_rgba(216,254,86,0.45)] hover:-translate-y-px"
+            className="ml-1 text-[0.82rem] font-bold uppercase tracking-[0.12em] text-[#D8CCEC] transition-colors duration-200 hover:text-white"
           >
             Inloggen
           </Link>
+          <a
+            href="https://morgencompany.com/#home-aanvraag"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="ml-1 inline-flex items-center rounded-[20px] bg-gradient-to-br from-[#d8fe56] to-[#b8e040] px-5 py-2 text-[0.88rem] font-bold text-[#1A1A2E] shadow-[0_4px_16px_rgba(216,254,86,0.3)] transition-all duration-200 hover:-translate-y-px hover:shadow-[0_6px_24px_rgba(216,254,86,0.45)]"
+          >
+            Kennismaking
+          </a>
         </div>
 
         {/* Mobile toggle */}
@@ -162,59 +243,23 @@ const Landing = () => {
         {/* Mobile dropdown */}
         {mobileNavOpen && (
           <div className="absolute top-full left-4 right-4 mt-2 flex flex-col gap-1 rounded-[20px] border border-white/[0.18] bg-[rgba(12,8,24,0.97)] backdrop-blur-[40px] backdrop-saturate-200 p-4 lg:hidden">
-            {headerLinks.map((item) => {
-              if (item.active) {
-                return (
-                  <Link
-                    key={item.label}
-                    to={item.href}
-                    onClick={() => setMobileNavOpen(false)}
-                    className="rounded-lg px-3 py-2.5 text-[0.92rem] font-medium text-white"
-                  >
-                    {item.label}
-                  </Link>
-                );
-              }
-
-              if (item.href.startsWith("http")) {
-                return (
-                  <a
-                    key={item.label}
-                    href={item.href}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    onClick={() => setMobileNavOpen(false)}
-                    className="rounded-lg px-3 py-2.5 text-[0.92rem] font-medium text-[#D8CCEC] hover:text-white transition-colors"
-                  >
-                    {item.label}
-                  </a>
-                );
-              }
-
-              return (
-                <a
-                  key={item.label}
-                  href={item.href}
-                  onClick={() => setMobileNavOpen(false)}
-                  className="rounded-lg px-3 py-2.5 text-[0.92rem] font-medium text-[#D8CCEC] hover:text-white transition-colors"
-                >
-                  {item.label}
-                </a>
-              );
-            })}
-            <button
-              onClick={() => { setContactOpen(true); setMobileNavOpen(false); }}
-              className="rounded-lg px-3 py-2.5 text-left text-[0.92rem] font-medium text-[#D8CCEC] hover:text-white transition-colors"
-            >
-              Contact
-            </button>
+            {headerLinks.map((item) => renderHeaderLink(item, true))}
             <Link
               to="/login"
               onClick={() => setMobileNavOpen(false)}
-              className="mt-1 flex items-center justify-center rounded-[20px] bg-gradient-to-br from-[#d8fe56] to-[#b8e040] px-5 py-2.5 text-[0.88rem] font-bold text-[#1A1A2E]"
+              className="rounded-lg px-3 py-2.5 text-[0.82rem] font-bold uppercase tracking-[0.12em] text-[#D8CCEC] transition-colors hover:text-white"
             >
               Inloggen
             </Link>
+            <a
+              href="https://morgencompany.com/#home-aanvraag"
+              target="_blank"
+              rel="noopener noreferrer"
+              onClick={() => setMobileNavOpen(false)}
+              className="mt-1 flex items-center justify-center rounded-[20px] bg-gradient-to-br from-[#d8fe56] to-[#b8e040] px-5 py-2.5 text-[0.88rem] font-bold text-[#1A1A2E]"
+            >
+              Kennismaking
+            </a>
           </div>
         )}
       </nav>
@@ -276,6 +321,18 @@ const Landing = () => {
             Onze nieuwsbrief zit boordevol praktische tips die je AI-gebruik echt een boost geven.
             Geen spam, geen reclame. Wel waarde.
           </p>
+          <p className="mt-3 text-sm text-muted-foreground">
+            Toch liever incompany?{" "}
+            <a
+              href="https://morgencompany.com/academy"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="font-medium text-primary hover:underline"
+            >
+              Bekijk de trainingen voor teams
+            </a>
+            .
+          </p>
         </motion.div>
       </section>
 
@@ -303,9 +360,25 @@ const Landing = () => {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ duration: 0.5, delay: index * 0.15 }}
-              className={`group overflow-hidden rounded-xl bg-card border border-border ${
-                course.comingSoon ? "opacity-70" : ""
+              className={`group overflow-hidden rounded-xl border border-border bg-card transition-colors ${
+                course.comingSoon ? "opacity-70" : "cursor-pointer hover:border-primary/40"
               }`}
+              onClick={
+                course.comingSoon ? undefined : () => navigate(`/checkout/${course.id}`)
+              }
+              onKeyDown={
+                course.comingSoon
+                  ? undefined
+                  : (event) => {
+                      if (event.key === "Enter" || event.key === " ") {
+                        event.preventDefault();
+                        navigate(`/checkout/${course.id}`);
+                      }
+                    }
+              }
+              role={course.comingSoon ? undefined : "link"}
+              tabIndex={course.comingSoon ? undefined : 0}
+              aria-label={course.comingSoon ? undefined : `Ga naar ${course.title}`}
             >
               <div className="relative aspect-video overflow-hidden">
                 <img
@@ -361,7 +434,10 @@ const Landing = () => {
                     )}
                     <Button
                       className="gap-2 text-sm"
-                      onClick={() => navigate(`/checkout/${course.id}`)}
+                      onClick={(event) => {
+                        event.stopPropagation();
+                        navigate(`/checkout/${course.id}`);
+                      }}
                     >
                       Koop nu
                       <ArrowRight className="h-4 w-4" />
@@ -604,7 +680,7 @@ const Landing = () => {
 
             <div className="w-full shrink-0 flex-col gap-3 md:w-auto md:pt-10 flex">
               <Button asChild size="lg" className="w-full gap-2 text-sm uppercase tracking-wider">
-                <a href="https://morgencompany.com/academy">
+                <a href="https://morgencompany.com/academy" target="_blank" rel="noopener noreferrer">
                   Bekijk incompany trainingen
                   <ArrowRight className="h-4 w-4" />
                 </a>
@@ -632,41 +708,55 @@ const Landing = () => {
       <NewsletterDialog open={newsletterOpen} onOpenChange={setNewsletterOpen} />
 
       {/* Footer */}
-      <footer className="border-t border-border/50 py-8">
-        <div className="mx-auto flex max-w-6xl flex-col items-center justify-between gap-4 px-6 sm:flex-row">
-          <p className="text-sm text-muted-foreground">
-            Morgen Academy is het trainingsplatform van{" "}
-            <a
-              href="https://www.morgencompany.com"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-primary hover:underline"
-            >
-              Morgen Company
-            </a>
-          </p>
-          <div className="flex items-center gap-4">
-            <button
-              type="button"
-              onClick={() => setContactOpen(true)}
-              className="text-xs text-muted-foreground/60 transition-colors hover:text-primary"
-            >
-              totmorgen@morgenacademy.nl
-            </button>
-            <a
-              href="https://www.morgencompany.com"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-xs text-muted-foreground/60 hover:text-primary transition-colors"
-            >
-              © {new Date().getFullYear()} Morgen Company
-            </a>
-            <Link
-              to="/privacy"
-              className="text-xs text-muted-foreground/60 hover:text-primary transition-colors"
-            >
-              Privacy
-            </Link>
+      <footer className="border-t border-white/10 bg-[rgba(6,4,14,0.96)] py-14 text-white">
+        <div className="mx-auto max-w-6xl px-6">
+          <div className="grid gap-12 border-b border-white/10 pb-10 md:grid-cols-[1.35fr_1fr_1fr_1fr]">
+            <div>
+              <Link
+                to="/"
+                className="font-display text-[1.5rem] font-black uppercase tracking-[0.1em] text-white"
+              >
+                MORGEN<span className="text-[#d8fe56] font-black not-italic">.</span>
+              </Link>
+              <p className="mt-5 max-w-[26ch] text-sm leading-7 text-[#9F97B9]">
+                Morgen Academy is het trainingsplatform van Morgen Company.
+              </p>
+              <button
+                type="button"
+                onClick={() => setContactOpen(true)}
+                className="mt-4 text-sm text-[#d8fe56] transition-colors hover:text-white"
+              >
+                Liever mailen? totmorgen@morgenacademy.nl
+              </button>
+            </div>
+
+            {footerColumns.map((column) => (
+              <div key={column.title}>
+                <h3 className="mb-5 text-[1rem] font-extrabold uppercase tracking-[0.06em] text-white">
+                  {column.title}
+                </h3>
+                <div className="flex flex-col gap-3">
+                  {column.links.map((link) => renderFooterLink(link))}
+                </div>
+              </div>
+            ))}
+          </div>
+
+          <div className="flex flex-col gap-4 pt-6 text-xs text-[#7E7896] sm:flex-row sm:items-center sm:justify-between">
+            <p>© {new Date().getFullYear()} Morgen Academy. Alle rechten voorbehouden.</p>
+            <div className="flex flex-wrap items-center gap-4">
+              <a
+                href="https://morgencompany.com"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="transition-colors hover:text-white"
+              >
+                Morgen Company
+              </a>
+              <Link to="/privacy" className="transition-colors hover:text-white">
+                Privacybeleid
+              </Link>
+            </div>
           </div>
         </div>
       </footer>
