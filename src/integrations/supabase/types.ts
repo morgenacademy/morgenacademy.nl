@@ -335,6 +335,39 @@ export type Database = {
         }
         Relationships: []
       }
+      workshop_participants: {
+        Row: {
+          company: string
+          created_at: string
+          created_by: string | null
+          email: string
+          id: string
+          name: string
+          updated_at: string
+          workshop_title: string
+        }
+        Insert: {
+          company: string
+          created_at?: string
+          created_by?: string | null
+          email: string
+          id?: string
+          name: string
+          updated_at?: string
+          workshop_title: string
+        }
+        Update: {
+          company?: string
+          created_at?: string
+          created_by?: string | null
+          email?: string
+          id?: string
+          name?: string
+          updated_at?: string
+          workshop_title?: string
+        }
+        Relationships: []
+      }
       user_roles: {
         Row: {
           id: string

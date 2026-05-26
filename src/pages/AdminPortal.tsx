@@ -9,7 +9,8 @@ import { courses } from "@/data/courses";
 import { toast } from "sonner";
 import {
   ArrowLeft, Plus, Copy, Check, ToggleLeft, ToggleRight,
-  Star, Loader2, Upload, Trash2, ExternalLink, Pencil, Download, Gift,
+  Star, Loader2, Upload, Trash2, ExternalLink, Pencil, Download, Gift, FileUp,
+  Users, UserPlus, Mail, Building2, ClipboardList, Search,
 } from "lucide-react";
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle,
@@ -29,6 +30,16 @@ interface Company {
   created_at: string;
 }
 
+interface TrainingResource {
+  label: string;
+  value: string;
+  type?: "file";
+  storagePath?: string;
+  filename?: string;
+  contentType?: string;
+  size?: number;
+}
+
 interface Training {
   id: string;
   company_id: string;
@@ -38,7 +49,7 @@ interface Training {
   training_dates: string[] | null;
   slide_storage_path: string | null;
   slide_filename: string | null;
-  resources: { label: string; value: string }[] | null;
+  resources: TrainingResource[] | null;
   is_active: boolean;
 }
 
@@ -58,8 +69,51 @@ interface FeedbackRow {
   created_at: string;
 }
 
+interface WorkshopParticipant {
+  id: string;
+  name: string;
+  email: string;
+  company: string;
+  workshop_title: string;
+  created_by: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+interface ParticipantForm {
+  name: string;
+  email: string;
+  company: string;
+  workshop_title: string;
+}
+
 const slugify = (s: string) =>
   s.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
+
+const PORTAL_STORAGE_BUCKET = "portal-slides";
+const EMPTY_PARTICIPANT_FORM: ParticipantForm = {
+  name: "",
+  email: "",
+  company: "",
+  workshop_title: "",
+};
+
+const sanitizeFileName = (name: string) => {
+  const cleaned = name
+    .normalize("NFKD")
+    .replace(/[^\w.-]+/g, "-")
+    .replace(/-+/g, "-")
+    .replace(/(^-|-$)/g, "");
+
+  return cleaned || "bestand";
+};
+
+const escapeCsvValue = (value: string | number | null | undefined) => {
+  if (value === null || value === undefined) return "";
+  const stringValue = String(value);
+  const escaped = stringValue.replace(/"/g, '""');
+  return /[",\n]/.test(escaped) ? `"${escaped}"` : escaped;
+};
 
 const AdminPortal = () => {
   const navigate = useNavigate();
@@ -82,11 +136,13 @@ const AdminPortal = () => {
   const [newTrainingDesc, setNewTrainingDesc] = useState("");
   const [newTrainingDates, setNewTrainingDates] = useState<string[]>([""]);
   const [newTrainingCompany, setNewTrainingCompany] = useState("");
-  const [newTrainingResources, setNewTrainingResources] = useState<{label: string; value: string}[]>([]);
+  const [newTrainingResources, setNewTrainingResources] = useState<TrainingResource[]>([]);
   const [savingTraining, setSavingTraining] = useState(false);
   const [uploadingFor, setUploadingFor] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const resourceFileInputRef = useRef<HTMLInputElement>(null);
   const [uploadTarget, setUploadTarget] = useState<string | null>(null);
+  const [resourceUploadTarget, setResourceUploadTarget] = useState<string | null>(null);
 
   // Edit training state
   const [editDialogOpen, setEditDialogOpen] = useState(false);
@@ -94,7 +150,7 @@ const AdminPortal = () => {
   const [editTitle, setEditTitle] = useState("");
   const [editDesc, setEditDesc] = useState("");
   const [editDates, setEditDates] = useState<string[]>([]);
-  const [editResources, setEditResources] = useState<{label: string; value: string}[]>([]);
+  const [editResources, setEditResources] = useState<TrainingResource[]>([]);
   const [savingEdit, setSavingEdit] = useState(false);
 
   // Feedback state
@@ -108,6 +164,15 @@ const AdminPortal = () => {
   const [grantEmail, setGrantEmail] = useState("");
   const [grantCourseId, setGrantCourseId] = useState(courses[0]?.id ?? "");
   const [grantingAccess, setGrantingAccess] = useState(false);
+
+  // Participant state
+  const [participants, setParticipants] = useState<WorkshopParticipant[]>([]);
+  const [loadingParticipants, setLoadingParticipants] = useState(false);
+  const [participantSearch, setParticipantSearch] = useState("");
+  const [participantDialogOpen, setParticipantDialogOpen] = useState(false);
+  const [editingParticipant, setEditingParticipant] = useState<WorkshopParticipant | null>(null);
+  const [participantForm, setParticipantForm] = useState<ParticipantForm>(EMPTY_PARTICIPANT_FORM);
+  const [savingParticipant, setSavingParticipant] = useState(false);
 
   // Admin check
   useEffect(() => {
@@ -167,6 +232,32 @@ const AdminPortal = () => {
         setLoadingFeedback(false);
       });
   }, [isAdmin, feedbackTrainingId]);
+
+  // Load workshop participants
+  useEffect(() => {
+    if (!isAdmin) return;
+
+    let isActive = true;
+    setLoadingParticipants(true);
+
+    supabase.from("workshop_participants")
+      .select("*")
+      .order("created_at", { ascending: false })
+      .then(({ data, error }) => {
+        if (!isActive) return;
+        if (error) {
+          toast.error(`Deelnemers laden mislukt: ${error.message}`, { duration: Infinity });
+          setParticipants([]);
+        } else {
+          setParticipants((data as WorkshopParticipant[]) ?? []);
+        }
+        setLoadingParticipants(false);
+      });
+
+    return () => {
+      isActive = false;
+    };
+  }, [isAdmin]);
 
   if (isAdmin === null) return null;
 
@@ -251,19 +342,27 @@ const AdminPortal = () => {
     }
   };
 
-  const handleUploadSlide = async (trainingId: string, file: File) => {
+  const uploadPortalFile = async ({
+    trainingId,
+    file,
+    path,
+    onSuccess,
+    successMessage,
+  }: {
+    trainingId: string;
+    file: File;
+    path: string;
+    onSuccess: () => Promise<void>;
+    successMessage: string;
+  }) => {
     setUploadingFor(trainingId);
-    const ext = file.name.split(".").pop() ?? "pdf";
-    const path = `${trainingId}/slides.${ext}`;
-    const bucketName = "portal-slides";
-
-    // Remove existing file first (TUS doesn't support upsert)
-    await supabase.storage.from(bucketName).remove([path]);
 
     const { data: { session } } = await supabase.auth.getSession();
     if (!session) {
       toast.error("Niet ingelogd", { duration: Infinity });
       setUploadingFor(null);
+      setUploadTarget(null);
+      setResourceUploadTarget(null);
       return;
     }
 
@@ -280,7 +379,7 @@ const AdminPortal = () => {
         uploadDataDuringCreation: true,
         removeFingerprintOnSuccess: true,
         metadata: {
-          bucketName,
+          bucketName: PORTAL_STORAGE_BUCKET,
           objectName: path,
           contentType: file.type || "application/octet-stream",
         },
@@ -289,28 +388,20 @@ const AdminPortal = () => {
           toast.error(`Upload mislukt: ${error.message}`, { duration: Infinity });
           setUploadingFor(null);
           setUploadTarget(null);
+          setResourceUploadTarget(null);
           resolve();
         },
         onSuccess: async () => {
           try {
-            const { error: updateError } = await supabase
-              .from("portal_trainings")
-              .update({ slide_storage_path: path, slide_filename: file.name })
-              .eq("id", trainingId);
-            if (updateError) throw updateError;
-
-            setTrainings((prev) =>
-              prev.map((t) =>
-                t.id === trainingId ? { ...t, slide_storage_path: path, slide_filename: file.name } : t
-              )
-            );
-            toast.success(`Slides geüpload: ${file.name}`, { duration: Infinity });
+            await onSuccess();
+            toast.success(successMessage, { duration: Infinity });
           } catch (err: unknown) {
             const msg = err instanceof Error ? err.message : "Onbekende fout";
             toast.error(`Upload gelukt maar opslaan mislukt: ${msg}`, { duration: Infinity });
           } finally {
             setUploadingFor(null);
             setUploadTarget(null);
+            setResourceUploadTarget(null);
             resolve();
           }
         },
@@ -321,6 +412,72 @@ const AdminPortal = () => {
         if (prev.length > 0) upload.resumeFromPreviousUpload(prev[0]);
         upload.start();
       });
+    });
+  };
+
+  const handleUploadSlide = async (trainingId: string, file: File) => {
+    const ext = file.name.split(".").pop() ?? "file";
+    const path = `${trainingId}/slides.${ext}`;
+    const existingPath = trainings.find((training) => training.id === trainingId)?.slide_storage_path;
+
+    // Remove existing file first (TUS doesn't support upsert)
+    await supabase.storage.from(PORTAL_STORAGE_BUCKET).remove([existingPath ?? path]);
+
+    return uploadPortalFile({
+      trainingId,
+      file,
+      path,
+      successMessage: `Bestand geüpload: ${file.name}`,
+      onSuccess: async () => {
+        const { error: updateError } = await supabase
+          .from("portal_trainings")
+          .update({ slide_storage_path: path, slide_filename: file.name })
+          .eq("id", trainingId);
+        if (updateError) throw updateError;
+
+        setTrainings((prev) =>
+          prev.map((training) =>
+            training.id === trainingId
+              ? { ...training, slide_storage_path: path, slide_filename: file.name }
+              : training
+          )
+        );
+      },
+    });
+  };
+
+  const handleUploadResource = async (training: Training, file: File) => {
+    const safeName = sanitizeFileName(file.name);
+    const path = `${training.id}/resources/${Date.now()}-${safeName}`;
+    const nextResource: TrainingResource = {
+      label: file.name,
+      value: file.name,
+      type: "file",
+      storagePath: path,
+      filename: file.name,
+      contentType: file.type || "application/octet-stream",
+      size: file.size,
+    };
+    const nextResources = [...(training.resources ?? []), nextResource];
+
+    return uploadPortalFile({
+      trainingId: training.id,
+      file,
+      path,
+      successMessage: `Naslagwerk geüpload: ${file.name}`,
+      onSuccess: async () => {
+        const { error: updateError } = await supabase
+          .from("portal_trainings")
+          .update({ resources: nextResources })
+          .eq("id", training.id);
+        if (updateError) throw updateError;
+
+        setTrainings((prev) =>
+          prev.map((item) =>
+            item.id === training.id ? { ...item, resources: nextResources } : item
+          )
+        );
+      },
     });
   };
 
@@ -460,6 +617,114 @@ const AdminPortal = () => {
     }
   };
 
+  // ---- Participant actions ----
+
+  const openNewParticipantDialog = () => {
+    setEditingParticipant(null);
+    setParticipantForm({ ...EMPTY_PARTICIPANT_FORM });
+    setParticipantDialogOpen(true);
+  };
+
+  const openEditParticipantDialog = (participant: WorkshopParticipant) => {
+    setEditingParticipant(participant);
+    setParticipantForm({
+      name: participant.name,
+      email: participant.email,
+      company: participant.company,
+      workshop_title: participant.workshop_title,
+    });
+    setParticipantDialogOpen(true);
+  };
+
+  const handleSaveParticipant = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    const payload = {
+      name: participantForm.name.trim(),
+      email: participantForm.email.trim().toLowerCase(),
+      company: participantForm.company.trim(),
+      workshop_title: participantForm.workshop_title.trim(),
+    };
+
+    if (!payload.name || !payload.email || !payload.company || !payload.workshop_title) return;
+
+    setSavingParticipant(true);
+    try {
+      if (editingParticipant) {
+        const { data, error } = await supabase
+          .from("workshop_participants")
+          .update(payload)
+          .eq("id", editingParticipant.id)
+          .select()
+          .single();
+        if (error) throw error;
+
+        setParticipants((prev) =>
+          prev.map((participant) =>
+            participant.id === editingParticipant.id ? data as WorkshopParticipant : participant
+          )
+        );
+        toast.success("Deelnemer bijgewerkt", { duration: Infinity });
+      } else {
+        const { data, error } = await supabase
+          .from("workshop_participants")
+          .insert(payload)
+          .select()
+          .single();
+        if (error) throw error;
+
+        setParticipants((prev) => [data as WorkshopParticipant, ...prev]);
+        toast.success("Deelnemer toegevoegd", { duration: Infinity });
+      }
+
+      setParticipantDialogOpen(false);
+      setEditingParticipant(null);
+      setParticipantForm({ ...EMPTY_PARTICIPANT_FORM });
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : "Onbekende fout";
+      toast.error(`Opslaan mislukt: ${msg}`, { duration: Infinity });
+    } finally {
+      setSavingParticipant(false);
+    }
+  };
+
+  const handleDeleteParticipant = async (participant: WorkshopParticipant) => {
+    const { error } = await supabase
+      .from("workshop_participants")
+      .delete()
+      .eq("id", participant.id);
+
+    if (error) {
+      toast.error(`Verwijderen mislukt: ${error.message}`, { duration: Infinity });
+      return;
+    }
+
+    setParticipants((prev) => prev.filter((item) => item.id !== participant.id));
+    toast.success("Deelnemer verwijderd", { duration: Infinity });
+  };
+
+  const handleExportParticipants = () => {
+    if (!participants.length) return;
+
+    const headers = ["Naam", "E-mailadres", "Bedrijf", "Workshop", "Toegevoegd op"];
+    const rows = participants.map((participant) => [
+      escapeCsvValue(participant.name),
+      escapeCsvValue(participant.email),
+      escapeCsvValue(participant.company),
+      escapeCsvValue(participant.workshop_title),
+      escapeCsvValue(new Date(participant.created_at).toLocaleDateString("nl-NL")),
+    ]);
+
+    const csv = [headers.join(","), ...rows.map((row) => row.join(","))].join("\n");
+    const blob = new Blob(["\uFEFF" + csv], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "academy-deelnemers.csv";
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
   // ---- Render helpers ----
 
   const avgRating = (rows: FeedbackRow[]) => {
@@ -483,6 +748,17 @@ const AdminPortal = () => {
     );
   };
 
+  const participantSearchTerm = participantSearch.trim().toLowerCase();
+  const filteredParticipants = participantSearchTerm
+    ? participants.filter((participant) =>
+        [
+          participant.name,
+          participant.email,
+          participant.company,
+          participant.workshop_title,
+        ].some((value) => value.toLowerCase().includes(participantSearchTerm))
+      )
+    : participants;
 
   return (
     <div className="min-h-screen bg-background">
@@ -565,61 +841,157 @@ const AdminPortal = () => {
 
           {/* ---- ACADEMY TAB ---- */}
           <TabsContent value="academy">
-            <div className="max-w-2xl rounded-xl border border-border bg-card p-6">
-              <div className="flex items-start gap-3">
-                <div className="rounded-full bg-primary/10 p-2 text-primary">
-                  <Gift className="h-4 w-4" />
+            <div className="space-y-8">
+              <section className="max-w-2xl rounded-xl border border-border bg-card p-6">
+                <div className="flex items-start gap-3">
+                  <div className="rounded-full bg-primary/10 p-2 text-primary">
+                    <Gift className="h-4 w-4" />
+                  </div>
+                  <div className="flex-1">
+                    <h2 className="font-display text-lg font-semibold text-foreground">
+                      Gratis toegang geven
+                    </h2>
+                    <p className="mt-1 text-sm text-muted-foreground">
+                      Geef iemand direct toegang tot een cursus zonder betaling. De gebruiker moet wel al een account hebben aangemaakt.
+                    </p>
+                  </div>
                 </div>
-                <div className="flex-1">
-                  <h2 className="font-display text-lg font-semibold text-foreground">
-                    Gratis toegang geven
-                  </h2>
-                  <p className="mt-1 text-sm text-muted-foreground">
-                    Geef iemand direct toegang tot een cursus zonder betaling. De gebruiker moet wel al een account hebben aangemaakt.
-                  </p>
-                </div>
-              </div>
 
-              <form onSubmit={handleGrantCourseAccess} className="mt-6 space-y-4">
-                <div className="space-y-2">
-                  <label htmlFor="grant-email" className="text-sm font-medium text-foreground">
-                    E-mailadres
-                  </label>
+                <form onSubmit={handleGrantCourseAccess} className="mt-6 space-y-4">
+                  <div className="space-y-2">
+                    <label htmlFor="grant-email" className="text-sm font-medium text-foreground">
+                      E-mailadres
+                    </label>
+                    <Input
+                      id="grant-email"
+                      type="email"
+                      placeholder="naam@bedrijf.nl"
+                      value={grantEmail}
+                      onChange={(e) => setGrantEmail(e.target.value)}
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <label htmlFor="grant-course" className="text-sm font-medium text-foreground">
+                      Cursus
+                    </label>
+                    <Select value={grantCourseId} onValueChange={setGrantCourseId}>
+                      <SelectTrigger id="grant-course">
+                        <SelectValue placeholder="Kies een cursus..." />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {courses.map((course) => (
+                          <SelectItem key={course.id} value={course.id}>
+                            {course.title}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div className="flex items-center justify-between gap-4 rounded-lg bg-secondary/50 px-4 py-3 text-sm text-muted-foreground">
+                    <span>Na toekennen ziet de gebruiker de cursus direct in het dashboard.</span>
+                    <Button type="submit" disabled={grantingAccess || !grantEmail.trim() || !grantCourseId} className="gap-2">
+                      {grantingAccess ? <Loader2 className="h-4 w-4 animate-spin" /> : <Gift className="h-4 w-4" />}
+                      Gratis aanmelden
+                    </Button>
+                  </div>
+                </form>
+              </section>
+
+              <section className="space-y-4">
+                <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                  <div>
+                    <h2 className="flex items-center gap-2 font-display text-lg font-semibold text-foreground">
+                      <Users className="h-5 w-5 text-primary" />
+                      Deelnemers
+                    </h2>
+                    <p className="mt-1 text-sm text-muted-foreground">
+                      {participants.length} {participants.length === 1 ? "deelnemer" : "deelnemers"}
+                    </p>
+                  </div>
+                  <div className="flex flex-wrap gap-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={handleExportParticipants}
+                      disabled={!participants.length}
+                      className="gap-1.5"
+                    >
+                      <Download className="h-4 w-4" />
+                      CSV
+                    </Button>
+                    <Button size="sm" onClick={openNewParticipantDialog} className="gap-1.5">
+                      <UserPlus className="h-4 w-4" />
+                      Deelnemer
+                    </Button>
+                  </div>
+                </div>
+
+                <div className="relative max-w-md">
+                  <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
                   <Input
-                    id="grant-email"
-                    type="email"
-                    placeholder="naam@bedrijf.nl"
-                    value={grantEmail}
-                    onChange={(e) => setGrantEmail(e.target.value)}
+                    value={participantSearch}
+                    onChange={(e) => setParticipantSearch(e.target.value)}
+                    placeholder="Zoek op naam, e-mail, bedrijf of workshop"
+                    className="pl-9"
                   />
                 </div>
 
-                <div className="space-y-2">
-                  <label htmlFor="grant-course" className="text-sm font-medium text-foreground">
-                    Cursus
-                  </label>
-                  <Select value={grantCourseId} onValueChange={setGrantCourseId}>
-                    <SelectTrigger id="grant-course">
-                      <SelectValue placeholder="Kies een cursus..." />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {courses.map((course) => (
-                        <SelectItem key={course.id} value={course.id}>
-                          {course.title}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                <div className="flex items-center justify-between gap-4 rounded-lg bg-secondary/50 px-4 py-3 text-sm text-muted-foreground">
-                  <span>Na toekennen ziet de gebruiker de cursus direct in het dashboard.</span>
-                  <Button type="submit" disabled={grantingAccess || !grantEmail.trim() || !grantCourseId} className="gap-2">
-                    {grantingAccess ? <Loader2 className="h-4 w-4 animate-spin" /> : <Gift className="h-4 w-4" />}
-                    Gratis aanmelden
-                  </Button>
-                </div>
-              </form>
+                {loadingParticipants ? (
+                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                    Laden...
+                  </div>
+                ) : filteredParticipants.length === 0 ? (
+                  <div className="rounded-xl border border-border bg-card px-5 py-8 text-sm text-muted-foreground">
+                    {participantSearchTerm ? "Geen deelnemers gevonden." : "Nog geen deelnemers toegevoegd."}
+                  </div>
+                ) : (
+                  <div className="divide-y divide-border rounded-xl border border-border bg-card">
+                    {filteredParticipants.map((participant) => (
+                      <div
+                        key={participant.id}
+                        className="grid gap-4 px-5 py-4 md:grid-cols-[1.35fr_1fr_1.2fr_auto] md:items-center"
+                      >
+                        <div className="min-w-0">
+                          <p className="truncate font-medium text-foreground">{participant.name}</p>
+                          <p className="mt-1 flex min-w-0 items-center gap-1.5 text-xs text-muted-foreground">
+                            <Mail className="h-3.5 w-3.5 shrink-0" />
+                            <span className="truncate">{participant.email}</span>
+                          </p>
+                        </div>
+                        <p className="flex min-w-0 items-center gap-1.5 text-sm text-foreground">
+                          <Building2 className="h-4 w-4 shrink-0 text-muted-foreground" />
+                          <span className="truncate">{participant.company}</span>
+                        </p>
+                        <p className="flex min-w-0 items-center gap-1.5 text-sm text-foreground">
+                          <ClipboardList className="h-4 w-4 shrink-0 text-muted-foreground" />
+                          <span className="truncate">{participant.workshop_title}</span>
+                        </p>
+                        <div className="flex items-center gap-1 md:justify-end">
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => openEditParticipantDialog(participant)}
+                            title="Bewerk deelnemer"
+                          >
+                            <Pencil className="h-4 w-4" />
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => handleDeleteParticipant(participant)}
+                            title="Verwijder deelnemer"
+                          >
+                            <Trash2 className="h-4 w-4 text-destructive" />
+                          </Button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </section>
             </div>
           </TabsContent>
 
@@ -662,10 +1034,10 @@ const AdminPortal = () => {
                             .join(", ") || "Geen datum"
                           }
                           {training.slide_filename && (
-                            <span className="ml-2 text-success">· {training.slide_filename}</span>
+                            <span className="ml-2 text-success">· Hoofdbestand: {training.slide_filename}</span>
                           )}
                           {training.resources?.length ? (
-                            <span className="ml-2 text-primary">· {training.resources.length} resource{training.resources.length !== 1 ? "s" : ""}</span>
+                            <span className="ml-2 text-primary">· {training.resources.length} naslagwerkitem{training.resources.length !== 1 ? "s" : ""}</span>
                           ) : null}
                         </p>
                       </div>
@@ -682,7 +1054,21 @@ const AdminPortal = () => {
                           {uploadingFor === training.id
                             ? <Loader2 className="h-3.5 w-3.5 animate-spin" />
                             : <Upload className="h-3.5 w-3.5" />}
-                          {training.slide_storage_path ? "Vervangen" : "Upload slides"}
+                          {training.slide_storage_path ? "Hoofdbestand vervangen" : "Hoofdbestand uploaden"}
+                        </Button>
+                        <Button
+                          variant="outline" size="sm"
+                          disabled={uploadingFor === training.id}
+                          onClick={() => {
+                            setResourceUploadTarget(training.id);
+                            resourceFileInputRef.current?.click();
+                          }}
+                          className="gap-1.5 text-xs"
+                        >
+                          {uploadingFor === training.id
+                            ? <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                            : <FileUp className="h-3.5 w-3.5" />}
+                          Naslagwerk uploaden
                         </Button>
                       <Button
                         variant="ghost" size="icon"
@@ -709,11 +1095,21 @@ const AdminPortal = () => {
             <input
               ref={fileInputRef}
               type="file"
-              accept=".pdf,.pptx,.ppt"
               className="hidden"
               onChange={(e) => {
                 const file = e.target.files?.[0];
                 if (file && uploadTarget) handleUploadSlide(uploadTarget, file);
+                e.target.value = "";
+              }}
+            />
+            <input
+              ref={resourceFileInputRef}
+              type="file"
+              className="hidden"
+              onChange={(e) => {
+                const file = e.target.files?.[0];
+                const training = trainings.find((item) => item.id === resourceUploadTarget);
+                if (file && training) handleUploadResource(training, file);
                 e.target.value = "";
               }}
             />
@@ -894,6 +1290,96 @@ const AdminPortal = () => {
             </div>
             <Button type="submit" className="w-full" disabled={savingCompany}>
               {savingCompany ? <Loader2 className="h-4 w-4 animate-spin" /> : "Aanmaken"}
+            </Button>
+          </form>
+        </DialogContent>
+      </Dialog>
+
+      {/* Participant Dialog */}
+      <Dialog
+        open={participantDialogOpen}
+        onOpenChange={(open) => {
+          setParticipantDialogOpen(open);
+          if (!open) {
+            setEditingParticipant(null);
+            setParticipantForm({ ...EMPTY_PARTICIPANT_FORM });
+          }
+        }}
+      >
+        <DialogContent className="sm:max-w-md bg-card border-border">
+          <DialogHeader>
+            <DialogTitle className="font-display text-xl">
+              {editingParticipant ? "Deelnemer bewerken" : "Nieuwe deelnemer"}
+            </DialogTitle>
+          </DialogHeader>
+          <form onSubmit={handleSaveParticipant} className="space-y-4 pt-2">
+            <div className="space-y-1.5">
+              <label htmlFor="participant-name" className="text-sm font-medium text-foreground">
+                Naam
+              </label>
+              <Input
+                id="participant-name"
+                value={participantForm.name}
+                onChange={(e) => setParticipantForm((prev) => ({ ...prev, name: e.target.value }))}
+                placeholder="Voornaam Achternaam"
+                required
+              />
+            </div>
+            <div className="space-y-1.5">
+              <label htmlFor="participant-email" className="text-sm font-medium text-foreground">
+                E-mailadres
+              </label>
+              <Input
+                id="participant-email"
+                type="email"
+                value={participantForm.email}
+                onChange={(e) => setParticipantForm((prev) => ({ ...prev, email: e.target.value }))}
+                placeholder="naam@bedrijf.nl"
+                required
+              />
+            </div>
+            <div className="space-y-1.5">
+              <label htmlFor="participant-company" className="text-sm font-medium text-foreground">
+                Bedrijf
+              </label>
+              <Input
+                id="participant-company"
+                value={participantForm.company}
+                onChange={(e) => setParticipantForm((prev) => ({ ...prev, company: e.target.value }))}
+                placeholder="Bedrijfsnaam"
+                required
+              />
+            </div>
+            <div className="space-y-1.5">
+              <label htmlFor="participant-workshop" className="text-sm font-medium text-foreground">
+                Workshop
+              </label>
+              <Input
+                id="participant-workshop"
+                list="academy-workshops"
+                value={participantForm.workshop_title}
+                onChange={(e) => setParticipantForm((prev) => ({ ...prev, workshop_title: e.target.value }))}
+                placeholder="Naam van de workshop"
+                required
+              />
+              <datalist id="academy-workshops">
+                {courses.map((course) => (
+                  <option key={course.id} value={course.title} />
+                ))}
+              </datalist>
+            </div>
+            <Button
+              type="submit"
+              className="w-full"
+              disabled={
+                savingParticipant
+                || !participantForm.name.trim()
+                || !participantForm.email.trim()
+                || !participantForm.company.trim()
+                || !participantForm.workshop_title.trim()
+              }
+            >
+              {savingParticipant ? <Loader2 className="h-4 w-4 animate-spin" /> : "Opslaan"}
             </Button>
           </form>
         </DialogContent>

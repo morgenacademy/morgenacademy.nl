@@ -6,13 +6,21 @@ const corsHeaders = {
     "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
 
+type PortalResource = {
+  label?: string;
+  value?: string;
+  type?: string;
+  storagePath?: string;
+  filename?: string;
+};
+
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
   }
 
   try {
-    const { slug, password, training_id } = await req.json();
+    const { slug, password, training_id, storage_path } = await req.json();
 
     if (!slug || !password || !training_id) {
       return new Response(JSON.stringify({ error: "Missing required fields" }), {
@@ -42,17 +50,49 @@ Deno.serve(async (req) => {
 
     const company_id = verifyResult.company_id;
 
-    // Verify training belongs to this company and has a slide
+    // Verify training belongs to this company and has downloadable material
     const { data: training, error: trainingError } = await supabase
       .from("portal_trainings")
-      .select("slide_storage_path, slide_filename, company_id")
+      .select("slide_storage_path, slide_filename, resources, company_id")
       .eq("id", training_id)
       .eq("company_id", company_id)
       .eq("is_active", true)
       .maybeSingle();
 
-    if (trainingError || !training || !training.slide_storage_path) {
-      return new Response(JSON.stringify({ error: "Training or slide not found" }), {
+    if (trainingError || !training) {
+      return new Response(JSON.stringify({ error: "Training not found" }), {
+        status: 404,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    let targetPath = training.slide_storage_path as string | null;
+    let filename = (training.slide_filename as string | null) || "slides.pdf";
+
+    if (typeof storage_path === "string" && storage_path.trim() !== "") {
+      const requestedPath = storage_path.trim();
+      const resources = Array.isArray(training.resources)
+        ? (training.resources as PortalResource[])
+        : [];
+      const resource = resources.find((item) =>
+        item &&
+        typeof item === "object" &&
+        (item.storagePath === requestedPath || item.value === requestedPath)
+      );
+
+      if (!resource || !requestedPath.startsWith(`${training_id}/`)) {
+        return new Response(JSON.stringify({ error: "Resource not found" }), {
+          status: 404,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+
+      targetPath = requestedPath;
+      filename = resource.filename || resource.label || "bestand";
+    }
+
+    if (!targetPath) {
+      return new Response(JSON.stringify({ error: "Downloadable file not found" }), {
         status: 404,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
@@ -61,7 +101,7 @@ Deno.serve(async (req) => {
     // Generate signed URL (5 minute expiry)
     const { data: signedUrlData, error: signedUrlError } = await supabase.storage
       .from("portal-slides")
-      .createSignedUrl(training.slide_storage_path, 300);
+      .createSignedUrl(targetPath, 300);
 
     if (signedUrlError || !signedUrlData?.signedUrl) {
       throw new Error("Failed to generate download URL");
@@ -70,7 +110,7 @@ Deno.serve(async (req) => {
     return new Response(
       JSON.stringify({
         download_url: signedUrlData.signedUrl,
-        filename: training.slide_filename || "slides.pdf",
+        filename,
       }),
       {
         status: 200,

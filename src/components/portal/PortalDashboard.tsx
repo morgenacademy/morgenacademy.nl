@@ -14,7 +14,17 @@ interface Training {
   training_dates: string[] | null;
   slide_storage_path: string | null;
   slide_filename: string | null;
-  resources: { label: string; value: string }[] | null;
+  resources: Resource[] | null;
+}
+
+interface Resource {
+  label: string;
+  value: string;
+  type?: "file";
+  storagePath?: string;
+  filename?: string;
+  contentType?: string;
+  size?: number;
 }
 
 interface PortalSession {
@@ -82,7 +92,7 @@ const PortalDashboard = ({ session, slug, onLogout }: PortalDashboardProps) => {
             Trainingsmaterialen
           </h1>
           <p className="mt-3 max-w-lg text-base leading-relaxed text-muted-foreground">
-            Download hieronder de slides van je training. We stellen het zeer op prijs als je even een minuutje neemt om feedback te geven, dat helpt ons de training steeds beter te maken.
+            Bekijk hieronder de materialen van je training. We stellen het zeer op prijs als je even een minuutje neemt om feedback te geven, dat helpt ons de training steeds beter te maken.
           </p>
         </motion.div>
 

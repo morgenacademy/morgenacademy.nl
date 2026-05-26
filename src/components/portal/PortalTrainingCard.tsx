@@ -16,7 +16,17 @@ interface Training {
   training_dates: string[] | null;
   slide_storage_path: string | null;
   slide_filename: string | null;
-  resources: { label: string; value: string }[] | null;
+  resources: Resource[] | null;
+}
+
+interface Resource {
+  label: string;
+  value: string;
+  type?: "file";
+  storagePath?: string;
+  filename?: string;
+  contentType?: string;
+  size?: number;
 }
 
 interface PortalTrainingCardProps {
@@ -29,6 +39,7 @@ interface PortalTrainingCardProps {
 
 const PortalTrainingCard = ({ training, companyId, slug, password, index }: PortalTrainingCardProps) => {
   const [downloading, setDownloading] = useState(false);
+  const [downloadingResourcePath, setDownloadingResourcePath] = useState<string | null>(null);
   const [feedbackOpen, setFeedbackOpen] = useState(false);
   const [feedbackSubmitted, setFeedbackSubmitted] = useState(false);
   const [resourcesOpen, setResourcesOpen] = useState(false);
@@ -45,11 +56,16 @@ const PortalTrainingCard = ({ training, companyId, slug, password, index }: Port
   const hasResources = !!training.resources?.length;
   const showFeedback = hasSlide;
 
-  const handleDownload = async () => {
-    setDownloading(true);
+  const downloadTrainingFile = async (storagePath?: string) => {
+    if (storagePath) {
+      setDownloadingResourcePath(storagePath);
+    } else {
+      setDownloading(true);
+    }
+
     try {
       const { data, error } = await supabase.functions.invoke("portal-download", {
-        body: { slug, password, training_id: training.id },
+        body: { slug, password, training_id: training.id, storage_path: storagePath },
       });
 
       if (error || !data?.download_url) throw new Error("Download mislukt");
@@ -65,7 +81,13 @@ const PortalTrainingCard = ({ training, companyId, slug, password, index }: Port
       });
     } finally {
       setDownloading(false);
+      setDownloadingResourcePath(null);
     }
+  };
+
+  const handleDownloadResource = (resource: Resource) => {
+    if (!resource.storagePath) return;
+    downloadTrainingFile(resource.storagePath);
   };
 
   return (
@@ -113,7 +135,7 @@ const PortalTrainingCard = ({ training, companyId, slug, password, index }: Port
             <div className="flex flex-col gap-2.5 sm:flex-row">
               {hasSlide && (
                 <Button
-                  onClick={handleDownload}
+                  onClick={() => downloadTrainingFile()}
                   disabled={downloading}
                   className="flex-1 gap-2"
                 >
@@ -122,7 +144,7 @@ const PortalTrainingCard = ({ training, companyId, slug, password, index }: Port
                   ) : (
                     <FileDown className="h-4 w-4" />
                   )}
-                  {downloading ? "Bezig..." : "Slides downloaden"}
+                  {downloading ? "Bezig..." : "Hoofdbestand openen"}
                 </Button>
               )}
 
@@ -157,6 +179,8 @@ const PortalTrainingCard = ({ training, companyId, slug, password, index }: Port
           onOpenChange={setResourcesOpen}
           trainingTitle={training.title}
           resources={training.resources!}
+          downloadingResourcePath={downloadingResourcePath}
+          onDownloadFile={handleDownloadResource}
         />
       )}
     </>
