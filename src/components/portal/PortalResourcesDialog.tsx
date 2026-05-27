@@ -147,12 +147,17 @@ const PortalResourcesDialog = ({
                       )}
                     </div>
                     {isVideo && previewUrl && previewResourcePath === resource.storagePath && (
-                      <video
-                        className="aspect-video w-full rounded bg-black"
-                        src={previewUrl}
-                        controls
-                        playsInline
-                      />
+                      <div className="space-y-2">
+                        <video
+                          className="aspect-video w-full rounded bg-black"
+                          src={previewUrl}
+                          controls
+                          playsInline
+                        />
+                        <p className="text-xs leading-relaxed text-muted-foreground">
+                          Speelt de video niet af? Zet deze video dan in Bunny Stream en voeg de Bunny embed-url toe als resource.
+                        </p>
+                      </div>
                     )}
                   </div>
                 ) : bunnyEmbedUrl ? (

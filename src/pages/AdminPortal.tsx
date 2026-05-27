@@ -1485,10 +1485,13 @@ const AdminPortal = () => {
             </div>
             <div className="space-y-1.5">
               <label className="text-sm font-medium text-foreground">Resources <span className="text-muted-foreground font-normal">(optioneel)</span></label>
+              <p className="text-xs leading-relaxed text-muted-foreground">
+                Gebruik voor video een Bunny Stream embed-url. Bestandsuploads zoals .mov kunnen door browsers alsnog als download openen.
+              </p>
               {newTrainingResources.map((r, i) => (
                 <div key={i} className="flex gap-2">
                   <Input
-                    placeholder="Label, bijv. API Key"
+                    placeholder="Label, bijv. Extra clip"
                     value={r.label}
                     onChange={(e) => {
                       const updated = [...newTrainingResources];
@@ -1498,7 +1501,7 @@ const AdminPortal = () => {
                     className="w-1/3"
                   />
                   <Textarea
-                    placeholder="Waarde..."
+                    placeholder="Waarde of Bunny embed-url..."
                     value={r.value}
                     onChange={(e) => {
                       const updated = [...newTrainingResources];
@@ -1577,10 +1580,13 @@ const AdminPortal = () => {
             </div>
             <div className="space-y-1.5">
               <label className="text-sm font-medium text-foreground">Resources <span className="text-muted-foreground font-normal">(optioneel)</span></label>
+              <p className="text-xs leading-relaxed text-muted-foreground">
+                Gebruik voor video een Bunny Stream embed-url. Bestandsuploads zoals .mov kunnen door browsers alsnog als download openen.
+              </p>
               {editResources.map((r, i) => (
                 <div key={i} className="flex gap-2">
                   <Input
-                    placeholder="Label, bijv. API Key"
+                    placeholder="Label, bijv. Extra clip"
                     value={r.label}
                     onChange={(e) => {
                       const updated = [...editResources];
@@ -1590,7 +1596,7 @@ const AdminPortal = () => {
                     className="w-1/3"
                   />
                   <Textarea
-                    placeholder="Waarde..."
+                    placeholder="Waarde of Bunny embed-url..."
                     value={r.value}
                     onChange={(e) => {
                       const updated = [...editResources];
