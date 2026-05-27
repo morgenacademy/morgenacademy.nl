@@ -1,11 +1,10 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { FileDown, MessageSquare, CheckCircle, Loader2, Calendar, BookOpen } from "lucide-react";
+import { FileDown, Loader2, Calendar, BookOpen } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import PortalFeedbackDialog from "./PortalFeedbackDialog";
 import PortalResourcesDialog from "./PortalResourcesDialog";
 
 interface Training {
@@ -31,19 +30,16 @@ interface Resource {
 
 interface PortalTrainingCardProps {
   training: Training;
-  companyId: string;
   slug: string;
   password: string;
   index: number;
 }
 
-const PortalTrainingCard = ({ training, companyId, slug, password, index }: PortalTrainingCardProps) => {
+const PortalTrainingCard = ({ training, slug, password, index }: PortalTrainingCardProps) => {
   const [downloading, setDownloading] = useState(false);
   const [downloadingResourcePath, setDownloadingResourcePath] = useState<string | null>(null);
   const [previewResourcePath, setPreviewResourcePath] = useState<string | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
-  const [feedbackOpen, setFeedbackOpen] = useState(false);
-  const [feedbackSubmitted, setFeedbackSubmitted] = useState(false);
   const [resourcesOpen, setResourcesOpen] = useState(false);
   const { toast } = useToast();
 
@@ -56,7 +52,6 @@ const PortalTrainingCard = ({ training, companyId, slug, password, index }: Port
 
   const hasSlide = !!training.slide_storage_path;
   const hasResources = !!training.resources?.length;
-  const showFeedback = hasSlide;
 
   const getDownloadUrl = async (storagePath?: string) => {
     const { data, error } = await supabase.functions.invoke("portal-download", {
@@ -122,12 +117,6 @@ const PortalTrainingCard = ({ training, companyId, slug, password, index }: Port
               <CardTitle className="font-display text-lg font-semibold text-foreground leading-snug">
                 {training.title}
               </CardTitle>
-              {feedbackSubmitted && (
-                <div className="flex shrink-0 items-center gap-1 rounded-full bg-success/10 px-2.5 py-1 text-xs text-success">
-                  <CheckCircle className="h-3.5 w-3.5" />
-                  Feedback gegeven
-                </div>
-              )}
             </div>
             {formattedDate && (
               <p className="flex items-center gap-1.5 text-xs text-muted-foreground">
@@ -166,31 +155,10 @@ const PortalTrainingCard = ({ training, companyId, slug, password, index }: Port
                   {downloading ? "Bezig..." : "Hoofdbestand openen"}
                 </Button>
               )}
-
-              {showFeedback && (
-                <Button
-                  variant={feedbackSubmitted ? "outline" : "secondary"}
-                  onClick={() => setFeedbackOpen(true)}
-                  disabled={feedbackSubmitted}
-                  className="flex-1 gap-2"
-                >
-                  <MessageSquare className="h-4 w-4" />
-                  {feedbackSubmitted ? "Feedback verstuurd" : "Geef feedback"}
-                </Button>
-              )}
             </div>
           </CardContent>
         </Card>
       </motion.div>
-
-      <PortalFeedbackDialog
-        open={feedbackOpen}
-        onOpenChange={setFeedbackOpen}
-        trainingId={training.id}
-        trainingTitle={training.title}
-        companyId={companyId}
-        onSubmitted={() => setFeedbackSubmitted(true)}
-      />
 
       {hasResources && (
         <PortalResourcesDialog

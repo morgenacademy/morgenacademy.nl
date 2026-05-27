@@ -75,9 +75,12 @@ const PortalLogin = ({ slug, onSuccess }: PortalLoginProps) => {
       >
         {/* Logo */}
         <div className="mb-8 text-center">
-          <h2 className="font-display text-2xl font-semibold text-foreground tracking-tight">
+          <a
+            href="https://www.morgenacademy.nl/"
+            className="font-display text-2xl font-semibold text-foreground tracking-tight transition-opacity hover:opacity-80"
+          >
             Morgen <span className="text-primary">Academy</span>
-          </h2>
+          </a>
           <p className="mt-1 flex items-center justify-center gap-1.5 text-xs uppercase tracking-[0.25em] text-muted-foreground">
             <Sparkles className="h-3 w-3" />
             Klantportaal

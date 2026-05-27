@@ -207,12 +207,12 @@ const Landing = () => {
         )}
       >
         {/* Logo */}
-        <Link
-          to="/"
+        <a
+          href="https://www.morgenacademy.nl/"
           className="font-display text-[1.5rem] font-black uppercase tracking-[0.1em] text-white shrink-0"
         >
           MORGEN<span className="text-[#d8fe56] font-black not-italic">.</span>
-        </Link>
+        </a>
 
         {/* Desktop nav */}
         <div className="hidden lg:flex items-center gap-6">
@@ -697,12 +697,12 @@ const Landing = () => {
         <div className="mx-auto max-w-6xl px-6">
           <div className="grid gap-12 border-b border-white/10 pb-10 md:grid-cols-[1.6fr_1fr_1fr_1fr]">
             <div>
-              <Link
-                to="/"
+              <a
+                href="https://www.morgenacademy.nl/"
                 className="font-display text-[1.5rem] font-black uppercase tracking-[0.1em] text-white"
               >
                 MORGEN<span className="text-[#d8fe56] font-black not-italic">.</span>
-              </Link>
+              </a>
               <p className="mt-5 max-w-[32ch] text-[0.95rem] leading-7 text-[#9F97B9]">
                 Morgen Academy is het trainingsplatform van{" "}
                 <a

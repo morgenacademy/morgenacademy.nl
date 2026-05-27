@@ -150,11 +150,11 @@ const Checkout = () => {
             <ArrowLeft className="h-4 w-4" />
           </button>
           <div className="flex-1 text-center">
-            <Link to="/">
+            <a href="https://www.morgenacademy.nl/">
               <span className="font-display text-xl font-semibold text-foreground tracking-tight">
                 Morgen <span className="text-primary">Academy</span>
               </span>
-            </Link>
+            </a>
           </div>
           <div className="w-8" />
         </div>

@@ -53,9 +53,12 @@ const Dashboard = () => {
       {/* Header */}
       <header className="border-b border-border">
         <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-5">
-          <h2 className="font-display text-xl font-semibold text-foreground tracking-tight">
+          <a
+            href="https://www.morgenacademy.nl/"
+            className="font-display text-xl font-semibold text-foreground tracking-tight transition-opacity hover:opacity-80"
+          >
             Morgen <span className="text-primary">Academy</span>
-          </h2>
+          </a>
           <div className="flex items-center gap-2">
             {isAdmin && (
               <Link to="/admin/portal">

@@ -62,11 +62,11 @@ const PaymentStatus = () => {
       {/* Header */}
       <header className="border-b border-border/50">
         <div className="mx-auto flex max-w-6xl items-center justify-center px-6 py-4">
-          <Link to="/">
+          <a href="https://www.morgenacademy.nl/">
             <span className="font-display text-xl font-semibold text-foreground tracking-tight">
               Morgen <span className="text-primary">Academy</span>
             </span>
-          </Link>
+          </a>
         </div>
       </header>
 
