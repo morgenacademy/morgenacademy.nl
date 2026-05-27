@@ -1,6 +1,8 @@
-import course1 from "@/assets/course-1.jpg";
-import course2 from "@/assets/course-2.jpg";
-import course3 from "@/assets/course-3.jpg";
+import aiBasisImage from "@/assets/course-ai-basis.jpg";
+import agenticAiImage from "@/assets/course-agentic-ai.jpeg";
+import vibecodenImage from "@/assets/course-vibecoden.jpeg";
+import claudeOpenAiImage from "@/assets/course-claude-openai.jpeg";
+import aiBedrijfImage from "@/assets/course-ai-bedrijf.jpg";
 
 export interface Lesson {
   id: string;
@@ -45,10 +47,10 @@ const placeholderVideo = "";
 export const courses: Course[] = [
   {
     id: "basistraining-ai",
-    title: "Basistraining AI",
+    title: "AI Basis Training",
     subtitle:
-      "Leer de fundamenten van kunstmatige intelligentie en pas het direct toe",
-    thumbnail: course1,
+      "Het stevige fundament om AI direct toe te passen in je dagelijkse werk",
+    thumbnail: aiBasisImage,
     totalLessons: 30,
     totalDuration: "3u 30min",
     progress: 0,
@@ -323,22 +325,46 @@ export const courses: Course[] = [
     ],
   },
   {
-    id: "automatiseren-kun-je-leren",
-    title: "Automatiseren kun je leren",
-    subtitle: "Van handmatig werk naar slimme automatiseringen",
-    thumbnail: course2,
-    totalLessons: 0,
-    totalDuration: "Binnenkort beschikbaar",
+    id: "agentic-ai",
+    title: "Agentic AI",
+    subtitle:
+      "Automatiseer workflows en laat AI-agents slim werk uit handen nemen",
+    thumbnail: agenticAiImage,
+    totalLessons: 12,
+    totalDuration: "Direct toegang",
     price: "49.00",
     modules: [],
   },
   {
     id: "vibecoden",
-    title: "Vibecoden",
-    subtitle: "Maak je eigen app of website met AI — zonder te kunnen programmeren",
-    thumbnail: course3,
-    totalLessons: 0,
-    totalDuration: "Binnenkort beschikbaar",
+    title: "VIBEcoden",
+    subtitle:
+      "Van idee naar werkend product met AI, zonder klassieke programmeerkennis",
+    thumbnail: vibecodenImage,
+    totalLessons: 10,
+    totalDuration: "Direct toegang",
+    price: "49.00",
+    modules: [],
+  },
+  {
+    id: "claude-openai-training",
+    title: "Claude & OpenAI Training",
+    subtitle:
+      "Haal alles uit chat, cowork en coding skills in je dagelijkse werk",
+    thumbnail: claudeOpenAiImage,
+    totalLessons: 14,
+    totalDuration: "Direct toegang",
+    price: "49.00",
+    modules: [],
+  },
+  {
+    id: "ai-in-je-bedrijf",
+    title: "AI in je bedrijf",
+    subtitle:
+      "Voor leiders die AI concreet, veilig en resultaatgericht willen inzetten",
+    thumbnail: aiBedrijfImage,
+    totalLessons: 8,
+    totalDuration: "Direct toegang",
     price: "49.00",
     modules: [],
   },

@@ -7,8 +7,11 @@ const corsHeaders = {
 };
 
 const COURSE_TITLES: Record<string, string> = {
-  "basistraining-ai": "Basistraining AI",
-  "automatiseren-kun-je-leren": "Automatiseren kun je leren",
+  "basistraining-ai": "AI Basis Training",
+  "agentic-ai": "Agentic AI",
+  "vibecoden": "VIBEcoden",
+  "claude-openai-training": "Claude & OpenAI Training",
+  "ai-in-je-bedrijf": "AI in je bedrijf",
 };
 
 Deno.serve(async (req) => {
