@@ -9,7 +9,7 @@ import { courses } from "@/data/courses";
 import { toast } from "sonner";
 import {
   ArrowLeft, Plus, Copy, Check, ToggleLeft, ToggleRight,
-  Star, Loader2, Upload, Trash2, ExternalLink, Pencil, Download, Gift, FileUp,
+  Star, Loader2, Upload, Trash2, ExternalLink, Pencil, Download, Gift, FileUp, Link as LinkIcon,
   Users, UserPlus, Mail, Building2, ClipboardList, Search,
 } from "lucide-react";
 import {
@@ -508,6 +508,39 @@ const AdminPortal = () => {
         );
       },
     });
+  };
+
+  const handleAddResourceUrl = async (training: Training) => {
+    const label = window.prompt("Naam van het naslagwerk", "Bunny video");
+    if (!label?.trim()) return;
+
+    const value = window.prompt(
+      "Plak de URL, bijvoorbeeld een Bunny embed-url",
+      "https://iframe.mediadelivery.net/embed/"
+    );
+    if (!value?.trim()) return;
+
+    const nextResources = [
+      ...(training.resources ?? []),
+      { label: label.trim(), value: value.trim() },
+    ];
+
+    const { error } = await supabase
+      .from("portal_trainings")
+      .update({ resources: nextResources })
+      .eq("id", training.id);
+
+    if (error) {
+      toast.error(`URL toevoegen mislukt: ${error.message}`, { duration: Infinity });
+      return;
+    }
+
+    setTrainings((prev) =>
+      prev.map((item) =>
+        item.id === training.id ? { ...item, resources: nextResources } : item
+      )
+    );
+    toast.success("URL toegevoegd aan naslagwerk", { duration: Infinity });
   };
 
   const handleDeleteTraining = async (trainingId: string) => {
@@ -1105,6 +1138,14 @@ const AdminPortal = () => {
                             ? <Loader2 className="h-3.5 w-3.5 animate-spin" />
                             : <FileUp className="h-3.5 w-3.5" />}
                           Naslagwerk uploaden
+                        </Button>
+                        <Button
+                          variant="outline" size="sm"
+                          onClick={() => handleAddResourceUrl(training)}
+                          className="gap-1.5 text-xs"
+                        >
+                          <LinkIcon className="h-3.5 w-3.5" />
+                          URL toevoegen
                         </Button>
                       <Button
                         variant="ghost" size="icon"

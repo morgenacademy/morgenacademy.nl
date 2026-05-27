@@ -49,8 +49,25 @@ const isVideoResource = (resource: Resource) => {
 };
 
 const getBunnyEmbedUrl = (value: string) => {
-  if (!value.includes("mediadelivery.net/embed/")) return null;
-  return value.startsWith("http") ? value : `https://${value}`;
+  const withProtocol = value.startsWith("http") ? value : `https://${value}`;
+
+  try {
+    const url = new URL(withProtocol);
+
+    if (url.hostname === "iframe.mediadelivery.net" && url.pathname.startsWith("/embed/")) {
+      return url.toString();
+    }
+
+    if (url.hostname === "player.mediadelivery.net" && url.pathname.startsWith("/play/")) {
+      const [, , libraryId, videoId] = url.pathname.split("/");
+      if (!libraryId || !videoId) return null;
+      return `https://iframe.mediadelivery.net/embed/${libraryId}/${videoId}`;
+    }
+  } catch {
+    return null;
+  }
+
+  return null;
 };
 
 const PortalResourcesDialog = ({
