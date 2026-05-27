@@ -449,18 +449,19 @@ const Landing = () => {
               Live agenda
             </p>
             <h2 className="font-display text-3xl font-semibold text-foreground md:text-4xl">
-              Geplande live sessies, zonder dat de homepage volloopt
+              Summer School kalender
             </h2>
             <p className="mt-4 text-sm leading-relaxed text-muted-foreground md:text-base">
-              De snelste route blijft online: direct starten, eigen tempo, meteen toegang.
-              Voor wie liever op een vast moment instapt, plannen we daarnaast een klein aantal live sessies in.
+              De Summer School start op 1 juli en loopt twee maanden. Iedere twee weken is er op woensdag
+              een live webinar. Je kunt de webinars los boeken voor € 39,95 per stuk; bij de Summer School
+              zijn ze inbegrepen.
             </p>
           </div>
           <a
             href="#trainingen"
             className="text-sm font-medium text-primary transition-opacity hover:opacity-80"
           >
-            Liever meteen online beginnen
+            Bekijk online trainingen
           </a>
         </motion.div>
 
@@ -475,48 +476,50 @@ const Landing = () => {
             <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(216,254,86,0.18),transparent_34%),radial-gradient(circle_at_bottom_left,rgba(124,53,201,0.26),transparent_42%)]" />
             <div className="relative">
               <div className="inline-flex items-center rounded-full border border-white/10 bg-white/[0.06] px-3 py-1 text-[0.68rem] font-semibold uppercase tracking-[0.22em] text-[#D8CCEC]">
-                Eerste keuze
+                Summer School
               </div>
               <h3 className="mt-5 max-w-sm font-display text-3xl font-semibold leading-none text-white">
-                Meeste deelnemers starten nog steeds online
+                Twee maanden leren met vier live momenten
               </h3>
               <p className="mt-4 max-w-md text-sm leading-relaxed text-[#D8CCEC]">
-                Rustig leren, direct beginnen en later altijd nog aanschuiven bij live verdieping.
-                Zo blijft de ervaring overzichtelijk en groeit het aanbod mee met de vraag.
+                Start op woensdag 1 juli. Daarna schuif je iedere twee weken aan voor een live webinar
+                over duurzaam AI-gebruik, ethiek en data soevereiniteit.
               </p>
 
               <div className="mt-8 grid gap-3 sm:grid-cols-3">
                 <div className="rounded-2xl border border-white/10 bg-black/10 p-4">
                   <p className="text-[0.68rem] uppercase tracking-[0.2em] text-[#D8CCEC]">Start</p>
-                  <p className="mt-2 font-display text-2xl text-white">Vandaag</p>
-                  <p className="mt-1 text-xs text-[#D8CCEC]">Direct toegang tot je training</p>
+                  <p className="mt-2 font-display text-2xl text-white">1 juli</p>
+                  <p className="mt-1 text-xs text-[#D8CCEC]">KickOff live online</p>
                 </div>
                 <div className="rounded-2xl border border-white/10 bg-black/10 p-4">
-                  <p className="text-[0.68rem] uppercase tracking-[0.2em] text-[#D8CCEC]">Tempo</p>
-                  <p className="mt-2 font-display text-2xl text-white">Eigen</p>
-                  <p className="mt-1 text-xs text-[#D8CCEC]">Kijken wanneer het jou uitkomt</p>
+                  <p className="text-[0.68rem] uppercase tracking-[0.2em] text-[#D8CCEC]">Duur</p>
+                  <p className="mt-2 font-display text-2xl text-white">2 maanden</p>
+                  <p className="mt-1 text-xs text-[#D8CCEC]">Vier webinars in totaal</p>
                 </div>
                 <div className="rounded-2xl border border-white/10 bg-black/10 p-4">
-                  <p className="text-[0.68rem] uppercase tracking-[0.2em] text-[#D8CCEC]">Later</p>
-                  <p className="mt-2 font-display text-2xl text-white">Live</p>
-                  <p className="mt-1 text-xs text-[#D8CCEC]">Makkelijk uit te breiden met sessies</p>
+                  <p className="text-[0.68rem] uppercase tracking-[0.2em] text-[#D8CCEC]">Webinar</p>
+                  <p className="mt-2 font-display text-2xl text-white">€ 39,95</p>
+                  <p className="mt-1 text-xs text-[#D8CCEC]">Los boeken kan ook</p>
                 </div>
               </div>
 
               <div className="mt-8 flex flex-wrap gap-3">
-                <Button asChild size="lg" className="gap-2 text-sm uppercase tracking-wider">
-                  <a href="#trainingen">
-                    Bekijk online trainingen
-                    <ArrowRight className="h-4 w-4" />
-                  </a>
+                <Button
+                  size="lg"
+                  className="gap-2 text-sm uppercase tracking-wider"
+                  onClick={() => setSelectedLiveSession(liveSessions[0])}
+                >
+                  Boek Summer School
+                  <ArrowRight className="h-4 w-4" />
                 </Button>
                 <Button
                   variant="outline"
                   size="lg"
                   className="text-sm uppercase tracking-wider"
-                  onClick={() => setNewsletterOpen(true)}
+                  onClick={() => setSelectedLiveSession(liveSessions[0])}
                 >
-                  Blijf op de hoogte
+                  Los webinar boeken
                 </Button>
               </div>
             </div>
@@ -592,14 +595,14 @@ const Landing = () => {
                         <p className="mt-2 text-xs text-muted-foreground">{session.priceLabel}</p>
                       </div>
                       <Button className="w-full gap-2" onClick={() => setSelectedLiveSession(session)}>
-                        Schrijf je in
+                        Boek webinar
                         <ArrowRight className="h-4 w-4" />
                       </Button>
                       <a
-                        href="#trainingen"
+                        href="mailto:totmorgen@morgenacademy.nl?subject=Summer%20School"
                         className="text-center text-xs font-medium text-muted-foreground transition-colors hover:text-primary"
                       >
-                        Eerst online kijken
+                        Summer School inbegrepen
                       </a>
                     </div>
                   </div>
