@@ -299,6 +299,35 @@ const AdminPortal = () => {
     setCompanies((prev) => prev.map((c) => c.id === company.id ? { ...c, is_active: !c.is_active } : c));
   };
 
+  const handleDeleteCompany = async (company: Company) => {
+    const confirmed = window.confirm(
+      `Weet je zeker dat je "${company.name}" wilt verwijderen? Alle trainingen en feedback van deze omgeving worden ook verwijderd.`
+    );
+    if (!confirmed) return;
+
+    const { error } = await supabase
+      .from("portal_companies")
+      .delete()
+      .eq("id", company.id);
+
+    if (error) {
+      toast.error(`Verwijderen mislukt: ${error.message}`, { duration: Infinity });
+      return;
+    }
+
+    setCompanies((prev) => prev.filter((item) => item.id !== company.id));
+    if (selectedCompanyId === company.id) {
+      setSelectedCompanyId("");
+      setTrainings([]);
+    }
+    if (feedbackCompanyId === company.id) {
+      setFeedbackCompanyId("");
+      setFeedbackTrainingId("");
+      setFeedback([]);
+    }
+    toast.success(`${company.name} verwijderd`, { duration: Infinity });
+  };
+
   const handleCopyUrl = (slug: string) => {
     navigator.clipboard.writeText(`${window.location.origin}/portal/${slug}`);
     setCopiedSlug(slug);
@@ -831,6 +860,13 @@ const AdminPortal = () => {
                         <a href={`/portal/${company.slug}`} target="_blank" rel="noopener noreferrer">
                           <ExternalLink className="h-4 w-4" />
                         </a>
+                      </Button>
+                      <Button
+                        variant="ghost" size="icon"
+                        onClick={() => handleDeleteCompany(company)}
+                        title="Verwijder omgeving"
+                      >
+                        <Trash2 className="h-4 w-4 text-destructive" />
                       </Button>
                     </div>
                   </div>

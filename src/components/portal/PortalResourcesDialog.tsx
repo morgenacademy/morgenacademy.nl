@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Copy, Check, ShieldAlert, Download, Loader2 } from "lucide-react";
+import VideoPlayer from "@/components/VideoPlayer";
 
 interface Resource {
   label: string;
@@ -19,7 +20,10 @@ interface PortalResourcesDialogProps {
   trainingTitle: string;
   resources: Resource[];
   downloadingResourcePath?: string | null;
+  previewResourcePath?: string | null;
+  previewUrl?: string | null;
   onDownloadFile: (resource: Resource) => void;
+  onPreviewFile: (resource: Resource) => void;
 }
 
 const formatFileSize = (size?: number) => {
@@ -36,13 +40,29 @@ const formatFileSize = (size?: number) => {
   return `${value.toFixed(value >= 10 || unitIndex === 0 ? 0 : 1)} ${units[unitIndex]}`;
 };
 
+const isVideoResource = (resource: Resource) => {
+  const fileName = `${resource.filename ?? resource.value}`.toLowerCase();
+  return (
+    resource.contentType?.startsWith("video/") ||
+    /\.(mp4|m4v|mov|webm|ogg)$/i.test(fileName)
+  );
+};
+
+const getBunnyEmbedUrl = (value: string) => {
+  if (!value.includes("mediadelivery.net/embed/")) return null;
+  return value.startsWith("http") ? value : `https://${value}`;
+};
+
 const PortalResourcesDialog = ({
   open,
   onOpenChange,
   trainingTitle,
   resources,
   downloadingResourcePath,
+  previewResourcePath,
+  previewUrl,
   onDownloadFile,
+  onPreviewFile,
 }: PortalResourcesDialogProps) => {
   const [copiedIndex, setCopiedIndex] = useState<number | null>(null);
 
@@ -66,9 +86,12 @@ const PortalResourcesDialog = ({
         <div className="space-y-3 pt-2">
           {resources.map((resource, index) => {
             const isFile = resource.type === "file" || !!resource.storagePath;
+            const isVideo = isVideoResource(resource);
+            const bunnyEmbedUrl = getBunnyEmbedUrl(resource.value);
             const isLong = resource.value.length > 80;
             const isCopied = copiedIndex === index;
             const isDownloading = !!resource.storagePath && downloadingResourcePath === resource.storagePath;
+            const isPreviewing = !!resource.storagePath && previewResourcePath === resource.storagePath;
             const fileSize = formatFileSize(resource.size);
 
             return (
@@ -79,16 +102,16 @@ const PortalResourcesDialog = ({
                     <Button
                       variant="ghost"
                       size="sm"
-                      onClick={() => onDownloadFile(resource)}
-                      disabled={isDownloading}
+                      onClick={() => isVideo ? onPreviewFile(resource) : onDownloadFile(resource)}
+                      disabled={isDownloading || isPreviewing}
                       className="h-7 gap-1.5 px-2 text-xs text-muted-foreground hover:text-foreground"
                     >
-                      {isDownloading ? (
+                      {isDownloading || isPreviewing ? (
                         <Loader2 className="h-3.5 w-3.5 animate-spin" />
                       ) : (
                         <Download className="h-3.5 w-3.5" />
                       )}
-                      Open
+                      {isVideo ? "Afspelen" : "Open"}
                     </Button>
                   ) : (
                     <Button
@@ -112,15 +135,32 @@ const PortalResourcesDialog = ({
                   )}
                 </div>
                 {isFile ? (
-                  <div className="rounded bg-background px-2 py-1.5 text-xs text-muted-foreground">
-                    <p className="break-all font-medium text-foreground">
-                      {resource.filename ?? resource.value}
-                    </p>
-                    {(resource.contentType || fileSize) && (
-                      <p className="mt-1">
-                        {[resource.contentType, fileSize].filter(Boolean).join(" · ")}
+                  <div className="space-y-2">
+                    <div className="rounded bg-background px-2 py-1.5 text-xs text-muted-foreground">
+                      <p className="break-all font-medium text-foreground">
+                        {resource.filename ?? resource.value}
                       </p>
+                      {(resource.contentType || fileSize) && (
+                        <p className="mt-1">
+                          {[resource.contentType, fileSize].filter(Boolean).join(" · ")}
+                        </p>
+                      )}
+                    </div>
+                    {isVideo && previewUrl && previewResourcePath === resource.storagePath && (
+                      <video
+                        className="aspect-video w-full rounded bg-black"
+                        src={previewUrl}
+                        controls
+                        playsInline
+                      />
                     )}
+                  </div>
+                ) : bunnyEmbedUrl ? (
+                  <div className="space-y-2">
+                    <VideoPlayer src={bunnyEmbedUrl} />
+                    <code className="block rounded bg-background px-2 py-1.5 font-mono text-xs text-foreground break-all">
+                      {resource.value}
+                    </code>
                   </div>
                 ) : isLong ? (
                   <pre className="max-h-32 overflow-y-auto whitespace-pre-wrap break-all rounded bg-background p-2 font-mono text-xs text-foreground">

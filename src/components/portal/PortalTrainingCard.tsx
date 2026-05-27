@@ -40,6 +40,8 @@ interface PortalTrainingCardProps {
 const PortalTrainingCard = ({ training, companyId, slug, password, index }: PortalTrainingCardProps) => {
   const [downloading, setDownloading] = useState(false);
   const [downloadingResourcePath, setDownloadingResourcePath] = useState<string | null>(null);
+  const [previewResourcePath, setPreviewResourcePath] = useState<string | null>(null);
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [feedbackOpen, setFeedbackOpen] = useState(false);
   const [feedbackSubmitted, setFeedbackSubmitted] = useState(false);
   const [resourcesOpen, setResourcesOpen] = useState(false);
@@ -56,23 +58,21 @@ const PortalTrainingCard = ({ training, companyId, slug, password, index }: Port
   const hasResources = !!training.resources?.length;
   const showFeedback = hasSlide;
 
+  const getDownloadUrl = async (storagePath?: string) => {
+    const { data, error } = await supabase.functions.invoke("portal-download", {
+      body: { slug, password, training_id: training.id, storage_path: storagePath },
+    });
+
+    if (error || !data?.download_url) throw new Error("Download mislukt");
+    return data.download_url as string;
+  };
+
   const downloadTrainingFile = async (storagePath?: string) => {
-    if (storagePath) {
-      setDownloadingResourcePath(storagePath);
-    } else {
-      setDownloading(true);
-    }
+    if (storagePath) setDownloadingResourcePath(storagePath);
+    else setDownloading(true);
 
     try {
-      const { data, error } = await supabase.functions.invoke("portal-download", {
-        body: { slug, password, training_id: training.id, storage_path: storagePath },
-      });
-
-      if (error || !data?.download_url) throw new Error("Download mislukt");
-
-      // Use direct navigation — works reliably on mobile Safari
-      // Browser will open PDF in viewer or download other file types
-      window.location.href = data.download_url;
+      window.location.href = await getDownloadUrl(storagePath);
     } catch {
       toast({
         title: "Download mislukt",
@@ -88,6 +88,25 @@ const PortalTrainingCard = ({ training, companyId, slug, password, index }: Port
   const handleDownloadResource = (resource: Resource) => {
     if (!resource.storagePath) return;
     downloadTrainingFile(resource.storagePath);
+  };
+
+  const handlePreviewResource = async (resource: Resource) => {
+    if (!resource.storagePath) return;
+
+    setDownloadingResourcePath(resource.storagePath);
+    try {
+      const url = await getDownloadUrl(resource.storagePath);
+      setPreviewResourcePath(resource.storagePath);
+      setPreviewUrl(url);
+    } catch {
+      toast({
+        title: "Video laden mislukt",
+        description: "Probeer het later opnieuw.",
+        variant: "destructive",
+      });
+    } finally {
+      setDownloadingResourcePath(null);
+    }
   };
 
   return (
@@ -180,7 +199,10 @@ const PortalTrainingCard = ({ training, companyId, slug, password, index }: Port
           trainingTitle={training.title}
           resources={training.resources!}
           downloadingResourcePath={downloadingResourcePath}
+          previewResourcePath={previewResourcePath}
+          previewUrl={previewUrl}
           onDownloadFile={handleDownloadResource}
+          onPreviewFile={handlePreviewResource}
         />
       )}
     </>
