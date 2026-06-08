@@ -193,7 +193,7 @@ const PortalDashboard = ({ session, slug, onLogout }: PortalDashboardProps) => {
                     De zomer die alles verandert.
                   </h2>
                   <p className="mt-3 max-w-xl text-sm leading-relaxed text-muted-foreground">
-                    Voor €350 krijg je in juli en augustus toegang tot alle 5 online trainingen, community en persoonlijke begeleiding van Karin & Harmen.
+                    Voor €350 krijg je in juli en augustus toegang tot alle 5 online trainingen, live masterclasses om de twee weken, community en persoonlijke begeleiding van Karin & Harmen.
                   </p>
                 </div>
                 <Button asChild className="shrink-0 gap-2">
