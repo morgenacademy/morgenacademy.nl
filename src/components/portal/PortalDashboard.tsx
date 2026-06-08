@@ -187,13 +187,15 @@ const PortalDashboard = ({ session, slug, onLogout }: PortalDashboardProps) => {
               <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
                 <div>
                   <p className="mb-2 text-xs uppercase tracking-[0.25em] text-primary">
-                    Summer School 2025
+                    Summer School
                   </p>
                   <h2 className="font-display text-2xl font-semibold text-foreground">
                     De zomer die alles verandert.
                   </h2>
                   <p className="mt-3 max-w-xl text-sm leading-relaxed text-muted-foreground">
-                    Voor €350 krijg je in juli en augustus toegang tot alle 5 online trainingen, live masterclasses om de twee weken, community en persoonlijke begeleiding van Karin & Harmen.
+                    Voor €250 krijg je in juli en augustus online toegang tot al onze live trainingen,
+                    de KickOff en iedere twee weken een live webinar om zelf verder te leren en vragen te stellen.
+                    Je behoudt oneindig toegang tot de webinars.
                   </p>
                 </div>
                 <Button asChild className="shrink-0 gap-2">

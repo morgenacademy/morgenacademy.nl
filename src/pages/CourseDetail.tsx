@@ -4,7 +4,9 @@ import { motion } from "framer-motion";
 import { ArrowLeft, FileText, ExternalLink, Lock, Bell, CheckCircle, X } from "lucide-react";
 import VideoPlayer from "@/components/VideoPlayer";
 import LessonList from "@/components/LessonList";
+import RecommendationRow from "@/components/RecommendationRow";
 import { courses, getAllLessons } from "@/data/courses";
+import { getRecommendationsForCourse } from "@/data/recommendations";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -22,6 +24,7 @@ const CourseDetail = () => {
   const activeLesson = allLessons.find((l) => l.id === activeLessonId) || allLessons[0];
   const [videoUrl, setVideoUrl] = useState("");
   const [enrolled, setEnrolled] = useState<boolean | null>(null);
+  const [enrolledCourseIds, setEnrolledCourseIds] = useState<string[]>([]);
 
   // Wachtlijst modal state
   const [waitlistModal, setWaitlistModal] = useState<{ id: string; title: string } | null>(null);
@@ -50,17 +53,24 @@ const CourseDetail = () => {
 
       if (adminRole) {
         setEnrolled(true);
+        setEnrolledCourseIds(courses.filter((c) => !c.comingSoon).map((c) => c.id));
         return;
       }
 
-      const { data } = await supabase
+      const { data: currentEnrollment } = await supabase
         .from("course_enrollments")
         .select("id")
         .eq("user_id", user.id)
         .eq("course_id", courseId)
         .maybeSingle();
 
-      setEnrolled(!!data);
+      const { data: enrollments } = await supabase
+        .from("course_enrollments")
+        .select("course_id")
+        .eq("user_id", user.id);
+
+      setEnrolled(!!currentEnrollment);
+      setEnrolledCourseIds(enrollments?.map((enrollment) => enrollment.course_id) || []);
     };
     checkEnrollment();
   }, [courseId]);
@@ -144,6 +154,8 @@ const CourseDetail = () => {
     );
   }
 
+  const recommendationItems = getRecommendationsForCourse(course.id, enrolledCourseIds);
+
   if (!hasLessons) {
     return (
       <div className="min-h-screen bg-background">
@@ -180,6 +192,12 @@ const CourseDetail = () => {
             </div>
           </div>
         </div>
+
+        <RecommendationRow
+          items={recommendationItems}
+          className="mx-auto max-w-6xl px-6 pb-16"
+          subtitle="Terwijl deze training wordt gevuld, kun je alvast door naar een andere verdieping of podcast."
+        />
       </div>
     );
   }
@@ -275,6 +293,12 @@ const CourseDetail = () => {
                   ))}
                 </div>
               )}
+
+              <RecommendationRow
+                items={recommendationItems}
+                className="mt-12"
+                subtitle="Kies meteen je volgende verdieping of luister verder via een aanbevolen podcast."
+              />
             </div>
           </motion.div>
 

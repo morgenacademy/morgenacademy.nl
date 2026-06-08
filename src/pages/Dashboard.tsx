@@ -5,14 +5,18 @@ import { LogOut, ArrowRight, Settings } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import CourseCard from "@/components/CourseCard";
+import RecommendationRow from "@/components/RecommendationRow";
 import WaitlistDialog from "@/components/WaitlistDialog";
 import { courses } from "@/data/courses";
+import { getRecommendationsForCourses } from "@/data/recommendations";
+import { getDaypartGreeting } from "@/lib/daypartGreeting";
 
 const Dashboard = () => {
   const navigate = useNavigate();
   const [enrolledCourseIds, setEnrolledCourseIds] = useState<string[]>([]);
   const [isAdmin, setIsAdmin] = useState(false);
   const [waitlistCourse, setWaitlistCourse] = useState<{ id: string; title: string } | null>(null);
+  const [daypartGreeting, setDaypartGreeting] = useState(() => getDaypartGreeting());
 
   useEffect(() => {
     const fetchEnrollments = async () => {
@@ -43,10 +47,20 @@ const Dashboard = () => {
     fetchEnrollments();
   }, []);
 
+  useEffect(() => {
+    const interval = window.setInterval(() => {
+      setDaypartGreeting(getDaypartGreeting());
+    }, 60 * 1000);
+
+    return () => window.clearInterval(interval);
+  }, []);
+
   const handleLogout = async () => {
     await supabase.auth.signOut();
     navigate("/");
   };
+
+  const recommendationItems = getRecommendationsForCourses(enrolledCourseIds, enrolledCourseIds);
 
   return (
     <div className="min-h-screen bg-background">
@@ -89,7 +103,7 @@ const Dashboard = () => {
           transition={{ duration: 0.6 }}
         >
           <p className="text-xs uppercase tracking-[0.25em] text-primary mb-3">
-            Welkom terug
+            {daypartGreeting}
           </p>
           <h1 className="font-display text-4xl md:text-5xl font-semibold text-foreground leading-tight max-w-xl">
             Jouw trainingen
@@ -114,6 +128,13 @@ const Dashboard = () => {
           ))}
         </div>
       </section>
+
+      {recommendationItems.length > 0 && (
+        <RecommendationRow
+          items={recommendationItems}
+          className="mx-auto max-w-6xl px-6 pb-20"
+        />
+      )}
 
       {/* Subtle Morgen Company hint */}
       <section className="mx-auto max-w-6xl px-6 pb-20">

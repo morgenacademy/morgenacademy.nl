@@ -7,8 +7,8 @@ Deze app verwacht meer dan alleen een `VITE_SUPABASE_URL` en publishable key. Vo
 Zet lokaal en in je hosting:
 
 ```env
-VITE_SUPABASE_PROJECT_ID=ktxyniigglouaghzmwyf
-VITE_SUPABASE_URL=https://ktxyniigglouaghzmwyf.supabase.co
+VITE_SUPABASE_PROJECT_ID=fiquwpfscmmeqlpkrjjp
+VITE_SUPABASE_URL=https://fiquwpfscmmeqlpkrjjp.supabase.co
 VITE_SUPABASE_PUBLISHABLE_KEY=...
 ```
 

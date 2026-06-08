@@ -21,9 +21,9 @@ import { courses } from "@/data/courses";
 import { liveSessions, type LiveSession } from "@/data/liveSessions";
 import WaitlistDialog from "@/components/WaitlistDialog";
 import ContactDialog from "@/components/ContactDialog";
-import NewsletterDialog from "@/components/NewsletterDialog";
 import LiveSessionSignupDialog from "@/components/LiveSessionSignupDialog";
 import { cn } from "@/lib/utils";
+import { getDaypartGreeting } from "@/lib/daypartGreeting";
 
 const headerLinks = [
   {
@@ -103,10 +103,10 @@ const formatSessionDate = (startsAt: string, endsAt: string) => {
 
 const Landing = () => {
   const navigate = useNavigate();
+  const [daypartGreeting, setDaypartGreeting] = useState(() => getDaypartGreeting());
   const [waitlistCourse, setWaitlistCourse] = useState<{ id: string; title: string } | null>(null);
   const [selectedLiveSession, setSelectedLiveSession] = useState<LiveSession | null>(null);
   const [contactOpen, setContactOpen] = useState(false);
-  const [newsletterOpen, setNewsletterOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
 
@@ -114,6 +114,14 @@ const Landing = () => {
     const handleScroll = () => setScrolled(window.scrollY > 20);
     window.addEventListener("scroll", handleScroll, { passive: true });
     return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
+
+  useEffect(() => {
+    const interval = window.setInterval(() => {
+      setDaypartGreeting(getDaypartGreeting());
+    }, 60 * 1000);
+
+    return () => window.clearInterval(interval);
   }, []);
 
   const renderHeaderLink = (item: typeof headerLinks[number], mobile = false) => {
@@ -262,7 +270,7 @@ const Landing = () => {
         >
           <p className="mb-4 flex items-center gap-2 text-xs uppercase tracking-[0.3em] text-primary">
             <Sparkles className="h-3.5 w-3.5" />
-            Online trainingen
+            {daypartGreeting}
           </p>
           <h1 className="font-display text-4xl font-semibold leading-[1.1] text-foreground md:text-5xl lg:text-6xl">
             Leer werken met AI & automatisering
@@ -270,53 +278,6 @@ const Landing = () => {
           <p className="mt-6 text-lg leading-relaxed text-muted-foreground">
             Praktische videotrainingen waarmee je direct aan de slag kunt.
             Leer op je eigen tempo, waar en wanneer je wilt.
-          </p>
-          <a
-            href="#live-agenda"
-            className="mt-6 inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.03] px-4 py-2 text-xs uppercase tracking-[0.18em] text-[#D8CCEC] transition-colors hover:text-white"
-          >
-            <CalendarDays className="h-3.5 w-3.5 text-primary" />
-            Live agenda
-            <span className="text-white/70">
-              {liveSessions.map((session) => format(parseISO(session.startsAt), "d MMM", { locale: nl })).join(" / ")}
-            </span>
-          </a>
-          <div className="mt-8 flex flex-wrap gap-4">
-            <a href="#trainingen">
-              <Button size="lg" className="gap-2 text-sm uppercase tracking-wider">
-                Bekijk trainingen
-                <ArrowRight className="h-4 w-4" />
-              </Button>
-            </a>
-            <Button
-              variant="outline"
-              size="lg"
-              className="text-sm uppercase tracking-wider"
-              onClick={() => setNewsletterOpen(true)}
-            >
-              Nieuwsbrief
-            </Button>
-            <Link to="/login">
-              <Button variant="outline" size="lg" className="text-sm uppercase tracking-wider">
-                Al een account? Log in
-              </Button>
-            </Link>
-          </div>
-          <p className="mt-5 max-w-xl text-sm leading-relaxed text-muted-foreground">
-            Onze nieuwsbrief zit boordevol praktische tips die je AI-gebruik echt een boost geven.
-            Geen spam, geen reclame. Wel waarde.
-          </p>
-          <p className="mt-3 text-sm text-muted-foreground">
-            Toch liever incompany?{" "}
-            <a
-              href="https://morgencompany.com/academy"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="font-medium text-primary hover:underline"
-            >
-              Bekijk de trainingen voor teams
-            </a>
-            .
           </p>
         </motion.div>
       </section>
@@ -452,9 +413,9 @@ const Landing = () => {
               Summer School kalender
             </h2>
             <p className="mt-4 text-sm leading-relaxed text-muted-foreground md:text-base">
-              De Summer School start op 1 juli en loopt twee maanden. Iedere twee weken is er op woensdag
-              een live webinar. Je kunt de webinars los boeken voor € 39,95 per stuk; bij de Summer School
-              zijn ze inbegrepen.
+              De Summer School start op 1 juli en loopt twee maanden. Voor € 250 krijg je online toegang
+              tot al onze live trainingen, de KickOff en iedere twee weken een live webinar. De webinars
+              staan in het teken van zelf leren en vragen stellen, en je houdt oneindig toegang tot de opnames.
             </p>
           </div>
           <a
@@ -479,11 +440,11 @@ const Landing = () => {
                 Summer School
               </div>
               <h3 className="mt-5 max-w-sm font-display text-3xl font-semibold leading-none text-white">
-                Twee maanden leren met vier live momenten
+                Twee maanden online leren voor € 250
               </h3>
               <p className="mt-4 max-w-md text-sm leading-relaxed text-[#D8CCEC]">
-                Start op woensdag 1 juli. Daarna schuif je iedere twee weken aan voor een live webinar
-                over duurzaam AI-gebruik, ethiek en data soevereiniteit.
+                Start op woensdag 1 juli met de KickOff. Daarna schuif je iedere twee weken online aan
+                voor een live webinar op basis van thema's, vragen en wat je zelf wilt leren.
               </p>
 
               <div className="mt-8 grid gap-3 sm:grid-cols-3">
@@ -495,12 +456,12 @@ const Landing = () => {
                 <div className="rounded-2xl border border-white/10 bg-black/10 p-4">
                   <p className="text-[0.68rem] uppercase tracking-[0.2em] text-[#D8CCEC]">Duur</p>
                   <p className="mt-2 font-display text-2xl text-white">2 maanden</p>
-                  <p className="mt-1 text-xs text-[#D8CCEC]">Vier webinars in totaal</p>
+                  <p className="mt-1 text-xs text-[#D8CCEC]">KickOff + webinars</p>
                 </div>
                 <div className="rounded-2xl border border-white/10 bg-black/10 p-4">
-                  <p className="text-[0.68rem] uppercase tracking-[0.2em] text-[#D8CCEC]">Webinar</p>
-                  <p className="mt-2 font-display text-2xl text-white">€ 39,95</p>
-                  <p className="mt-1 text-xs text-[#D8CCEC]">Los boeken kan ook</p>
+                  <p className="text-[0.68rem] uppercase tracking-[0.2em] text-[#D8CCEC]">Toegang</p>
+                  <p className="mt-2 font-display text-2xl text-white">Oneindig</p>
+                  <p className="mt-1 text-xs text-[#D8CCEC]">Ook tot de webinars</p>
                 </div>
               </div>
 
@@ -519,7 +480,7 @@ const Landing = () => {
                   className="text-sm uppercase tracking-wider"
                   onClick={() => setSelectedLiveSession(liveSessions[0])}
                 >
-                  Los webinar boeken
+                  Stel je vraag
                 </Button>
               </div>
             </div>
@@ -595,7 +556,7 @@ const Landing = () => {
                         <p className="mt-2 text-xs text-muted-foreground">{session.priceLabel}</p>
                       </div>
                       <Button className="w-full gap-2" onClick={() => setSelectedLiveSession(session)}>
-                        Boek webinar
+                        Doe mee
                         <ArrowRight className="h-4 w-4" />
                       </Button>
                       <a
@@ -693,7 +654,6 @@ const Landing = () => {
         session={selectedLiveSession}
       />
       <ContactDialog open={contactOpen} onOpenChange={setContactOpen} />
-      <NewsletterDialog open={newsletterOpen} onOpenChange={setNewsletterOpen} />
 
       {/* Footer */}
       <footer className="border-t border-white/10 bg-[rgba(6,4,14,0.96)] py-14 text-white">
