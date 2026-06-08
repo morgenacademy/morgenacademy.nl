@@ -13,6 +13,7 @@ export interface RecommendationItem {
   relatedCourseIds: string[];
   comingSoon?: boolean;
   price?: string;
+  locked?: boolean;
 }
 
 const courseRecommendations: RecommendationItem[] = courses.map((course) => ({
@@ -35,7 +36,7 @@ const podcastRecommendations: RecommendationItem[] = [
     title: "AI in de praktijk",
     subtitle: "Korte gesprekken en voorbeelden over slimmer werken met AI.",
     image: courses.find((course) => course.id === "ai-in-je-bedrijf")?.thumbnail ?? courses[0].thumbnail,
-    href: "https://morgencompany.com",
+    href: "https://open.spotify.com/show/6Lws4ZDBxEQtf52YGd2UzL",
     cta: "Luister podcast",
     relatedCourseIds: ["basistraining-ai", "ai-in-je-bedrijf", "claude-openai-training"],
   },
@@ -80,7 +81,7 @@ const recommendationOrderByCourseId: Record<string, string[]> = {
 export function getRecommendationsForCourse(
   courseId: string,
   enrolledCourseIds: string[] = [],
-  limit = 5
+  limit = 12
 ): RecommendationItem[] {
   const enrolledSet = new Set(enrolledCourseIds);
   const orderedIds = recommendationOrderByCourseId[courseId] ?? [];
@@ -94,18 +95,29 @@ export function getRecommendationsForCourse(
 
   return [...ordered, ...fallback]
     .filter((item) => item.id !== courseId)
-    .filter((item) => item.kind !== "course" || !enrolledSet.has(item.id))
+    .map((item) => {
+      if (item.kind !== "course") return item;
+
+      const locked = !enrolledSet.has(item.id);
+      return {
+        ...item,
+        locked,
+        href: locked ? `/checkout/${item.id}` : `/cursus/${item.id}`,
+        cta: locked ? "Bekijk" : "Ga verder",
+      };
+    })
     .slice(0, limit);
 }
 
 export function getRecommendationsForCourses(
   courseIds: string[],
   enrolledCourseIds: string[] = [],
-  limit = 6
+  limit = 12
 ): RecommendationItem[] {
   const seen = new Set<string>();
+  const sourceCourseIds = courseIds.length > 0 ? courseIds : courses.map((course) => course.id);
 
-  return courseIds
+  return sourceCourseIds
     .flatMap((courseId) => getRecommendationsForCourse(courseId, enrolledCourseIds, limit))
     .filter((item) => {
       if (seen.has(item.id)) return false;

@@ -1,9 +1,8 @@
-import { useState, useEffect } from "react";
-import { motion } from "framer-motion";
+import { useState, useEffect, useRef } from "react";
+import { motion, useScroll, useTransform } from "framer-motion";
 import {
   Lock,
   ArrowRight,
-  Sparkles,
   Bell,
   Users,
   Clock,
@@ -103,7 +102,14 @@ const formatSessionDate = (startsAt: string, endsAt: string) => {
 
 const Landing = () => {
   const navigate = useNavigate();
+  const heroRef = useRef<HTMLElement | null>(null);
   const [daypartGreeting, setDaypartGreeting] = useState(() => getDaypartGreeting());
+  const daypart = daypartGreeting.replace("Goede", "");
+  const { scrollYProgress } = useScroll({
+    target: heroRef,
+    offset: ["start start", "end start"],
+  });
+  const learnY = useTransform(scrollYProgress, [0, 0.45, 0.9], ["0%", "100%", "200%"]);
   const [waitlistCourse, setWaitlistCourse] = useState<{ id: string; title: string } | null>(null);
   const [selectedLiveSession, setSelectedLiveSession] = useState<LiveSession | null>(null);
   const [contactOpen, setContactOpen] = useState(false);
@@ -261,24 +267,57 @@ const Landing = () => {
       <div className="h-[72px]" />
 
       {/* Hero */}
-      <section className="mx-auto max-w-6xl px-6 pt-20 pb-16">
+      <section ref={heroRef} className="mx-auto flex min-h-[calc(100svh-72px)] max-w-6xl items-center px-6 py-16">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.7 }}
-          className="max-w-2xl"
+          className="max-w-3xl"
         >
-          <p className="mb-4 flex items-center gap-2 text-xs uppercase tracking-[0.3em] text-primary">
-            <Sparkles className="h-3.5 w-3.5" />
-            {daypartGreeting}
-          </p>
-          <h1 className="font-display text-4xl font-semibold leading-[1.1] text-foreground md:text-5xl lg:text-6xl">
-            Leer werken met AI & automatisering
+          <h1 className="relative inline-block font-display text-6xl font-black leading-[0.9] tracking-[0.01em] text-foreground sm:text-7xl md:text-8xl lg:text-9xl">
+            <span>Goede</span>
+            <span className="relative inline-block">
+              {daypart}
+              <motion.span
+                key={daypart}
+                aria-hidden="true"
+                initial={{ scaleX: 0, opacity: 0 }}
+                animate={{ scaleX: 1, opacity: 1 }}
+                transition={{ duration: 0.75, ease: [0.22, 1, 0.36, 1], delay: 0.18 }}
+                className="absolute left-[3%] right-[4%] top-[52%] h-1.5 origin-left -rotate-2 rounded-full bg-[#d8fe56] shadow-[0_0_18px_rgba(216,254,86,0.35)] md:h-2"
+              />
+            </span>
+            <span className="text-[#d8fe56]">.</span>
           </h1>
-          <p className="mt-6 text-lg leading-relaxed text-muted-foreground">
-            Praktische videotrainingen waarmee je direct aan de slag kunt.
-            Leer op je eigen tempo, waar en wanneer je wilt.
-          </p>
+          <div className="relative mt-8 font-display text-[2.65rem] font-black uppercase leading-[0.92] tracking-[0.01em] text-white sm:text-6xl md:text-7xl lg:text-8xl">
+            <motion.span
+              style={{ y: learnY }}
+              className="absolute left-0 top-0 z-10 inline-block"
+            >
+              Leer
+            </motion.span>
+            <div className="grid gap-1 pl-[4.7rem] sm:pl-[6.8rem] md:pl-[8rem] lg:pl-[9.4rem]">
+              <p>
+                <span className="text-transparent [-webkit-text-stroke:1px_#f2f0ff] md:[-webkit-text-stroke:1.5px_#f2f0ff]">
+                  slimmer
+                </span>
+                .
+              </p>
+              <p>
+                <span className="text-transparent [-webkit-text-stroke:1px_#f2f0ff] md:[-webkit-text-stroke:1.5px_#f2f0ff]">
+                  sneller
+                </span>
+                .
+              </p>
+              <p>
+                <span className="text-[#d8fe56]">AI</span>{" "}
+                <span className="text-transparent [-webkit-text-stroke:1px_#d8fe56] md:[-webkit-text-stroke:1.5px_#d8fe56]">
+                  skills
+                </span>
+                .
+              </p>
+            </div>
+          </div>
         </motion.div>
       </section>
 
