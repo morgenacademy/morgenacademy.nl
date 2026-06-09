@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from "react";
-import { motion, useScroll, useTransform } from "framer-motion";
+import { AnimatePresence, motion, useScroll, useTransform } from "framer-motion";
 import {
   Lock,
   ArrowRight,
@@ -100,6 +100,12 @@ const formatSessionDate = (startsAt: string, endsAt: string) => {
   };
 };
 
+const daypartRollVariants = {
+  initial: { y: "105%", opacity: 0, rotateX: -55 },
+  animate: { y: "0%", opacity: 1, rotateX: 0 },
+  exit: { y: "-105%", opacity: 0, rotateX: 55 },
+};
+
 const Landing = () => {
   const navigate = useNavigate();
   const heroRef = useRef<HTMLElement | null>(null);
@@ -109,7 +115,7 @@ const Landing = () => {
     target: heroRef,
     offset: ["start start", "end start"],
   });
-  const learnY = useTransform(scrollYProgress, [0, 0.45, 0.9], ["0%", "100%", "200%"]);
+  const learnY = useTransform(scrollYProgress, [0, 0.22, 0.42], ["0%", "100%", "200%"]);
   const [waitlistCourse, setWaitlistCourse] = useState<{ id: string; title: string } | null>(null);
   const [selectedLiveSession, setSelectedLiveSession] = useState<LiveSession | null>(null);
   const [contactOpen, setContactOpen] = useState(false);
@@ -267,36 +273,48 @@ const Landing = () => {
       <div className="h-[72px]" />
 
       {/* Hero */}
-      <section ref={heroRef} className="mx-auto flex min-h-[calc(100svh-72px)] max-w-6xl items-center px-6 py-16">
+      <section ref={heroRef} className="mx-auto flex min-h-[min(760px,calc(84svh-72px))] max-w-6xl items-center px-6 pb-10 pt-12 md:pb-12 md:pt-16">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.7 }}
           className="max-w-3xl"
         >
-          <h1 className="relative inline-block font-display text-6xl font-black leading-[0.9] tracking-[0.01em] text-foreground sm:text-7xl md:text-8xl lg:text-9xl">
+          <h1 className="relative inline-block font-display text-[clamp(4rem,13vw,8.75rem)] font-black leading-[0.86] tracking-[0.01em] text-foreground">
             <span>Goede</span>
-            <span className="relative inline-block">
-              {daypart}
+            <span className="relative inline-grid overflow-hidden align-baseline [perspective:600px]">
+              <AnimatePresence mode="wait" initial={false}>
+                <motion.span
+                  key={daypart}
+                  variants={daypartRollVariants}
+                  initial="initial"
+                  animate="animate"
+                  exit="exit"
+                  transition={{ duration: 0.42, ease: [0.22, 1, 0.36, 1] }}
+                  className="col-start-1 row-start-1 inline-block"
+                >
+                  {daypart}
+                </motion.span>
+              </AnimatePresence>
               <motion.span
                 key={daypart}
                 aria-hidden="true"
-                initial={{ scaleX: 0, opacity: 0 }}
-                animate={{ scaleX: 1, opacity: 1 }}
-                transition={{ duration: 0.75, ease: [0.22, 1, 0.36, 1], delay: 0.18 }}
+                initial={{ scaleX: 0, opacity: 0, x: "-4%" }}
+                animate={{ scaleX: 1, opacity: 1, x: "0%" }}
+                transition={{ duration: 0.46, ease: [0.22, 1, 0.36, 1], delay: 0.12 }}
                 className="absolute left-[3%] right-[4%] top-[52%] h-1.5 origin-left -rotate-2 rounded-full bg-[#d8fe56] shadow-[0_0_18px_rgba(216,254,86,0.35)] md:h-2"
               />
             </span>
             <span className="text-[#d8fe56]">.</span>
           </h1>
-          <div className="relative mt-8 font-display text-[2.65rem] font-black uppercase leading-[0.92] tracking-[0.01em] text-white sm:text-6xl md:text-7xl lg:text-8xl">
+          <div className="relative mt-6 font-display text-[clamp(2.7rem,8vw,6.25rem)] font-black uppercase leading-[0.9] tracking-[0.01em] text-white md:mt-7">
             <motion.span
               style={{ y: learnY }}
-              className="absolute left-0 top-0 z-10 inline-block"
+              className="absolute left-0 top-0 z-10 inline-block will-change-transform"
             >
               Leer
             </motion.span>
-            <div className="grid gap-1 pl-[4.7rem] sm:pl-[6.8rem] md:pl-[8rem] lg:pl-[9.4rem]">
+            <div className="grid gap-0.5 pl-[4.7rem] sm:pl-[6.6rem] md:pl-[8rem] lg:pl-[9.1rem]">
               <p>
                 <span className="text-transparent [-webkit-text-stroke:1px_#f2f0ff] md:[-webkit-text-stroke:1.5px_#f2f0ff]">
                   slimmer
@@ -322,7 +340,7 @@ const Landing = () => {
       </section>
 
       {/* Courses */}
-      <section id="trainingen" className="mx-auto max-w-6xl px-6 pb-20">
+      <section id="trainingen" className="mx-auto max-w-6xl scroll-mt-24 px-6 pb-20 pt-2">
         <motion.div
           initial={{ opacity: 0 }}
           whileInView={{ opacity: 1 }}
