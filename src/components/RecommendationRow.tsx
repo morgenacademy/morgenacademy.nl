@@ -15,41 +15,58 @@ const RecommendationCard = ({ item, index }: { item: RecommendationItem; index: 
   const isExternal = item.href.startsWith("http");
   const isPodcast = item.kind === "podcast";
   const isLocked = item.locked || item.comingSoon;
+  const hasEmbed = isPodcast && item.embedUrl;
   const content = (
     <motion.article
       initial={{ opacity: 0, y: 14 }}
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true }}
       transition={{ duration: 0.3, delay: index * 0.04 }}
-      className="group h-full w-[176px] shrink-0 overflow-hidden rounded-lg border border-border bg-card transition-all duration-300 hover:border-primary/35 hover:shadow-[0_18px_40px_-28px_hsl(var(--primary)/0.4)] sm:w-[196px]"
+      className={`group h-full shrink-0 overflow-hidden rounded-lg border border-border bg-card transition-all duration-300 hover:border-primary/35 hover:shadow-[0_18px_40px_-28px_hsl(var(--primary)/0.4)] ${
+        hasEmbed ? "w-[320px]" : "w-[176px] sm:w-[196px]"
+      }`}
     >
-      <div className="relative aspect-[16/10] overflow-hidden">
-        <img
-          src={item.image}
-          alt={item.title}
-          className={`h-full w-full object-cover transition-transform duration-500 ${
-            isLocked ? "grayscale" : "group-hover:scale-105"
-          }`}
-        />
-        <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/35 to-black/5" />
-        <div className="absolute left-2 top-2 inline-flex items-center gap-1 rounded-full bg-background/90 px-2 py-0.5 text-[10px] font-medium text-foreground backdrop-blur-sm">
-          {isPodcast ? <Headphones className="h-2.5 w-2.5 text-primary" /> : <PlayCircle className="h-2.5 w-2.5 text-primary" />}
-          {isPodcast ? "Podcast" : "Training"}
+      {hasEmbed ? (
+        <div className="h-[152px] bg-secondary/40">
+          <iframe
+            src={item.embedUrl}
+            title={item.title}
+            width="100%"
+            height="152"
+            loading="lazy"
+            allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
+            className="block border-0"
+          />
         </div>
-        {isLocked && (
-          <div className="absolute right-2 top-2 flex h-7 w-7 items-center justify-center rounded-full bg-background/90 text-foreground backdrop-blur-sm">
-            <Lock className="h-3.5 w-3.5 text-primary" />
+      ) : (
+        <div className="relative aspect-[16/10] overflow-hidden">
+          <img
+            src={item.image}
+            alt={item.title}
+            className={`h-full w-full object-cover transition-transform duration-500 ${
+              isLocked ? "grayscale" : "group-hover:scale-105"
+            }`}
+          />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/35 to-black/5" />
+          <div className="absolute left-2 top-2 inline-flex items-center gap-1 rounded-full bg-background/90 px-2 py-0.5 text-[10px] font-medium text-foreground backdrop-blur-sm">
+            {isPodcast ? <Headphones className="h-2.5 w-2.5 text-primary" /> : <PlayCircle className="h-2.5 w-2.5 text-primary" />}
+            {isPodcast ? "Podcast" : "Training"}
           </div>
-        )}
-        <div className="absolute inset-x-0 bottom-0 p-3">
-          <h3 className="line-clamp-2 font-display text-sm font-semibold leading-tight text-white">
-            {item.title}
-          </h3>
+          {isLocked && (
+            <div className="absolute right-2 top-2 flex h-7 w-7 items-center justify-center rounded-full bg-background/90 text-foreground backdrop-blur-sm">
+              <Lock className="h-3.5 w-3.5 text-primary" />
+            </div>
+          )}
+          <div className="absolute inset-x-0 bottom-0 p-3">
+            <h3 className="line-clamp-2 font-display text-sm font-semibold leading-tight text-white">
+              {item.title}
+            </h3>
+          </div>
         </div>
-      </div>
+      )}
 
       <div className="flex min-h-[78px] flex-col justify-between gap-2 p-3">
-        <p className="line-clamp-2 text-xs leading-relaxed text-muted-foreground">
+        <p className={`${hasEmbed ? "line-clamp-1" : "line-clamp-2"} text-xs leading-relaxed text-muted-foreground`}>
           {item.subtitle}
         </p>
         <p className="flex items-center gap-1.5 text-[11px] font-medium text-primary">

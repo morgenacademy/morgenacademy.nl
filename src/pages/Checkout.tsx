@@ -19,14 +19,141 @@ import { courses } from "@/data/courses";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 
-const benefits = [
-  "Bespaar 20% tijd en win een volle werkdag per week",
-  "Eenvoudig en je hebt geen technische kennis nodig",
-  "Bouw je eigen assistenten; automatisering die nooit slaapt",
-  "Toekomstbestendig: van afwachter naar voorloper in je vak",
-  "Volledig online, leer in je eigen tempo en plek",
-  "Onbeperkt toegang en blijvende updates voor altijd",
-];
+const defaultProductCopy = {
+  eyebrow: "Online training",
+  headline: "Stap op de AI trein",
+  introStrong: "Claim je voorsprong. 100% online en onbeperkt toegang.",
+  intro:
+    "De wereld verandert snel. Terwijl anderen nog handmatig werken, zet jij de turbo aan. In deze praktische online training leer je hoe je AI voor je laat werken. Geen vage theorie, maar directe tijdwinst.",
+  benefitsTitle: "Transformeer je werkroutine met slimme automatisering",
+  benefits: [
+    "Bespaar tijd op terugkerende taken en werk met meer focus",
+    "Eenvoudig te volgen, ook zonder technische kennis",
+    "Leer prompts, tools en workflows die je direct kunt toepassen",
+    "Maak betere keuzes doordat je AI-output leert beoordelen",
+    "Volledig online, leer in je eigen tempo en op je eigen plek",
+    "Onbeperkt toegang en blijvende updates",
+  ],
+  description:
+    "Leer efficiënt en zonder technisch gedoe AI te gebruiken om taken te automatiseren, slimmer te werken en betere resultaten te halen uit je dagelijkse werk. Je bouwt systematisch aan praktische vaardigheden en krijgt toegang tot alle materialen.",
+};
+
+const productCopyByCourseId: Record<string, typeof defaultProductCopy> = {
+  "basistraining-ai": {
+    eyebrow: "AI Basis Training",
+    headline: "Begin sterk met AI in je dagelijkse werk",
+    introStrong:
+      "Alles wat je nodig hebt om AI met vertrouwen te gebruiken, zonder technische drempel.",
+    intro:
+      "Je leert wat AI wel en niet kan, hoe je betere prompts schrijft en hoe je AI inzet voor taken die nu onnodig veel tijd kosten. Ideaal als je serieus wilt starten en meteen praktisch resultaat wilt zien.",
+    benefitsTitle: "Na deze training werk je slimmer met AI",
+    benefits: [
+      "Begrijp de basis van AI zonder ingewikkelde theorie",
+      "Schrijf prompts die duidelijkere en bruikbare output opleveren",
+      "Gebruik AI veilig en bewust in je dagelijkse werk",
+      "Ontdek waar AI jou de meeste tijd kan besparen",
+      "Bouw de basis voor je eigen AI-assistent",
+      "Leer online in je eigen tempo met onbeperkte toegang",
+    ],
+    description:
+      "Deze training geeft je een stevig fundament. Je krijgt overzicht, praktische voorbeelden en opdrachten waarmee je AI meteen toepast op je eigen werk.",
+  },
+  "agentic-ai": {
+    eyebrow: "Agentic AI",
+    headline: "Laat AI-agents werk voor je uitvoeren",
+    introStrong:
+      "Voor iedereen die verder wil dan losse prompts en echte workflows wil automatiseren.",
+    intro:
+      "In Agentic AI leer je hoe je AI-agents inzet als digitale collega’s die stappen plannen, informatie verwerken en taken afmaken. Je ontdekt hoe je workflows ontwerpt die betrouwbaar, controleerbaar en nuttig zijn in de praktijk.",
+    benefitsTitle: "Bouw workflows die doorwerken als jij iets anders doet",
+    benefits: [
+      "Begrijp wat AI-agents zijn en wanneer je ze inzet",
+      "Vertaal terugkerend werk naar slimme agent-workflows",
+      "Leer taken opdelen in duidelijke stappen en checks",
+      "Voorkom fouten met betere instructies en controlepunten",
+      "Maak automatisering concreet voor je eigen rol of team",
+      "Krijg onbeperkt toegang tot de online training",
+    ],
+    description:
+      "Deze training helpt je van experimenteren naar organiseren. Je leert hoe agentic workflows waarde toevoegen zonder dat je grip verliest op kwaliteit, veiligheid en resultaat.",
+  },
+  vibecoden: {
+    eyebrow: "VIBEcoden",
+    headline: "Van idee naar werkend product met AI",
+    introStrong:
+      "Leer bouwen met AI, ook als je jezelf geen programmeur noemt.",
+    intro:
+      "Met VIBEcoden zet je ideeën om in prototypes, tools en werkende concepten. Je leert hoe je AI gebruikt als bouwpartner: van het scherp maken van je idee tot testen, aanpassen en verbeteren.",
+    benefitsTitle: "Maak sneller iets dat echt werkt",
+    benefits: [
+      "Zet een vaag idee om in een helder bouwplan",
+      "Gebruik AI om code, schermen en functies te maken",
+      "Leer betere instructies geven aan coding tools",
+      "Test en verbeter zonder vast te lopen in technische taal",
+      "Bouw prototypes die je kunt laten zien of gebruiken",
+      "Volledig online met onbeperkte toegang",
+    ],
+    description:
+      "VIBEcoden is voor makers, ondernemers en professionals die sneller willen bouwen. Je leert denken in stappen, slim samenwerken met AI en je idee zichtbaar maken zonder maanden ontwikkelwerk.",
+  },
+  "claude-openai-training": {
+    eyebrow: "Claude & OpenAI Training",
+    headline: "Haal meer uit Claude, ChatGPT en OpenAI",
+    introStrong:
+      "Gebruik de beste AI-tools doelgerichter, sneller en professioneler.",
+    intro:
+      "Deze training laat zien hoe je Claude en OpenAI inzet voor schrijven, analyseren, structureren, brainstormen en bouwen. Je leert wanneer je welke tool kiest en hoe je betere resultaten krijgt met minder proberen.",
+    benefitsTitle: "Werk scherper met je favoriete AI-tools",
+    benefits: [
+      "Ontdek de sterke punten van Claude, ChatGPT en OpenAI",
+      "Maak betere prompts voor analyse, tekst en strategie",
+      "Gebruik AI als sparringpartner voor complexe vraagstukken",
+      "Versnel schrijfwerk, voorbereiding en besluitvorming",
+      "Leer output controleren, aanscherpen en hergebruiken",
+      "Onbeperkt toegang tot voorbeelden en updates",
+    ],
+    description:
+      "Na deze training gebruik je AI-tools minder willekeurig en veel gerichter. Je krijgt praktische workflows waarmee je direct betere output uit Claude, ChatGPT en OpenAI haalt.",
+  },
+  "ai-in-je-bedrijf": {
+    eyebrow: "AI in je bedrijf",
+    headline: "Maak AI concreet voor je organisatie",
+    introStrong:
+      "Voor leiders en teams die AI niet alleen willen proberen, maar goed willen invoeren.",
+    intro:
+      "Je leert hoe je kansen herkent, risico’s beheerst en AI vertaalt naar processen, rollen en besluitvorming. Zo voorkom je losse experimenten en bouw je aan toepassing die echt waarde oplevert.",
+    benefitsTitle: "Van losse ideeën naar een werkbare AI-aanpak",
+    benefits: [
+      "Bepaal waar AI de meeste waarde kan toevoegen",
+      "Breng kansen, risico’s en randvoorwaarden scherp in beeld",
+      "Maak AI begrijpelijk en toepasbaar voor je team",
+      "Ontwerp eerste use-cases die haalbaar en relevant zijn",
+      "Werk veiliger met data, tools en verantwoordelijkheden",
+      "Leer online in je eigen tempo met blijvende toegang",
+    ],
+    description:
+      "Deze training helpt je om AI volwassen en praktisch te benaderen. Je krijgt taal, structuur en voorbeelden om AI binnen je bedrijf verder te brengen.",
+  },
+  "ai-voor-projectmanagers": {
+    eyebrow: "AI voor projectmanagers",
+    headline: "Stuur projecten slimmer met AI",
+    introStrong:
+      "Gebruik AI als projectassistent voor planning, communicatie, risico’s en besluitvorming.",
+    intro:
+      "Als projectmanager ben je continu bezig met overzicht houden, mensen meenemen en keuzes voorbereiden. In deze training leer je hoe AI je helpt om sneller structuur aan te brengen, betere updates te maken en risico’s eerder te zien.",
+    benefitsTitle: "Meer overzicht, minder handwerk in je project",
+    benefits: [
+      "Maak sneller projectplannen, actielijsten en voortgangsupdates",
+      "Gebruik AI voor stakeholdercommunicatie die helder en passend is",
+      "Analyseer risico’s, afhankelijkheden en besluiten scherper",
+      "Bereid overleggen, stuurgroepen en retrospectives beter voor",
+      "Vertaal rommelige input naar duidelijke projectdocumentatie",
+      "Volledig online met onbeperkte toegang",
+    ],
+    description:
+      "Deze training is gemaakt voor projectmanagers die hun werk slimmer willen organiseren zonder de menselijke kant kwijt te raken. Je leert AI inzetten als praktische co-pilot voor overzicht, communicatie en voortgang.",
+  },
+};
 
 const testimonials = [
   {
@@ -80,6 +207,10 @@ const Checkout = () => {
   const price = course.price || "49.00";
   const priceNum = parseFloat(price);
   const btw = priceNum - priceNum / 1.21;
+  const productCopy = productCopyByCourseId[course.id] ?? {
+    ...defaultProductCopy,
+    eyebrow: course.title,
+  };
 
   const handleCheckout = async (e?: React.FormEvent) => {
     e?.preventDefault();
@@ -171,17 +302,17 @@ const Checkout = () => {
           >
             {/* Hero copy */}
             <div>
+              <p className="mb-3 text-xs uppercase tracking-[0.25em] text-primary">
+                {productCopy.eyebrow}
+              </p>
               <h1 className="font-display text-3xl md:text-4xl text-foreground leading-tight">
-                Stap op de AI trein
+                {productCopy.headline}
               </h1>
               <p className="mt-4 text-muted-foreground leading-relaxed">
                 <strong className="text-foreground">
-                  Claim je voorsprong. 100% online en onbeperkt toegang.
+                  {productCopy.introStrong}
                 </strong>{" "}
-                De wereld verandert snel. Terwijl anderen nog handmatig werken,
-                zet jij de turbo aan. In deze praktische online training leer je
-                hoe je AI voor je laat werken. Geen vage theorie, maar directe
-                tijdwinst.
+                {productCopy.intro}
               </p>
             </div>
 
@@ -197,10 +328,10 @@ const Checkout = () => {
             {/* Benefits */}
             <div>
               <h2 className="font-display text-xl text-foreground mb-4">
-                Transformeer je werkroutine met slimme automatisering
+                {productCopy.benefitsTitle}
               </h2>
               <div className="space-y-3">
-                {benefits.map((b, i) => (
+                {productCopy.benefits.map((b, i) => (
                   <div key={i} className="flex items-start gap-3">
                     <CheckCircle className="h-5 w-5 text-primary shrink-0 mt-0.5" />
                     <span className="text-sm text-muted-foreground leading-relaxed">
@@ -214,10 +345,7 @@ const Checkout = () => {
             {/* Long description */}
             <div>
               <p className="text-sm text-muted-foreground leading-relaxed">
-                Leer efficiënt en zonder technisch gedoe AI te gebruiken om taken
-                te automatiseren, lessen te volgen en continue updates te
-                ontvangen. Je bouwt systematisch aan je eigen vaardigheden en
-                krijgt levenslange toegang tot alle materialen.
+                {productCopy.description}
               </p>
             </div>
 

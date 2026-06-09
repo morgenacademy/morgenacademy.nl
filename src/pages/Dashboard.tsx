@@ -10,6 +10,7 @@ import WaitlistDialog from "@/components/WaitlistDialog";
 import { courses } from "@/data/courses";
 import { getRecommendationsForCourses } from "@/data/recommendations";
 import { getDaypartGreeting } from "@/lib/daypartGreeting";
+import { usePodcastRecommendations } from "@/hooks/usePodcastRecommendations";
 
 const Dashboard = () => {
   const navigate = useNavigate();
@@ -17,6 +18,7 @@ const Dashboard = () => {
   const [isAdmin, setIsAdmin] = useState(false);
   const [waitlistCourse, setWaitlistCourse] = useState<{ id: string; title: string } | null>(null);
   const [daypartGreeting, setDaypartGreeting] = useState(() => getDaypartGreeting());
+  const podcastRecommendations = usePodcastRecommendations();
 
   useEffect(() => {
     const fetchEnrollments = async () => {
@@ -60,7 +62,10 @@ const Dashboard = () => {
     navigate("/");
   };
 
-  const recommendationItems = getRecommendationsForCourses(enrolledCourseIds, enrolledCourseIds);
+  const recommendationItems = [
+    ...getRecommendationsForCourses(enrolledCourseIds, enrolledCourseIds),
+    ...podcastRecommendations,
+  ];
 
   return (
     <div className="min-h-screen bg-background">

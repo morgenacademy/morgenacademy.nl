@@ -3,6 +3,7 @@ import agenticAiImage from "@/assets/course-agentic-ai.jpeg";
 import vibecodenImage from "@/assets/course-vibecoden.jpeg";
 import claudeOpenAiImage from "@/assets/course-claude-openai.jpeg";
 import aiBedrijfImage from "@/assets/course-ai-bedrijf.jpg";
+import aiProjectmanagersImage from "@/assets/course-2.jpg";
 
 export interface Lesson {
   id: string;
@@ -364,6 +365,17 @@ export const courses: Course[] = [
       "Voor leiders die AI concreet, veilig en resultaatgericht willen inzetten",
     thumbnail: aiBedrijfImage,
     totalLessons: 8,
+    totalDuration: "Direct toegang",
+    price: "49.00",
+    modules: [],
+  },
+  {
+    id: "ai-voor-projectmanagers",
+    title: "AI voor projectmanagers",
+    subtitle:
+      "Gebruik AI voor planning, stakeholderupdates, risico's en betere projectbesluiten",
+    thumbnail: aiProjectmanagersImage,
+    totalLessons: 10,
     totalDuration: "Direct toegang",
     price: "49.00",
     modules: [],

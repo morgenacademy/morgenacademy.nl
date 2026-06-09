@@ -9,6 +9,7 @@ export interface RecommendationItem {
   subtitle: string;
   image: string;
   href: string;
+  embedUrl?: string;
   cta: string;
   relatedCourseIds: string[];
   comingSoon?: boolean;
@@ -29,52 +30,45 @@ const courseRecommendations: RecommendationItem[] = courses.map((course) => ({
   price: course.price,
 }));
 
-const podcastRecommendations: RecommendationItem[] = [
-  {
-    id: "podcast-ai-in-de-praktijk",
-    kind: "podcast",
-    title: "AI in de praktijk",
-    subtitle: "Korte gesprekken en voorbeelden over slimmer werken met AI.",
-    image: courses.find((course) => course.id === "ai-in-je-bedrijf")?.thumbnail ?? courses[0].thumbnail,
-    href: "https://open.spotify.com/show/6Lws4ZDBxEQtf52YGd2UzL",
-    cta: "Luister podcast",
-    relatedCourseIds: ["basistraining-ai", "ai-in-je-bedrijf", "claude-openai-training"],
-  },
-];
-
-const recommendations = [...courseRecommendations, ...podcastRecommendations];
+const recommendations = [...courseRecommendations];
 
 const recommendationOrderByCourseId: Record<string, string[]> = {
   "basistraining-ai": [
     "claude-openai-training",
     "agentic-ai",
     "vibecoden",
-    "podcast-ai-in-de-praktijk",
+    "ai-voor-projectmanagers",
     "ai-in-je-bedrijf",
   ],
   "agentic-ai": [
+    "ai-voor-projectmanagers",
     "claude-openai-training",
     "ai-in-je-bedrijf",
-    "podcast-ai-in-de-praktijk",
     "vibecoden",
   ],
   vibecoden: [
     "agentic-ai",
+    "ai-voor-projectmanagers",
     "claude-openai-training",
-    "podcast-ai-in-de-praktijk",
     "ai-in-je-bedrijf",
   ],
   "claude-openai-training": [
     "agentic-ai",
     "vibecoden",
-    "podcast-ai-in-de-praktijk",
+    "ai-voor-projectmanagers",
     "ai-in-je-bedrijf",
   ],
   "ai-in-je-bedrijf": [
+    "ai-voor-projectmanagers",
     "basistraining-ai",
     "agentic-ai",
-    "podcast-ai-in-de-praktijk",
     "claude-openai-training",
+  ],
+  "ai-voor-projectmanagers": [
+    "agentic-ai",
+    "claude-openai-training",
+    "ai-in-je-bedrijf",
+    "basistraining-ai",
   ],
 };
 

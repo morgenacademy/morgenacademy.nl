@@ -10,6 +10,7 @@ import { getRecommendationsForCourse } from "@/data/recommendations";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { usePodcastRecommendations } from "@/hooks/usePodcastRecommendations";
 
 // Coming-soon cursussen die als kaart getoond worden onderaan de sidebar
 const comingSoonCourses = courses.filter((c) => c.comingSoon);
@@ -25,6 +26,7 @@ const CourseDetail = () => {
   const [videoUrl, setVideoUrl] = useState("");
   const [enrolled, setEnrolled] = useState<boolean | null>(null);
   const [enrolledCourseIds, setEnrolledCourseIds] = useState<string[]>([]);
+  const podcastRecommendations = usePodcastRecommendations();
 
   // Wachtlijst modal state
   const [waitlistModal, setWaitlistModal] = useState<{ id: string; title: string } | null>(null);
@@ -154,7 +156,10 @@ const CourseDetail = () => {
     );
   }
 
-  const recommendationItems = getRecommendationsForCourse(course.id, enrolledCourseIds);
+  const recommendationItems = [
+    ...getRecommendationsForCourse(course.id, enrolledCourseIds),
+    ...podcastRecommendations,
+  ];
 
   if (!hasLessons) {
     return (
