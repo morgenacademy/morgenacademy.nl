@@ -4,6 +4,7 @@ import vibecodenImage from "@/assets/course-vibecoden.jpeg";
 import claudeOpenAiImage from "@/assets/course-claude-openai.jpeg";
 import aiBedrijfImage from "@/assets/course-ai-bedrijf.jpg";
 import aiProjectmanagersImage from "@/assets/course-2.jpg";
+import trainingCoPilotImage from "@/assets/course-training-copilot.jpeg";
 
 export interface Lesson {
   id: string;
@@ -375,6 +376,17 @@ export const courses: Course[] = [
     subtitle:
       "Gebruik AI voor planning, stakeholderupdates, risico's en betere projectbesluiten",
     thumbnail: aiProjectmanagersImage,
+    totalLessons: 10,
+    totalDuration: "Direct toegang",
+    price: "49.00",
+    modules: [],
+  },
+  {
+    id: "training-co-pilot",
+    title: "Training Co-Pilot",
+    subtitle:
+      "Ontwerp je eigen AI-co-pilot voor voorbereiding, uitvoering en opvolging van trainingen",
+    thumbnail: trainingCoPilotImage,
     totalLessons: 10,
     totalDuration: "Direct toegang",
     price: "49.00",

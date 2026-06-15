@@ -36,11 +36,13 @@ const recommendationOrderByCourseId: Record<string, string[]> = {
   "basistraining-ai": [
     "claude-openai-training",
     "agentic-ai",
+    "training-co-pilot",
     "vibecoden",
     "ai-voor-projectmanagers",
     "ai-in-je-bedrijf",
   ],
   "agentic-ai": [
+    "training-co-pilot",
     "ai-voor-projectmanagers",
     "claude-openai-training",
     "ai-in-je-bedrijf",
@@ -48,6 +50,7 @@ const recommendationOrderByCourseId: Record<string, string[]> = {
   ],
   vibecoden: [
     "agentic-ai",
+    "training-co-pilot",
     "ai-voor-projectmanagers",
     "claude-openai-training",
     "ai-in-je-bedrijf",
@@ -55,18 +58,28 @@ const recommendationOrderByCourseId: Record<string, string[]> = {
   "claude-openai-training": [
     "agentic-ai",
     "vibecoden",
+    "training-co-pilot",
     "ai-voor-projectmanagers",
     "ai-in-je-bedrijf",
   ],
   "ai-in-je-bedrijf": [
+    "training-co-pilot",
     "ai-voor-projectmanagers",
     "basistraining-ai",
     "agentic-ai",
     "claude-openai-training",
   ],
   "ai-voor-projectmanagers": [
+    "training-co-pilot",
     "agentic-ai",
     "claude-openai-training",
+    "ai-in-je-bedrijf",
+    "basistraining-ai",
+  ],
+  "training-co-pilot": [
+    "claude-openai-training",
+    "agentic-ai",
+    "ai-voor-projectmanagers",
     "ai-in-je-bedrijf",
     "basistraining-ai",
   ],

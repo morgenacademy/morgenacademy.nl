@@ -12,6 +12,8 @@ const COURSE_TITLES: Record<string, string> = {
   "vibecoden": "VIBEcoden",
   "claude-openai-training": "Claude & OpenAI Training",
   "ai-in-je-bedrijf": "AI in je bedrijf",
+  "ai-voor-projectmanagers": "AI voor projectmanagers",
+  "training-co-pilot": "Training Co-Pilot",
 };
 
 Deno.serve(async (req) => {

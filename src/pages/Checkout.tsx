@@ -153,6 +153,25 @@ const productCopyByCourseId: Record<string, typeof defaultProductCopy> = {
     description:
       "Deze training is gemaakt voor projectmanagers die hun werk slimmer willen organiseren zonder de menselijke kant kwijt te raken. Je leert AI inzetten als praktische co-pilot voor overzicht, communicatie en voortgang.",
   },
+  "training-co-pilot": {
+    eyebrow: "Training Co-Pilot",
+    headline: "Maak je eigen AI-co-pilot voor trainingen",
+    introStrong:
+      "Voor trainers, opleiders en facilitators die AI willen inzetten zonder hun eigen stijl kwijt te raken.",
+    intro:
+      "Je leert hoe je AI gebruikt als praktische co-pilot voor het ontwerpen, voorbereiden, geven en opvolgen van trainingen. Van intake en draaiboek tot oefeningen, evaluatie en persoonlijke follow-up.",
+    benefitsTitle: "Meer kwaliteit en minder voorbereidingswerk",
+    benefits: [
+      "Ontwerp sneller programma's, werkvormen en trainingsopdrachten",
+      "Gebruik AI voor intakevragen, doelgroepanalyse en leerdoelen",
+      "Maak draaiboeken, slidestructuren en oefeningen die beter aansluiten",
+      "Verwerk feedback en evaluaties tot concrete verbeterpunten",
+      "Bouw herbruikbare prompts voor voorbereiding en opvolging",
+      "Volledig online met onbeperkte toegang",
+    ],
+    description:
+      "Training Co-Pilot helpt je om AI te gebruiken als slimme sparringpartner voor je trainingspraktijk. Je houdt zelf de regie, terwijl AI het denk-, schrijf- en structuurwerk versnelt.",
+  },
 };
 
 const testimonials = [
