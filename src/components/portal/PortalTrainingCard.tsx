@@ -158,7 +158,7 @@ const PortalTrainingCard = ({ training, slug, password, index }: PortalTrainingC
                   ) : (
                     <FileDown className="h-4 w-4" />
                   )}
-                  {downloading ? "Bezig..." : "Download"}
+                  {downloading ? "Bezig..." : "Download slides"}
                 </Button>
               )}
             </div>
