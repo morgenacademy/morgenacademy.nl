@@ -77,6 +77,11 @@ const PortalDashboard = ({ session, slug, onLogout }: PortalDashboardProps) => {
 
   const feedbackTraining = trainings[0] ?? null;
 
+  // Per-portal overrides: deze klant kreeg een keynote (geen training) en geen Summer School-blok.
+  const isKeynote = slug === "or-gemeente-tilburg";
+  const eventNoun = isKeynote ? "keynote" : "training";
+  const showSummerSchool = !isKeynote;
+
   return (
     <div className="min-h-screen bg-background">
       {/* Header */}
@@ -110,10 +115,10 @@ const PortalDashboard = ({ session, slug, onLogout }: PortalDashboardProps) => {
             {session.company_name}
           </p>
           <h1 className="font-display text-3xl font-semibold text-foreground md:text-4xl">
-            Trainingsmaterialen
+            {isKeynote ? "Keynotemateriaal" : "Trainingsmaterialen"}
           </h1>
           <p className="mt-3 max-w-lg text-base leading-relaxed text-muted-foreground">
-            Wat leuk dat je erbij was. Hieronder vind je de materialen van je training. We stellen het zeer op prijs als je even een minuutje neemt om feedback te geven, dat helpt ons de training steeds beter te maken.
+            Wat leuk dat je erbij was. Hieronder vind je de materialen van je {eventNoun}. We stellen het zeer op prijs als je even een minuutje neemt om feedback te geven, dat helpt ons de {eventNoun} steeds beter te maken.
           </p>
         </motion.div>
 
@@ -183,33 +188,35 @@ const PortalDashboard = ({ session, slug, onLogout }: PortalDashboardProps) => {
             transition={{ duration: 0.4, delay: trainings.length * 0.1 + 0.1 }}
             className="mt-10 space-y-4"
           >
-            <div className="rounded-xl border border-primary/40 bg-primary/10 p-5 shadow-[0_0_40px_rgba(168,85,247,0.16)]">
-              <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
-                <div>
-                  <p className="mb-2 text-xs uppercase tracking-[0.25em] text-primary">
-                    Summer School
-                  </p>
-                  <h2 className="font-display text-2xl font-semibold text-foreground">
-                    De zomer die alles verandert.
-                  </h2>
-                  <p className="mt-3 max-w-xl text-sm leading-relaxed text-muted-foreground">
-                    Voor €250 krijg je in juli en augustus online toegang tot al onze live trainingen,
-                    de KickOff en iedere twee weken een live webinar om zelf verder te leren en vragen te stellen.
-                    Je behoudt oneindig toegang tot de webinars.
-                  </p>
+            {showSummerSchool && (
+              <div className="rounded-xl border border-primary/40 bg-primary/10 p-5 shadow-[0_0_40px_rgba(168,85,247,0.16)]">
+                <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
+                  <div>
+                    <p className="mb-2 text-xs uppercase tracking-[0.25em] text-primary">
+                      Summer School
+                    </p>
+                    <h2 className="font-display text-2xl font-semibold text-foreground">
+                      De zomer die alles verandert.
+                    </h2>
+                    <p className="mt-3 max-w-xl text-sm leading-relaxed text-muted-foreground">
+                      Voor €250 krijg je in juli en augustus online toegang tot al onze live trainingen,
+                      de KickOff en iedere twee weken een live webinar om zelf verder te leren en vragen te stellen.
+                      Je behoudt oneindig toegang tot de webinars.
+                    </p>
+                  </div>
+                  <Button asChild className="shrink-0 gap-2">
+                    <a
+                      href="mailto:totmorgen@morgenacademy.nl?subject=Interesse%20in%20Summer%20School"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      Ik wil meedoen
+                      <ArrowRight className="h-4 w-4" />
+                    </a>
+                  </Button>
                 </div>
-                <Button asChild className="shrink-0 gap-2">
-                  <a
-                    href="mailto:totmorgen@morgenacademy.nl?subject=Interesse%20in%20Summer%20School"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                  >
-                    Ik wil meedoen
-                    <ArrowRight className="h-4 w-4" />
-                  </a>
-                </Button>
               </div>
-            </div>
+            )}
 
             <div className="grid gap-4 sm:grid-cols-2">
               {offerLinks.map((offer) => {
