@@ -279,7 +279,7 @@ const Landing = () => {
           transition={{ duration: 0.7 }}
           className="max-w-3xl"
         >
-          <h1 className="relative inline-block font-display text-[clamp(4rem,13vw,8.75rem)] font-black leading-[0.86] tracking-[0.01em] text-foreground">
+          <h1 className="relative inline-block font-display text-[clamp(4rem,13vw,8.75rem)] font-black normal-case leading-[0.86] tracking-[0.01em] text-foreground">
             <span>Goede</span>
             <span className="relative whitespace-nowrap">
               MORGEN
@@ -290,7 +290,7 @@ const Landing = () => {
                   initial={{ scaleX: 0, opacity: 0, x: "-4%" }}
                   animate={{ scaleX: 1, opacity: 1, x: "0%" }}
                   transition={{ duration: 0.46, ease: [0.22, 1, 0.36, 1], delay: 0.12 }}
-                  className="absolute left-[-1%] right-[-1%] top-[52%] h-1.5 origin-left -rotate-2 rounded-full bg-[#d8fe56] shadow-[0_0_18px_rgba(216,254,86,0.35)] md:h-2"
+                  className="absolute left-[-2%] right-[-2%] top-[50%] h-1.5 origin-left -rotate-[7deg] rounded-full bg-[#d8fe56] shadow-[0_0_18px_rgba(216,254,86,0.35)] md:h-2"
                 />
               )}
             </span>
