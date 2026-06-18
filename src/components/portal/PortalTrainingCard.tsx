@@ -66,9 +66,15 @@ const PortalTrainingCard = ({ training, slug, password, index }: PortalTrainingC
     if (storagePath) setDownloadingResourcePath(storagePath);
     else setDownloading(true);
 
+    // Open tab synchroon op de klik zodat popup-blockers het toelaten; URL invullen na fetch.
+    const newTab = window.open("", "_blank");
+
     try {
-      window.location.href = await getDownloadUrl(storagePath);
+      const url = await getDownloadUrl(storagePath);
+      if (newTab) newTab.location.href = url;
+      else window.open(url, "_blank", "noopener,noreferrer");
     } catch {
+      newTab?.close();
       toast({
         title: "Download mislukt",
         description: "Probeer het later opnieuw.",
@@ -152,7 +158,7 @@ const PortalTrainingCard = ({ training, slug, password, index }: PortalTrainingC
                   ) : (
                     <FileDown className="h-4 w-4" />
                   )}
-                  {downloading ? "Bezig..." : "Hoofdbestand openen"}
+                  {downloading ? "Bezig..." : "Download"}
                 </Button>
               )}
             </div>

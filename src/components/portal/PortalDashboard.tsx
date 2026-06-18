@@ -127,10 +127,12 @@ const PortalDashboard = ({ session, slug, onLogout }: PortalDashboardProps) => {
             initial={{ opacity: 0, y: 16 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.4, delay: 0.1 }}
-            className="mb-8 rounded-xl border border-border bg-card p-5"
+            className="mb-12 rounded-xl border border-border/60 bg-card/40 p-4"
           >
-            <div className="flex flex-col gap-3 sm:flex-row">
+            <div className="flex flex-col gap-2.5 sm:flex-row">
               <Button
+                variant="secondary"
+                size="sm"
                 onClick={() => setFeedbackOpen(true)}
                 disabled={!feedbackTraining || feedbackSubmitted}
                 className="flex-1 gap-2"
@@ -142,7 +144,7 @@ const PortalDashboard = ({ session, slug, onLogout }: PortalDashboardProps) => {
                 )}
                 {feedbackSubmitted ? "Feedback verstuurd" : "Geef hier feedback"}
               </Button>
-              <Button variant="outline" asChild className="flex-1 gap-2">
+              <Button variant="outline" size="sm" asChild className="flex-1 gap-2">
                 <a
                   href="https://g.page/r/Cdz-0WCIxls3EBM/review"
                   target="_blank"
@@ -186,7 +188,7 @@ const PortalDashboard = ({ session, slug, onLogout }: PortalDashboardProps) => {
             initial={{ opacity: 0, y: 16 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.4, delay: trainings.length * 0.1 + 0.1 }}
-            className="mt-10 space-y-4"
+            className="mt-16 space-y-4"
           >
             {showSummerSchool && (
               <div className="rounded-xl border border-primary/40 bg-primary/10 p-5 shadow-[0_0_40px_rgba(168,85,247,0.16)]">
@@ -227,18 +229,18 @@ const PortalDashboard = ({ session, slug, onLogout }: PortalDashboardProps) => {
                     href={offer.href}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="group rounded-xl border border-border bg-card p-5 transition-colors hover:border-primary/60"
+                    className="group rounded-xl border border-border/70 bg-card/60 p-4 transition-colors hover:border-primary/60"
                   >
-                    <div className="mb-4 flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10 text-primary">
-                      <Icon className="h-5 w-5" />
+                    <div className="mb-3 flex h-9 w-9 items-center justify-center rounded-lg bg-primary/10 text-primary">
+                      <Icon className="h-4 w-4" />
                     </div>
-                    <h3 className="font-display text-lg font-semibold text-foreground">
+                    <h3 className="font-display text-base font-semibold text-foreground">
                       {offer.title}
                     </h3>
-                    <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
+                    <p className="mt-1.5 text-sm leading-relaxed text-muted-foreground">
                       {offer.body}
                     </p>
-                    <span className="mt-4 inline-flex items-center gap-2 text-sm font-medium text-primary group-hover:text-primary/80">
+                    <span className="mt-3 inline-flex items-center gap-2 text-sm font-medium text-primary group-hover:text-primary/80">
                       {offer.cta}
                       <ArrowRight className="h-4 w-4" />
                     </span>
