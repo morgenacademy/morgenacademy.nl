@@ -22,7 +22,7 @@ import WaitlistDialog from "@/components/WaitlistDialog";
 import ContactDialog from "@/components/ContactDialog";
 import LiveSessionSignupDialog from "@/components/LiveSessionSignupDialog";
 import { cn } from "@/lib/utils";
-import { getDaypartGreeting } from "@/lib/daypartGreeting";
+import { getDaypartPeriod } from "@/lib/daypartGreeting";
 
 const headerLinks = [
   {
@@ -109,8 +109,7 @@ const daypartRollVariants = {
 const Landing = () => {
   const navigate = useNavigate();
   const heroRef = useRef<HTMLElement | null>(null);
-  const [daypartGreeting, setDaypartGreeting] = useState(() => getDaypartGreeting());
-  const daypart = daypartGreeting.replace("Goede", "");
+  const [daypartPeriod, setDaypartPeriod] = useState(() => getDaypartPeriod());
   const { scrollYProgress } = useScroll({
     target: heroRef,
     offset: ["start start", "end start"],
@@ -130,7 +129,7 @@ const Landing = () => {
 
   useEffect(() => {
     const interval = window.setInterval(() => {
-      setDaypartGreeting(getDaypartGreeting());
+      setDaypartPeriod(getDaypartPeriod());
     }, 60 * 1000);
 
     return () => window.clearInterval(interval);
@@ -282,39 +281,49 @@ const Landing = () => {
         >
           <h1 className="relative inline-block font-display text-[clamp(4rem,13vw,8.75rem)] font-black leading-[0.86] tracking-[0.01em] text-foreground">
             <span>Goede</span>
-            <span className="relative inline-grid overflow-hidden align-baseline [perspective:600px]">
-              <AnimatePresence mode="wait" initial={false}>
+            <span className="relative whitespace-nowrap">
+              MORGEN
+              {daypartPeriod && (
                 <motion.span
-                  key={daypart}
-                  variants={daypartRollVariants}
-                  initial="initial"
-                  animate="animate"
-                  exit="exit"
-                  transition={{ duration: 0.42, ease: [0.22, 1, 0.36, 1] }}
-                  className="col-start-1 row-start-1 inline-block"
-                >
-                  {daypart}
-                </motion.span>
-              </AnimatePresence>
-              <motion.span
-                key={daypart}
-                aria-hidden="true"
-                initial={{ scaleX: 0, opacity: 0, x: "-4%" }}
-                animate={{ scaleX: 1, opacity: 1, x: "0%" }}
-                transition={{ duration: 0.46, ease: [0.22, 1, 0.36, 1], delay: 0.12 }}
-                className="absolute left-[3%] right-[4%] top-[52%] h-1.5 origin-left -rotate-2 rounded-full bg-[#d8fe56] shadow-[0_0_18px_rgba(216,254,86,0.35)] md:h-2"
-              />
+                  key={daypartPeriod}
+                  aria-hidden="true"
+                  initial={{ scaleX: 0, opacity: 0, x: "-4%" }}
+                  animate={{ scaleX: 1, opacity: 1, x: "0%" }}
+                  transition={{ duration: 0.46, ease: [0.22, 1, 0.36, 1], delay: 0.12 }}
+                  className="absolute left-[-1%] right-[-1%] top-[52%] h-1.5 origin-left -rotate-2 rounded-full bg-[#d8fe56] shadow-[0_0_18px_rgba(216,254,86,0.35)] md:h-2"
+                />
+              )}
             </span>
             <span className="text-[#d8fe56]">.</span>
+            {daypartPeriod && (
+              <>
+                {" "}
+                <span className="relative inline-grid overflow-hidden align-baseline [perspective:600px]">
+                  <AnimatePresence mode="wait" initial={false}>
+                    <motion.span
+                      key={daypartPeriod}
+                      variants={daypartRollVariants}
+                      initial="initial"
+                      animate="animate"
+                      exit="exit"
+                      transition={{ duration: 0.42, ease: [0.22, 1, 0.36, 1] }}
+                      className="col-start-1 row-start-1 inline-block text-white"
+                    >
+                      {daypartPeriod}
+                    </motion.span>
+                  </AnimatePresence>
+                </span>
+              </>
+            )}
           </h1>
-          <div className="relative mt-6 font-display text-[clamp(2.7rem,8vw,6.25rem)] font-black uppercase leading-[0.9] tracking-[0.01em] text-white md:mt-7">
+          <div className="relative mt-6 flex items-start gap-x-[0.4em] font-display text-[clamp(2.7rem,8vw,6.25rem)] font-black uppercase leading-[0.9] tracking-[0.01em] text-white md:mt-7">
             <motion.span
               style={{ y: learnY }}
-              className="absolute left-0 top-0 z-10 inline-block will-change-transform"
+              className="z-10 inline-block shrink-0 will-change-transform"
             >
               Leer
             </motion.span>
-            <div className="grid gap-0.5 pl-[4.7rem] sm:pl-[6.6rem] md:pl-[8rem] lg:pl-[9.1rem]">
+            <div className="grid gap-0.5">
               <p>
                 <span className="text-transparent [-webkit-text-stroke:1px_#f2f0ff] md:[-webkit-text-stroke:1.5px_#f2f0ff]">
                   slimmer
