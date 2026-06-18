@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from "react";
-import { AnimatePresence, motion, useScroll, useTransform } from "framer-motion";
+import { motion, useScroll, useTransform } from "framer-motion";
 import {
   Lock,
   ArrowRight,
@@ -98,12 +98,6 @@ const formatSessionDate = (startsAt: string, endsAt: string) => {
     fullDate: format(start, "EEEE d MMMM", { locale: nl }),
     time: `${format(start, "HH:mm")} - ${format(end, "HH:mm")}`,
   };
-};
-
-const daypartRollVariants = {
-  initial: { y: "105%", opacity: 0, rotateX: -55 },
-  animate: { y: "0%", opacity: 1, rotateX: 0 },
-  exit: { y: "-105%", opacity: 0, rotateX: 55 },
 };
 
 const Landing = () => {
@@ -277,42 +271,27 @@ const Landing = () => {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.7 }}
-          className="max-w-3xl"
+          className="w-full"
         >
-          <h1 className="relative inline-block font-display text-[clamp(4rem,13vw,8.75rem)] font-black normal-case leading-[0.86] tracking-[0.01em] text-foreground">
+          <h1 className="relative inline-block font-display text-[clamp(3.5rem,11vw,7.5rem)] font-black normal-case leading-[0.86] tracking-[0.01em] text-foreground">
             <span>Goede</span>
             <span className="relative whitespace-nowrap">
-              MORGEN
+              MORGEN<span className="text-[#d8fe56]">.</span>
               {daypartPeriod && (
                 <motion.span
                   key={daypartPeriod}
                   aria-hidden="true"
-                  initial={{ scaleX: 0, opacity: 0, x: "-4%" }}
-                  animate={{ scaleX: 1, opacity: 1, x: "0%" }}
+                  initial={{ scaleX: 0, opacity: 0, rotate: -5 }}
+                  animate={{ scaleX: 1, opacity: 1, rotate: -5 }}
                   transition={{ duration: 0.46, ease: [0.22, 1, 0.36, 1], delay: 0.12 }}
-                  className="absolute left-[-2%] right-[-2%] top-[50%] h-1.5 origin-left -rotate-[7deg] rounded-full bg-[#d8fe56] shadow-[0_0_18px_rgba(216,254,86,0.35)] md:h-2"
+                  className="absolute left-[-1%] right-[-1%] top-[54%] h-[0.08em] origin-left rounded-full bg-[#d8fe56]"
                 />
               )}
             </span>
-            <span className="text-[#d8fe56]">.</span>
             {daypartPeriod && (
               <>
                 {" "}
-                <span className="relative inline-grid overflow-hidden align-baseline [perspective:600px]">
-                  <AnimatePresence mode="wait" initial={false}>
-                    <motion.span
-                      key={daypartPeriod}
-                      variants={daypartRollVariants}
-                      initial="initial"
-                      animate="animate"
-                      exit="exit"
-                      transition={{ duration: 0.42, ease: [0.22, 1, 0.36, 1] }}
-                      className="col-start-1 row-start-1 inline-block text-white"
-                    >
-                      {daypartPeriod}
-                    </motion.span>
-                  </AnimatePresence>
-                </span>
+                <span className="text-white">{daypartPeriod}</span>
               </>
             )}
           </h1>
