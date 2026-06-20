@@ -23,6 +23,8 @@ import ContactDialog from "@/components/ContactDialog";
 import LiveSessionSignupDialog from "@/components/LiveSessionSignupDialog";
 import { cn } from "@/lib/utils";
 import { getDaypartPeriod } from "@/lib/daypartGreeting";
+import heroPhoto from "@/assets/training-tilburg-harmen.jpg";
+import incompanyPhoto from "@/assets/training-tilburg-harmen-3.jpg";
 
 const headerLinks = [
   {
@@ -266,12 +268,16 @@ const Landing = () => {
       <div className="h-[72px]" />
 
       {/* Hero */}
-      <section ref={heroRef} className="mx-auto flex min-h-[min(760px,calc(84svh-72px))] max-w-6xl items-center px-6 pb-10 pt-12 md:pb-12 md:pt-16">
+      <section ref={heroRef} className="relative mx-auto flex min-h-[min(760px,calc(84svh-72px))] max-w-6xl items-center px-6 pb-10 pt-12 md:pb-12 md:pt-16">
+        <div aria-hidden="true" className="pointer-events-none absolute left-1/2 top-0 h-full w-screen -translate-x-1/2">
+          <img src={heroPhoto} alt="" className="h-full w-full object-cover object-[62%_42%]" />
+          <div className="absolute inset-0 bg-[linear-gradient(to_right,rgba(12,10,24,0.96)_0%,rgba(12,10,24,0.9)_34%,rgba(12,10,24,0.55)_70%,rgba(12,10,24,0.28)_100%)]" />
+        </div>
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.7 }}
-          className="w-full"
+          className="relative z-10 w-full"
         >
           <h1 className="relative inline-block font-display text-[clamp(3.5rem,11vw,7.5rem)] font-black normal-case leading-[0.86] tracking-[0.01em] text-foreground">
             <span>Goede</span>
@@ -628,9 +634,13 @@ const Landing = () => {
           transition={{ duration: 0.5 }}
           className="relative overflow-hidden rounded-xl border border-border bg-card p-8 md:p-12"
         >
-          <div className="absolute top-0 left-0 right-0 h-[3px] bg-gradient-to-r from-primary to-accent" />
+          <div className="absolute top-0 left-0 right-0 z-10 h-[3px] bg-gradient-to-r from-primary to-accent" />
+          <div aria-hidden="true" className="pointer-events-none absolute inset-0">
+            <img src={incompanyPhoto} alt="" className="h-full w-full object-cover object-[55%_42%]" />
+            <div className="absolute inset-0 bg-[linear-gradient(to_right,rgba(12,10,24,0.95)_0%,rgba(12,10,24,0.88)_45%,rgba(12,10,24,0.5)_100%)]" />
+          </div>
 
-          <div className="flex flex-col items-start gap-8 md:flex-row md:gap-12">
+          <div className="relative z-10 flex flex-col items-start gap-8 md:flex-row md:gap-12">
             <div className="flex-1">
               <p className="mb-3 text-xs uppercase tracking-[0.25em] text-primary">
                 Live training

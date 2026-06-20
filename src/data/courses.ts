@@ -1,10 +1,10 @@
 import aiBasisImage from "@/assets/course-ai-basis.jpg";
-import agenticAiImage from "@/assets/course-agentic-ai.jpeg";
-import vibecodenImage from "@/assets/course-vibecoden.jpeg";
-import claudeOpenAiImage from "@/assets/course-claude-openai.jpeg";
+import agenticAiImage from "@/assets/training-tilburg-harmen.jpg";
+import vibecodenImage from "@/assets/training-pinkroccade-harmen.jpeg";
+import claudeOpenAiImage from "@/assets/training-fcdb-karin.jpeg";
 import aiBedrijfImage from "@/assets/course-ai-bedrijf.jpg";
-import aiProjectmanagersImage from "@/assets/course-2.jpg";
-import trainingCoPilotImage from "@/assets/course-training-copilot.jpeg";
+import aiProjectmanagersImage from "@/assets/training-vml-karin.jpeg";
+import trainingCoPilotImage from "@/assets/training-tilburg-harmen-2.jpg";
 
 export interface Lesson {
   id: string;
