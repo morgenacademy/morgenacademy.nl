@@ -454,8 +454,6 @@ const Landing = () => {
                 Meer weten over onze bredere aanpak voor teams en organisaties?{" "}
                 <a
                   href="https://www.morgencompany.com"
-                  target="_blank"
-                  rel="noopener noreferrer"
                   className="font-medium text-primary hover:underline"
                 >
                   Bekijk Morgen Company
@@ -482,7 +480,7 @@ const Landing = () => {
 
             <div className="w-full shrink-0 flex-col gap-3 md:w-auto md:pt-10 flex">
               <Button asChild size="lg" className="w-full gap-2 text-sm uppercase tracking-wider">
-                <a href="https://morgencompany.com/academy" target="_blank" rel="noopener noreferrer">
+                <a href="https://morgencompany.com/academy">
                   Bekijk incompany trainingen
                   <ArrowRight className="h-4 w-4" />
                 </a>

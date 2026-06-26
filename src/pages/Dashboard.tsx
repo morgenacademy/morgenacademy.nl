@@ -152,8 +152,6 @@ const Dashboard = () => {
             Wist je dat we ook incompany trainingen, consultancy en technische oplossingen bieden?{" "}
             <a
               href="https://www.morgencompany.com"
-              target="_blank"
-              rel="noopener noreferrer"
               className="inline-flex items-center gap-1 text-primary/70 hover:text-primary transition-colors"
             >
               Bekijk Morgen Company

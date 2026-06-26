@@ -62,7 +62,6 @@ const SiteHeader = ({ rightSlot }: SiteHeaderProps) => {
         key={item.label}
         href={item.href}
         onClick={onClick}
-        {...(item.kind === "external" ? { rel: "noopener" } : {})}
         className={className}
       >
         {item.label}
@@ -99,13 +98,13 @@ const SiteHeader = ({ rightSlot }: SiteHeaderProps) => {
           <DropdownMenuContent align="end" className="min-w-44">
             {companyLinks.map((c) => (
               <DropdownMenuItem key={c.label} asChild>
-                <a href={c.href} rel="noopener">
+                <a href={c.href}>
                   {c.label}
                 </a>
               </DropdownMenuItem>
             ))}
             <DropdownMenuItem asChild>
-              <a href={`${COMPANY_URL}/`} rel="noopener">
+              <a href={`${COMPANY_URL}/`}>
                 Morgen Company home
               </a>
             </DropdownMenuItem>
@@ -143,7 +142,6 @@ const SiteHeader = ({ rightSlot }: SiteHeaderProps) => {
             <a
               key={c.label}
               href={c.href}
-              rel="noopener"
               onClick={() => setMobileOpen(false)}
               className={mobileLinkClass}
             >
