@@ -1,5 +1,3 @@
-import { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import {
   ArrowRight,
@@ -9,25 +7,17 @@ import {
   ChevronRight,
   Clock,
   MapPin,
-  Menu,
   Sparkles,
   Target,
   Users,
-  X,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { cn } from "@/lib/utils";
+import SiteHeader from "@/components/SiteHeader";
+import SiteFooter from "@/components/SiteFooter";
 import heroPhoto from "@/assets/training-tilburg-harmen.jpg";
 import sessionPhoto from "@/assets/training-fcdb-karin.jpeg";
 import coachingPhoto from "@/assets/training-vml-karin.jpeg";
 import workshopPhoto from "@/assets/training-pinkroccade-harmen.jpeg";
-
-const navLinks = [
-  { label: "Trainingen", href: "/#trainingen", kind: "route" },
-  { label: "Live agenda", href: "/#live-agenda", kind: "route" },
-  { label: "Incompany", href: "https://morgencompany.com/academy", kind: "external" },
-  { label: "Contact", href: "mailto:totmorgen@morgenacademy.nl?subject=AI%20Accelerator", kind: "external" },
-] as const;
 
 const audience = [
   "slimmer willen werken met AI",
@@ -110,87 +100,18 @@ const includes = [
 ];
 
 const AIAccelerator = () => {
-  const [scrolled, setScrolled] = useState(false);
-  const [mobileNavOpen, setMobileNavOpen] = useState(false);
-
-  useEffect(() => {
-    const handleScroll = () => setScrolled(window.scrollY > 20);
-    window.addEventListener("scroll", handleScroll, { passive: true });
-    return () => window.removeEventListener("scroll", handleScroll);
-  }, []);
-
-  const renderNavLink = (item: typeof navLinks[number], mobile = false) => {
-    const className = cn(
-      mobile
-        ? "rounded-lg px-3 py-2.5 text-[0.82rem] font-bold uppercase tracking-[0.12em] transition-colors"
-        : "text-[0.82rem] font-bold uppercase tracking-[0.12em] text-[#D8CCEC] transition-colors hover:text-white",
-    );
-
-    if (item.kind === "route") {
-      return (
-        <Link key={item.label} to={item.href} onClick={mobile ? () => setMobileNavOpen(false) : undefined} className={className}>
-          {item.label}
-        </Link>
-      );
-    }
-
-    return (
-      <a
-        key={item.label}
-        href={item.href}
-        target={item.href.startsWith("mailto:") ? undefined : "_blank"}
-        rel={item.href.startsWith("mailto:") ? undefined : "noopener noreferrer"}
-        onClick={mobile ? () => setMobileNavOpen(false) : undefined}
-        className={className}
-      >
-        {item.label}
-      </a>
-    );
-  };
-
   return (
     <div className="min-h-screen bg-background text-foreground">
-      <nav
-        className={cn(
-          "fixed left-0 right-0 top-0 z-50 flex items-center justify-between px-6 transition-all duration-300 lg:px-16",
-          scrolled
-            ? "h-16 border-b border-white/[0.18] bg-white/[0.08] backdrop-blur-[40px] backdrop-saturate-200"
-            : "h-[72px]",
-        )}
-      >
-        <Link to="/" className="shrink-0 font-display text-[1.5rem] font-black uppercase tracking-[0.1em] text-white">
-          MORGEN<span className="text-[#d8fe56]">.</span>
-        </Link>
-
-        <div className="hidden items-center gap-6 lg:flex">
-          {navLinks.map((item) => renderNavLink(item))}
-          <Button asChild className="rounded-[20px] bg-gradient-to-br from-[#d8fe56] to-[#b8e040] px-5 py-2 text-[0.88rem] font-bold text-[#1A1A2E] shadow-[0_4px_16px_rgba(216,254,86,0.3)] hover:shadow-[0_6px_24px_rgba(216,254,86,0.45)]">
-            <a href="mailto:totmorgen@morgenacademy.nl?subject=Aanmelding%20AI%20Accelerator">
-              Aanmelden
-            </a>
-          </Button>
-        </div>
-
-        <button
-          onClick={() => setMobileNavOpen(!mobileNavOpen)}
-          className="flex h-10 w-10 items-center justify-center rounded-[20px] border border-white/[0.18] bg-white/[0.08] text-white lg:hidden"
-          aria-label="Menu openen"
-        >
-          {mobileNavOpen ? <X className="h-4 w-4" /> : <Menu className="h-4 w-4" />}
-        </button>
-
-        {mobileNavOpen && (
-          <div className="absolute left-4 right-4 top-full mt-2 flex flex-col gap-1 rounded-[20px] border border-white/[0.18] bg-[rgba(12,8,24,0.97)] p-4 text-[#D8CCEC] backdrop-blur-[40px] backdrop-saturate-200 lg:hidden">
-            {navLinks.map((item) => renderNavLink(item, true))}
-            <a
-              href="mailto:totmorgen@morgenacademy.nl?subject=Aanmelding%20AI%20Accelerator"
-              className="mt-1 flex items-center justify-center rounded-[20px] bg-gradient-to-br from-[#d8fe56] to-[#b8e040] px-5 py-2.5 text-[0.88rem] font-bold text-[#1A1A2E]"
-            >
-              Aanmelden
-            </a>
-          </div>
-        )}
-      </nav>
+      <SiteHeader
+        rightSlot={
+          <a
+            href="mailto:totmorgen@morgenacademy.nl?subject=Aanmelding%20AI%20Accelerator"
+            className="ml-1 inline-flex items-center rounded-[20px] bg-gradient-to-br from-[#d8fe56] to-[#b8e040] px-5 py-2 text-[0.88rem] font-bold text-[#1A1A2E] shadow-[0_4px_16px_rgba(216,254,86,0.3)] transition-all duration-200 hover:-translate-y-px hover:shadow-[0_6px_24px_rgba(216,254,86,0.45)]"
+          >
+            Aanmelden
+          </a>
+        }
+      />
 
       <main>
         <section className="relative flex min-h-[min(820px,92svh)] items-end overflow-hidden px-6 pb-16 pt-28 lg:px-16">
@@ -452,20 +373,7 @@ const AIAccelerator = () => {
         </section>
       </main>
 
-      <footer className="border-t border-white/10 bg-[rgba(6,4,14,0.96)] py-10 text-white">
-        <div className="mx-auto flex max-w-6xl flex-col gap-5 px-6 sm:flex-row sm:items-center sm:justify-between">
-          <Link to="/" className="font-display text-[1.5rem] font-black uppercase tracking-[0.1em] text-white">
-            MORGEN<span className="text-[#d8fe56]">.</span>
-          </Link>
-          <div className="flex flex-wrap gap-4 text-sm text-[#9F97B9]">
-            <Link to="/" className="transition-colors hover:text-white">Online trainingen</Link>
-            <Link to="/privacy" className="transition-colors hover:text-white">Privacybeleid</Link>
-            <a href="mailto:totmorgen@morgenacademy.nl" className="transition-colors hover:text-white">
-              totmorgen@morgenacademy.nl
-            </a>
-          </div>
-        </div>
-      </footer>
+      <SiteFooter />
     </div>
   );
 };

@@ -13,9 +13,9 @@ export default {
       },
     },
     fontFamily: {
-      display: ['Barlow Condensed', 'sans-serif'],
-      body: ['Arimo', 'sans-serif'],
-      ui: ['Plus Jakarta Sans', 'sans-serif'],
+      display: ['Barlow', 'sans-serif'],
+      body: ['Barlow', 'sans-serif'],
+      ui: ['Barlow', 'sans-serif'],
     },
     extend: {
       colors: {
@@ -53,6 +53,7 @@ export default {
           foreground: "hsl(var(--card-foreground))",
         },
         success: "hsl(var(--success))",
+        neon: "hsl(var(--neon))",
         sidebar: {
           DEFAULT: "hsl(var(--sidebar-background))",
           foreground: "hsl(var(--sidebar-foreground))",

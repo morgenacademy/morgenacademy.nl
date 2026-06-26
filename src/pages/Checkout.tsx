@@ -1,5 +1,6 @@
 import React, { useState, useRef } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
+import { ACADEMY_URL } from "@/lib/links";
 import { motion } from "framer-motion";
 import {
   ArrowLeft,
@@ -300,7 +301,7 @@ const Checkout = () => {
             <ArrowLeft className="h-4 w-4" />
           </button>
           <div className="flex-1 text-center">
-            <a href="https://www.morgenacademy.nl/">
+            <a href={ACADEMY_URL}>
               <span className="font-display text-xl font-semibold text-foreground tracking-tight">
                 Morgen <span className="text-primary">Academy</span>
               </span>

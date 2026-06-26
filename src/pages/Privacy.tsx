@@ -1,5 +1,6 @@
 import { Link } from "react-router-dom";
 import { ArrowLeft, Shield } from "lucide-react";
+import { ACADEMY_URL } from "@/lib/links";
 
 const Privacy = () => {
   return (
@@ -15,7 +16,7 @@ const Privacy = () => {
             Terug
           </Link>
           <div className="flex-1 text-center">
-            <a href="https://www.morgenacademy.nl/">
+            <a href={ACADEMY_URL}>
               <span className="font-display text-xl font-semibold text-foreground tracking-tight">
                 Morgen <span className="text-primary">Academy</span>
               </span>

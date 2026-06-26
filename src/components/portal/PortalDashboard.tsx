@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import PortalTrainingCard from "./PortalTrainingCard";
 import PortalFeedbackDialog from "./PortalFeedbackDialog";
+import { ACADEMY_URL } from "@/lib/links";
 
 interface Training {
   id: string;
@@ -45,7 +46,7 @@ const offerLinks = [
   {
     title: "Online Academy",
     body: "Leer op je eigen tempo met directe toegang tot de online trainingen.",
-    href: "https://morgenacademy.nl",
+    href: ACADEMY_URL,
     icon: GraduationCap,
     cta: "Bekijk online",
   },
@@ -87,7 +88,7 @@ const PortalDashboard = ({ session, slug, onLogout }: PortalDashboardProps) => {
       {/* Header */}
       <header className="border-b border-border/50">
         <div className="mx-auto flex max-w-3xl items-center justify-between px-6 py-5">
-          <a href="https://www.morgenacademy.nl/" className="font-display text-xl font-semibold text-foreground tracking-tight hover:opacity-80 transition-opacity">
+          <a href={ACADEMY_URL} className="font-display text-xl font-semibold text-foreground tracking-tight hover:opacity-80 transition-opacity">
             Morgen <span className="text-primary">Academy</span>
           </a>
           <Button

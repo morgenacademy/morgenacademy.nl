@@ -11,6 +11,8 @@ import { courses } from "@/data/courses";
 import { getRecommendationsForCourses } from "@/data/recommendations";
 import { getDaypartGreeting } from "@/lib/daypartGreeting";
 import { usePodcastRecommendations } from "@/hooks/usePodcastRecommendations";
+import SiteHeader from "@/components/SiteHeader";
+import SiteFooter from "@/components/SiteFooter";
 
 const Dashboard = () => {
   const navigate = useNavigate();
@@ -69,16 +71,9 @@ const Dashboard = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      {/* Header */}
-      <header className="border-b border-border">
-        <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-5">
-          <a
-            href="https://www.morgenacademy.nl/"
-            className="font-display text-xl font-semibold text-foreground tracking-tight transition-opacity hover:opacity-80"
-          >
-            Morgen <span className="text-primary">Academy</span>
-          </a>
-          <div className="flex items-center gap-2">
+      <SiteHeader
+        rightSlot={
+          <>
             {isAdmin && (
               <Link to="/admin/portal">
                 <Button variant="ghost" size="sm" className="text-muted-foreground hover:text-foreground gap-2">
@@ -96,9 +91,12 @@ const Dashboard = () => {
               <LogOut className="h-4 w-4" />
               <span className="hidden sm:inline">Uitloggen</span>
             </Button>
-          </div>
-        </div>
-      </header>
+          </>
+        }
+      />
+
+      {/* Spacer for fixed nav */}
+      <div className="h-[72px]" />
 
       {/* Hero */}
       <section className="mx-auto max-w-6xl px-6 pt-16 pb-12">
@@ -172,22 +170,7 @@ const Dashboard = () => {
         courseTitle={waitlistCourse?.title || ""}
       />
 
-      {/* Footer */}
-      <footer className="border-t border-border/50 py-8">
-        <div className="mx-auto max-w-6xl px-6 text-center">
-          <p className="text-sm text-muted-foreground">
-            Morgen Academy is het trainingsplatform van{" "}
-            <a
-              href="https://www.morgencompany.com"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-primary hover:underline"
-            >
-              Morgen Company
-            </a>
-          </p>
-        </div>
-      </footer>
+      <SiteFooter />
     </div>
   );
 };
