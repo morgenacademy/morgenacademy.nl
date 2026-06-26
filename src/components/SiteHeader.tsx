@@ -1,16 +1,29 @@
 import { useEffect, useState, type ReactNode } from "react";
 import { Link } from "react-router-dom";
-import { Menu, X } from "lucide-react";
+import { Menu, X, ChevronDown } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { COMPANY_URL, type NavLink } from "@/lib/links";
+import {
+  DropdownMenu,
+  DropdownMenuTrigger,
+  DropdownMenuContent,
+  DropdownMenuItem,
+} from "@/components/ui/dropdown-menu";
 
-// Eigen academy-secties + één brug naar het Morgen-merk. Zelfde stijl als
-// morgencompany.com, zodat de leeromgeving als één doorlopende site voelt.
-const navLinks: NavLink[] = [
+// Eigen academy-secties, plus de company-secties onder één "Morgen Company"-
+// dropdown. Zelfde stijl als morgencompany.com → voelt als één site, en je
+// bent vanuit de leeromgeving in één klik bij elke company-sectie.
+const academyLinks: NavLink[] = [
   { label: "Online trainingen", href: "/", kind: "route" },
   { label: "Live agenda", href: "/#live-agenda", kind: "anchor" },
   { label: "AI Accelerator", href: "/ai-accelerator", kind: "route" },
-  { label: "Morgen Company", href: COMPANY_URL, kind: "external" },
+];
+
+const companyLinks = [
+  { label: "Train", href: `${COMPANY_URL}/academy` },
+  { label: "Implement", href: `${COMPANY_URL}/consultancy` },
+  { label: "Build", href: `${COMPANY_URL}/technology` },
+  { label: "Get inspired", href: `${COMPANY_URL}/inspiratie` },
 ];
 
 interface SiteHeaderProps {
@@ -75,7 +88,29 @@ const SiteHeader = ({ rightSlot }: SiteHeaderProps) => {
 
       {/* Desktop nav */}
       <div className="hidden lg:flex items-center gap-6">
-        {navLinks.map((item) => renderLink(item))}
+        {academyLinks.map((item) => renderLink(item))}
+
+        <DropdownMenu>
+          <DropdownMenuTrigger className={cn(linkClass, "inline-flex items-center gap-1 outline-none focus-visible:text-white")}>
+            Morgen Company
+            <ChevronDown className="h-3.5 w-3.5" />
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end" className="min-w-44">
+            {companyLinks.map((c) => (
+              <DropdownMenuItem key={c.label} asChild>
+                <a href={c.href} rel="noopener">
+                  {c.label}
+                </a>
+              </DropdownMenuItem>
+            ))}
+            <DropdownMenuItem asChild>
+              <a href={`${COMPANY_URL}/`} rel="noopener">
+                Morgen Company home
+              </a>
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+
         {rightSlot ?? (
           <Link
             to="/login"
@@ -99,14 +134,28 @@ const SiteHeader = ({ rightSlot }: SiteHeaderProps) => {
       {/* Mobile dropdown */}
       {mobileOpen && (
         <div className="absolute top-full left-4 right-4 mt-2 flex flex-col gap-1 rounded-[16px] border border-white/[0.18] bg-[rgba(12,8,24,0.97)] backdrop-blur-[40px] backdrop-saturate-200 p-4 lg:hidden">
-          {navLinks.map((item) => renderLink(item, true))}
+          {academyLinks.map((item) => renderLink(item, true))}
+          <p className="mt-2 border-t border-white/[0.08] px-3 pt-3 text-[0.62rem] font-bold uppercase tracking-[0.2em] text-[#7A6B8E]">
+            Morgen Company
+          </p>
+          {companyLinks.map((c) => (
+            <a
+              key={c.label}
+              href={c.href}
+              rel="noopener"
+              onClick={() => setMobileOpen(false)}
+              className={mobileLinkClass}
+            >
+              {c.label}
+            </a>
+          ))}
           {rightSlot ? (
             <div className="mt-1 flex flex-col gap-1">{rightSlot}</div>
           ) : (
             <Link
               to="/login"
               onClick={() => setMobileOpen(false)}
-              className="mt-1 flex items-center justify-center rounded-[14px] bg-gradient-to-br from-[#d8fe56] to-[#b8e040] px-5 py-2.5 text-[0.88rem] font-bold text-[#1A1A2E]"
+              className="mt-2 flex items-center justify-center rounded-[14px] bg-gradient-to-br from-[#d8fe56] to-[#b8e040] px-5 py-2.5 text-[0.88rem] font-bold text-[#1A1A2E]"
             >
               Inloggen
             </Link>
