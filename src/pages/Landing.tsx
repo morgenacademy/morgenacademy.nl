@@ -39,6 +39,11 @@ const headerLinks = [
     kind: "anchor",
   },
   {
+    label: "AI Accelerator",
+    href: "/ai-accelerator",
+    kind: "route",
+  },
+  {
     label: "Incompany trainingen",
     href: "https://morgencompany.com/academy",
     kind: "external",
@@ -66,6 +71,7 @@ const footerColumns = [
     links: [
       { label: "Online trainingen", href: "/", kind: "route" },
       { label: "Live agenda", href: "#live-agenda", kind: "anchor" },
+      { label: "AI Accelerator", href: "/ai-accelerator", kind: "route" },
       { label: "Incompany trainingen", href: "https://morgencompany.com/academy", kind: "external" },
       { label: "Inloggen", href: "/login", kind: "route" },
     ],
