@@ -84,6 +84,7 @@ const SiteHeader = ({ rightSlot }: SiteHeaderProps) => {
         className="font-display text-[1.5rem] font-black uppercase tracking-[0.1em] text-white shrink-0"
       >
         MORGEN<span className="text-neon not-italic">.</span>
+        <span className="ml-1.5 font-semibold normal-case tracking-normal text-neon">Academy</span>
       </Link>
 
       {/* Desktop nav */}
