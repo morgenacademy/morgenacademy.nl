@@ -160,8 +160,6 @@ const Register = () => {
           Morgen Academy is het trainingsplatform van{" "}
           <a
             href="https://www.morgencompany.com"
-            target="_blank"
-            rel="noopener noreferrer"
             className="text-primary/60 hover:text-primary hover:underline"
           >
             Morgen Company

@@ -51,12 +51,12 @@ const renderLink = (link: NavLink) => {
       </a>
     );
   }
-  const isMail = link.href.startsWith("mailto:");
+  // Externe links zijn company cross-links (zelfde merk) → zelfde tab,
+  // zodat de twee sites als één voelen. mailto blijft ongewijzigd.
   return (
     <a
       key={link.label}
       href={link.href}
-      {...(isMail ? {} : { target: "_blank", rel: "noopener noreferrer" })}
       className={linkClass}
     >
       {link.label}
@@ -128,8 +128,6 @@ const SiteFooter = () => {
             </Link>
             <a
               href={`${COMPANY_URL}/`}
-              target="_blank"
-              rel="noopener noreferrer"
               className="text-[0.78rem] text-[#7A6B8E] transition-colors hover:text-white"
             >
               Morgen Company

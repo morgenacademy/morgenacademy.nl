@@ -228,8 +228,6 @@ const PortalDashboard = ({ session, slug, onLogout }: PortalDashboardProps) => {
                   <a
                     key={offer.title}
                     href={offer.href}
-                    target="_blank"
-                    rel="noopener noreferrer"
                     className="group rounded-xl border border-border/70 bg-card/60 p-4 transition-colors hover:border-primary/60"
                   >
                     <div className="mb-3 flex h-9 w-9 items-center justify-center rounded-lg bg-primary/10 text-primary">
@@ -270,8 +268,6 @@ const PortalDashboard = ({ session, slug, onLogout }: PortalDashboardProps) => {
             Morgen Academy is het trainingsplatform van{" "}
             <a
               href="https://www.morgencompany.com"
-              target="_blank"
-              rel="noopener noreferrer"
               className="text-primary/40 hover:text-primary/70 transition-colors"
             >
               Morgen Company
