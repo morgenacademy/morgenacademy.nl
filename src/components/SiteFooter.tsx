@@ -1,36 +1,68 @@
 import { Link } from "react-router-dom";
-import { COMPANY_URL, CONTACT_EMAIL, SOCIAL } from "@/lib/links";
+import { COMPANY_URL, CONTACT_EMAIL, SOCIAL, type NavLink } from "@/lib/links";
 
-// Footer 1-op-1 gelijk aan morgencompany.com (4 kolommen + onderbalk).
-const columns = [
+// Footer in de Morgen-huisstijl. Academy-kolom = de eigen pagina's van de
+// leeromgeving; de andere kolommen overbruggen naar morgencompany.com.
+const columns: { title: string; links: NavLink[] }[] = [
   {
     title: "Academy",
     links: [
-      { label: "Trainingwijzer", href: `${COMPANY_URL}/academy/#trainingwijzer-app`, external: true },
-      { label: "AI-trainingen", href: `${COMPANY_URL}/academy/#ac-trainingen`, external: true },
-      { label: "Online trainingen", href: "/", external: false },
-      { label: "EU AI Act conform", href: `${COMPANY_URL}/academy/#ac-ai-act`, external: true },
+      { label: "Online trainingen", href: "/", kind: "route" },
+      { label: "Live agenda", href: "/#live-agenda", kind: "anchor" },
+      { label: "AI Accelerator", href: "/ai-accelerator", kind: "route" },
+      { label: "Incompany trainingen", href: `${COMPANY_URL}/academy`, kind: "external" },
+      { label: "Inloggen", href: "/login", kind: "route" },
     ],
   },
   {
     title: "Build & Implement",
     links: [
-      { label: "Digitale oplossingen", href: `${COMPANY_URL}/technology/`, external: true },
-      { label: "Procesautomatisering", href: `${COMPANY_URL}/technology/`, external: true },
-      { label: "Digitale strategie", href: `${COMPANY_URL}/consultancy/`, external: true },
-      { label: "Projecten", href: `${COMPANY_URL}/projecten/`, external: true },
+      { label: "Digitale oplossingen", href: `${COMPANY_URL}/technology/`, kind: "external" },
+      { label: "Procesautomatisering", href: `${COMPANY_URL}/technology/`, kind: "external" },
+      { label: "Digitale strategie", href: `${COMPANY_URL}/consultancy/`, kind: "external" },
+      { label: "Projecten", href: `${COMPANY_URL}/projecten/`, kind: "external" },
     ],
   },
   {
     title: "Company & Info",
     links: [
-      { label: "Over Morgen.", href: `${COMPANY_URL}/about/`, external: true },
-      { label: "Keynote boeken", href: `${COMPANY_URL}/inspiratie/#cp-keynote`, external: true },
-      { label: "Podcast, artikelen en boek", href: `${COMPANY_URL}/inspiratie/#cp-verdieping`, external: true },
-      { label: CONTACT_EMAIL, href: `mailto:${CONTACT_EMAIL}`, external: true },
+      { label: "Over Morgen.", href: `${COMPANY_URL}/about/`, kind: "external" },
+      { label: "Keynote boeken", href: `${COMPANY_URL}/inspiratie/#cp-keynote`, kind: "external" },
+      { label: "Podcast, artikelen en boek", href: `${COMPANY_URL}/inspiratie/#cp-verdieping`, kind: "external" },
+      { label: CONTACT_EMAIL, href: `mailto:${CONTACT_EMAIL}`, kind: "external" },
     ],
   },
 ];
+
+const linkClass = "text-[0.86rem] text-[#7A6B8E] transition-colors hover:text-neon";
+
+const renderLink = (link: NavLink) => {
+  if (link.kind === "route") {
+    return (
+      <Link key={link.label} to={link.href} className={linkClass}>
+        {link.label}
+      </Link>
+    );
+  }
+  if (link.kind === "anchor") {
+    return (
+      <a key={link.label} href={link.href} className={linkClass}>
+        {link.label}
+      </a>
+    );
+  }
+  const isMail = link.href.startsWith("mailto:");
+  return (
+    <a
+      key={link.label}
+      href={link.href}
+      {...(isMail ? {} : { target: "_blank", rel: "noopener noreferrer" })}
+      className={linkClass}
+    >
+      {link.label}
+    </a>
+  );
+};
 
 const SiteFooter = () => {
   const year = new Date().getFullYear();
@@ -79,25 +111,7 @@ const SiteFooter = () => {
               </h3>
               <ul className="flex flex-col gap-3">
                 {column.links.map((link) => (
-                  <li key={link.label}>
-                    {link.external ? (
-                      <a
-                        href={link.href}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-[0.86rem] text-[#7A6B8E] transition-colors hover:text-neon"
-                      >
-                        {link.label}
-                      </a>
-                    ) : (
-                      <Link
-                        to={link.href}
-                        className="text-[0.86rem] text-[#7A6B8E] transition-colors hover:text-neon"
-                      >
-                        {link.label}
-                      </Link>
-                    )}
-                  </li>
+                  <li key={link.label}>{renderLink(link)}</li>
                 ))}
               </ul>
             </div>
