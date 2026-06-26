@@ -16,6 +16,7 @@ import AdminPortal from "./pages/AdminPortal";
 import CompanyPortal from "./pages/CompanyPortal";
 import Checkout from "./pages/Checkout";
 import Privacy from "./pages/Privacy";
+import AIAccelerator from "./pages/AIAccelerator";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -34,6 +35,7 @@ const App = () => (
           <Route path="/betaling" element={<PaymentStatus />} />
           <Route path="/checkout/:courseId" element={<Checkout />} />
           <Route path="/privacy" element={<Privacy />} />
+          <Route path="/ai-accelerator" element={<AIAccelerator />} />
           <Route
             path="/admin/upload"
             element={
