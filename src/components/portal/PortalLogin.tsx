@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { ACADEMY_URL } from "@/lib/links";
 
 interface PortalSession {
   company_id: string;
@@ -76,7 +77,7 @@ const PortalLogin = ({ slug, onSuccess }: PortalLoginProps) => {
         {/* Logo */}
         <div className="mb-8 text-center">
           <a
-            href="https://www.morgenacademy.nl/"
+            href={ACADEMY_URL}
             className="font-display text-2xl font-semibold text-foreground tracking-tight transition-opacity hover:opacity-80"
           >
             Morgen <span className="text-primary">Academy</span>

@@ -4,6 +4,7 @@ import { motion } from "framer-motion";
 import { CheckCircle, XCircle, Loader2, Mail, UserPlus, LogIn, BookOpen } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
+import { ACADEMY_URL } from "@/lib/links";
 
 const PaymentStatus = () => {
   const [searchParams] = useSearchParams();
@@ -62,7 +63,7 @@ const PaymentStatus = () => {
       {/* Header */}
       <header className="border-b border-border/50">
         <div className="mx-auto flex max-w-6xl items-center justify-center px-6 py-4">
-          <a href="https://www.morgenacademy.nl/">
+          <a href={ACADEMY_URL}>
             <span className="font-display text-xl font-semibold text-foreground tracking-tight">
               Morgen <span className="text-primary">Academy</span>
             </span>

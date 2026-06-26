@@ -6,89 +6,24 @@ import {
   Bell,
   Users,
   Clock,
-  Menu,
-  X,
   CalendarDays,
   MapPin,
   Monitor,
 } from "lucide-react";
 import { format, parseISO } from "date-fns";
 import { nl } from "date-fns/locale";
-import { Link, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { courses } from "@/data/courses";
 import { liveSessions, type LiveSession } from "@/data/liveSessions";
 import WaitlistDialog from "@/components/WaitlistDialog";
 import ContactDialog from "@/components/ContactDialog";
 import LiveSessionSignupDialog from "@/components/LiveSessionSignupDialog";
-import { cn } from "@/lib/utils";
+import SiteHeader from "@/components/SiteHeader";
+import SiteFooter from "@/components/SiteFooter";
 import { getDaypartPeriod } from "@/lib/daypartGreeting";
 import heroPhoto from "@/assets/training-tilburg-harmen.jpg";
 import incompanyPhoto from "@/assets/training-tilburg-harmen-3.jpg";
-
-const headerLinks = [
-  {
-    label: "Online trainingen",
-    href: "/",
-    kind: "route",
-    active: true,
-  },
-  {
-    label: "Live agenda",
-    href: "#live-agenda",
-    kind: "anchor",
-  },
-  {
-    label: "Incompany trainingen",
-    href: "https://morgencompany.com/academy",
-    kind: "external",
-  },
-  {
-    label: "Implement",
-    href: "https://morgencompany.com/consultancy",
-    kind: "external",
-  },
-  {
-    label: "Build",
-    href: "https://morgencompany.com/technology",
-    kind: "external",
-  },
-  {
-    label: "Get inspired",
-    href: "https://morgencompany.com/company",
-    kind: "external",
-  },
-] as const;
-
-const footerColumns = [
-  {
-    title: "Academy",
-    links: [
-      { label: "Online trainingen", href: "/", kind: "route" },
-      { label: "Live agenda", href: "#live-agenda", kind: "anchor" },
-      { label: "Incompany trainingen", href: "https://morgencompany.com/academy", kind: "external" },
-      { label: "Inloggen", href: "/login", kind: "route" },
-    ],
-  },
-  {
-    title: "Build & Implement",
-    links: [
-      { label: "Digitale oplossingen", href: "https://morgencompany.com/technology/", kind: "external" },
-      { label: "Procesautomatisering", href: "https://morgencompany.com/technology/", kind: "external" },
-      { label: "Digitale strategie", href: "https://morgencompany.com/consultancy/", kind: "external" },
-      { label: "Projecten", href: "https://morgencompany.com/projecten/", kind: "external" },
-    ],
-  },
-  {
-    title: "Company & Info",
-    links: [
-      { label: "Over Morgen.", href: "https://morgencompany.com/about/", kind: "external" },
-      { label: "Keynote boeken", href: "https://morgencompany.com/company/#cp-keynote", kind: "external" },
-      { label: "Podcast, artikelen en boek", href: "https://morgencompany.com/company/#cp-verdieping", kind: "external" },
-      { label: "totmorgen@morgenacademy.nl", href: "mailto:totmorgen@morgenacademy.nl", kind: "external" },
-    ],
-  },
-] as const;
 
 const formatSessionDate = (startsAt: string, endsAt: string) => {
   const start = parseISO(startsAt);
@@ -114,14 +49,6 @@ const Landing = () => {
   const [waitlistCourse, setWaitlistCourse] = useState<{ id: string; title: string } | null>(null);
   const [selectedLiveSession, setSelectedLiveSession] = useState<LiveSession | null>(null);
   const [contactOpen, setContactOpen] = useState(false);
-  const [scrolled, setScrolled] = useState(false);
-  const [mobileNavOpen, setMobileNavOpen] = useState(false);
-
-  useEffect(() => {
-    const handleScroll = () => setScrolled(window.scrollY > 20);
-    window.addEventListener("scroll", handleScroll, { passive: true });
-    return () => window.removeEventListener("scroll", handleScroll);
-  }, []);
 
   useEffect(() => {
     const interval = window.setInterval(() => {
@@ -131,138 +58,9 @@ const Landing = () => {
     return () => window.clearInterval(interval);
   }, []);
 
-  const renderHeaderLink = (item: typeof headerLinks[number], mobile = false) => {
-    const className = cn(
-      mobile
-        ? "rounded-lg px-3 py-2.5 text-[0.82rem] font-bold uppercase tracking-[0.12em] transition-colors duration-200"
-        : "text-[0.82rem] font-bold uppercase tracking-[0.12em] transition-colors duration-200 whitespace-nowrap",
-      item.active ? "text-white" : "text-[#D8CCEC] hover:text-white",
-    );
-
-    if (item.kind === "route") {
-      return (
-        <Link
-          key={item.label}
-          to={item.href}
-          onClick={mobile ? () => setMobileNavOpen(false) : undefined}
-          className={className}
-          aria-current={item.active ? "page" : undefined}
-        >
-          {item.label}
-        </Link>
-      );
-    }
-
-    if (item.kind === "anchor") {
-      return (
-        <a
-          key={item.label}
-          href={item.href}
-          onClick={mobile ? () => setMobileNavOpen(false) : undefined}
-          className={className}
-        >
-          {item.label}
-        </a>
-      );
-    }
-
-    return (
-      <a
-        key={item.label}
-        href={item.href}
-        target="_blank"
-        rel="noopener noreferrer"
-        onClick={mobile ? () => setMobileNavOpen(false) : undefined}
-        className={className}
-      >
-        {item.label}
-      </a>
-    );
-  };
-
-  const renderFooterLink = (link: typeof footerColumns[number]["links"][number]) => {
-    if (link.kind === "route") {
-      return (
-        <Link
-          key={link.label}
-          to={link.href}
-          className="text-sm text-[#9F97B9] transition-colors hover:text-white"
-        >
-          {link.label}
-        </Link>
-      );
-    }
-
-    const externalProps =
-      link.kind === "external" && !link.href.startsWith("mailto:")
-        ? { target: "_blank", rel: "noopener noreferrer" }
-        : {};
-
-    return (
-      <a
-        key={link.label}
-        href={link.href}
-        className="text-sm text-[#9F97B9] transition-colors hover:text-white"
-        {...externalProps}
-      >
-        {link.label}
-      </a>
-    );
-  };
-
   return (
     <div className="min-h-screen bg-background">
-      {/* Fixed Nav — morgencompany.com style */}
-      <nav
-        className={cn(
-          "fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-6 lg:px-16 transition-all duration-300",
-          scrolled
-            ? "h-16 bg-white/[0.08] backdrop-blur-[40px] backdrop-saturate-200 border-b border-white/[0.18]"
-            : "h-[72px]",
-        )}
-      >
-        {/* Logo */}
-        <a
-          href="https://www.morgenacademy.nl/"
-          className="font-display text-[1.5rem] font-black uppercase tracking-[0.1em] text-white shrink-0"
-        >
-          MORGEN<span className="text-[#d8fe56] font-black not-italic">.</span>
-        </a>
-
-        {/* Desktop nav */}
-        <div className="hidden lg:flex items-center gap-6">
-          {headerLinks.map((item) => renderHeaderLink(item))}
-
-          <Link
-            to="/login"
-            className="ml-1 inline-flex items-center rounded-[20px] bg-gradient-to-br from-[#d8fe56] to-[#b8e040] px-5 py-2 text-[0.88rem] font-bold text-[#1A1A2E] shadow-[0_4px_16px_rgba(216,254,86,0.3)] transition-all duration-200 hover:-translate-y-px hover:shadow-[0_6px_24px_rgba(216,254,86,0.45)]"
-          >
-            Inloggen
-          </Link>
-        </div>
-
-        {/* Mobile toggle */}
-        <button
-          onClick={() => setMobileNavOpen(!mobileNavOpen)}
-          className="lg:hidden flex items-center justify-center w-10 h-10 rounded-[20px] border border-white/[0.18] bg-white/[0.08] text-white"
-        >
-          {mobileNavOpen ? <X className="h-4 w-4" /> : <Menu className="h-4 w-4" />}
-        </button>
-
-        {/* Mobile dropdown */}
-        {mobileNavOpen && (
-          <div className="absolute top-full left-4 right-4 mt-2 flex flex-col gap-1 rounded-[20px] border border-white/[0.18] bg-[rgba(12,8,24,0.97)] backdrop-blur-[40px] backdrop-saturate-200 p-4 lg:hidden">
-            {headerLinks.map((item) => renderHeaderLink(item, true))}
-            <Link
-              to="/login"
-              onClick={() => setMobileNavOpen(false)}
-              className="mt-1 flex items-center justify-center rounded-[20px] bg-gradient-to-br from-[#d8fe56] to-[#b8e040] px-5 py-2.5 text-[0.88rem] font-bold text-[#1A1A2E]"
-            >
-              Inloggen
-            </Link>
-          </div>
-        )}
-      </nav>
+      <SiteHeader />
 
       {/* Spacer for fixed nav */}
       <div className="h-[72px]" />
@@ -710,61 +508,7 @@ const Landing = () => {
       />
       <ContactDialog open={contactOpen} onOpenChange={setContactOpen} />
 
-      {/* Footer */}
-      <footer className="border-t border-white/10 bg-[rgba(6,4,14,0.96)] py-14 text-white">
-        <div className="mx-auto max-w-6xl px-6">
-          <div className="grid gap-12 border-b border-white/10 pb-10 md:grid-cols-[1.6fr_1fr_1fr_1fr]">
-            <div>
-              <a
-                href="https://www.morgenacademy.nl/"
-                className="font-display text-[1.5rem] font-black uppercase tracking-[0.1em] text-white"
-              >
-                MORGEN<span className="text-[#d8fe56] font-black not-italic">.</span>
-              </a>
-              <p className="mt-5 max-w-[32ch] text-[0.95rem] leading-7 text-[#9F97B9]">
-                Morgen Academy is het trainingsplatform van{" "}
-                <a
-                  href="https://morgencompany.com"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-white transition-colors hover:text-[#d8fe56]"
-                >
-                  Morgen
-                </a>
-                .
-              </p>
-            </div>
-
-            {footerColumns.map((column) => (
-              <div key={column.title}>
-                <h3 className="mb-5 text-[1rem] font-extrabold uppercase tracking-[0.06em] text-white">
-                  {column.title}
-                </h3>
-                <div className="flex flex-col gap-3">
-                  {column.links.map((link) => renderFooterLink(link))}
-                </div>
-              </div>
-            ))}
-          </div>
-
-          <div className="flex flex-col gap-4 pt-6 text-xs text-[#7E7896] sm:flex-row sm:items-center sm:justify-between">
-            <p>© {new Date().getFullYear()} Morgen Academy. Alle rechten voorbehouden.</p>
-            <div className="flex flex-wrap items-center gap-4">
-              <a
-                href="https://morgencompany.com"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="transition-colors hover:text-white"
-              >
-                Morgen Company
-              </a>
-              <Link to="/privacy" className="transition-colors hover:text-white">
-                Privacybeleid
-              </Link>
-            </div>
-          </div>
-        </div>
-      </footer>
+      <SiteFooter />
     </div>
   );
 };
