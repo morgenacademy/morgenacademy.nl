@@ -20,6 +20,7 @@ const academyLinks: NavLink[] = [
 ];
 
 const companyLinks = [
+  { label: "Morgen.", href: `${COMPANY_URL}/` },
   { label: "Train", href: `${COMPANY_URL}/academy` },
   { label: "Implement", href: `${COMPANY_URL}/consultancy` },
   { label: "Build", href: `${COMPANY_URL}/technology` },
@@ -103,11 +104,6 @@ const SiteHeader = ({ rightSlot }: SiteHeaderProps) => {
                 </a>
               </DropdownMenuItem>
             ))}
-            <DropdownMenuItem asChild>
-              <a href={`${COMPANY_URL}/`}>
-                Morgen Company home
-              </a>
-            </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
 
