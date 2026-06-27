@@ -3,12 +3,6 @@ import { Link } from "react-router-dom";
 import { Menu, X, ChevronDown } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { COMPANY_URL, type NavLink } from "@/lib/links";
-import {
-  DropdownMenu,
-  DropdownMenuTrigger,
-  DropdownMenuContent,
-  DropdownMenuItem,
-} from "@/components/ui/dropdown-menu";
 
 // Eigen academy-secties, plus de company-secties onder één "Morgen Company"-
 // dropdown. Zelfde stijl als morgencompany.com → voelt als één site, en je
@@ -20,6 +14,7 @@ const academyLinks: NavLink[] = [
 ];
 
 const companyLinks = [
+  { label: "Morgen.", href: `${COMPANY_URL}/` },
   { label: "Train", href: `${COMPANY_URL}/academy` },
   { label: "Implement", href: `${COMPANY_URL}/consultancy` },
   { label: "Build", href: `${COMPANY_URL}/technology` },
@@ -90,26 +85,27 @@ const SiteHeader = ({ rightSlot }: SiteHeaderProps) => {
       <div className="hidden lg:flex items-center gap-6">
         {academyLinks.map((item) => renderLink(item))}
 
-        <DropdownMenu>
-          <DropdownMenuTrigger className={cn(linkClass, "inline-flex items-center gap-1 outline-none focus-visible:text-white")}>
+        {/* Hover-dropdown (zelfde gedrag als de TRAIN-dropdown op company.com) */}
+        <div className="group relative flex items-center">
+          <a href={`${COMPANY_URL}/`} className={cn(linkClass, "inline-flex items-center gap-1")}>
             Morgen Company
-            <ChevronDown className="h-3.5 w-3.5" />
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" className="min-w-44">
-            {companyLinks.map((c) => (
-              <DropdownMenuItem key={c.label} asChild>
-                <a href={c.href}>
+            <ChevronDown className="h-3.5 w-3.5 transition-transform group-hover:rotate-180" />
+          </a>
+          {/* top-full raakt de trigger (geen hover-gat); pt-3 geeft alleen visueel ruimte */}
+          <div className="absolute right-0 top-full z-50 hidden pt-3 group-hover:flex">
+            <div className="flex min-w-52 flex-col gap-0.5 rounded-[12px] border border-white/[0.18] bg-[rgba(12,8,24,0.97)] p-1.5 shadow-[0_4px_24px_rgba(0,0,0,0.4)] backdrop-blur-[40px] backdrop-saturate-200">
+              {companyLinks.map((c) => (
+                <a
+                  key={c.label}
+                  href={c.href}
+                  className="whitespace-nowrap rounded-[8px] px-3 py-2 text-[0.82rem] font-bold tracking-[0.02em] text-[#D8CCEC] transition-colors hover:bg-white/[0.06] hover:text-white"
+                >
                   {c.label}
                 </a>
-              </DropdownMenuItem>
-            ))}
-            <DropdownMenuItem asChild>
-              <a href={`${COMPANY_URL}/`}>
-                Morgen Company home
-              </a>
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
+              ))}
+            </div>
+          </div>
+        </div>
 
         {rightSlot ?? (
           <Link
