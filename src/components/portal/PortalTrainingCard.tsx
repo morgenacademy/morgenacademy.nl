@@ -59,7 +59,10 @@ const PortalTrainingCard = ({ training, slug, password, index }: PortalTrainingC
     });
 
     if (error || !data?.download_url) throw new Error("Download mislukt");
-    return data.download_url as string;
+    return {
+      url: data.download_url as string,
+      filename: (data.filename as string) || "",
+    };
   };
 
   const downloadTrainingFile = async (storagePath?: string) => {
@@ -70,9 +73,25 @@ const PortalTrainingCard = ({ training, slug, password, index }: PortalTrainingC
     const newTab = window.open("", "_blank");
 
     try {
-      const url = await getDownloadUrl(storagePath);
-      if (newTab) newTab.location.href = url;
-      else window.open(url, "_blank", "noopener,noreferrer");
+      const { url, filename } = await getDownloadUrl(storagePath);
+
+      // Supabase Storage serveert text/html bewust als text/plain (anti-hosting),
+      // waardoor HTML-slides als broncode tonen i.p.v. renderen. Op onze eigen
+      // origin halen we de HTML op en heropenen we via een blob met type text/html.
+      if (/\.html?$/i.test(filename)) {
+        const res = await fetch(url);
+        if (!res.ok) throw new Error("Download mislukt");
+        const html = await res.text();
+        const blobUrl = URL.createObjectURL(new Blob([html], { type: "text/html" }));
+        if (newTab) newTab.location.href = blobUrl;
+        else window.open(blobUrl, "_blank", "noopener,noreferrer");
+        // Blob-URL pas vrijgeven nadat het nieuwe tab geladen heeft.
+        setTimeout(() => URL.revokeObjectURL(blobUrl), 60000);
+      } else if (newTab) {
+        newTab.location.href = url;
+      } else {
+        window.open(url, "_blank", "noopener,noreferrer");
+      }
     } catch {
       newTab?.close();
       toast({
@@ -96,7 +115,7 @@ const PortalTrainingCard = ({ training, slug, password, index }: PortalTrainingC
 
     setDownloadingResourcePath(resource.storagePath);
     try {
-      const url = await getDownloadUrl(resource.storagePath);
+      const { url } = await getDownloadUrl(resource.storagePath);
       setPreviewResourcePath(resource.storagePath);
       setPreviewUrl(url);
     } catch {
