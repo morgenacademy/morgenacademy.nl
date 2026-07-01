@@ -21,6 +21,7 @@ import ContactDialog from "@/components/ContactDialog";
 import LiveSessionSignupDialog from "@/components/LiveSessionSignupDialog";
 import SiteHeader from "@/components/SiteHeader";
 import SiteFooter from "@/components/SiteFooter";
+import Seo from "@/components/Seo";
 import { getDaypartPeriod } from "@/lib/daypartGreeting";
 import heroPhoto from "@/assets/training-tilburg-harmen.jpg";
 import incompanyPhoto from "@/assets/training-tilburg-harmen-3.jpg";
@@ -60,6 +61,7 @@ const Landing = () => {
 
   return (
     <div className="min-h-screen bg-background">
+      <Seo path="/" />
       <SiteHeader />
 
       {/* Spacer for fixed nav */}

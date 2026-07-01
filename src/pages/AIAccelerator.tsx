@@ -14,6 +14,7 @@ import {
 import { Button } from "@/components/ui/button";
 import SiteHeader from "@/components/SiteHeader";
 import SiteFooter from "@/components/SiteFooter";
+import Seo from "@/components/Seo";
 import heroPhoto from "@/assets/training-tilburg-harmen.jpg";
 import sessionPhoto from "@/assets/training-fcdb-karin.jpeg";
 import coachingPhoto from "@/assets/training-vml-karin.jpeg";
@@ -102,6 +103,11 @@ const includes = [
 const AIAccelerator = () => {
   return (
     <div className="min-h-screen bg-background text-foreground">
+      <Seo
+        path="/ai-accelerator"
+        title="AI Accelerator | Morgen Academy"
+        description="Van losse AI-experimenten naar concrete verbetering in je werk. Een begeleid traject waarin je AI toepast op je eigen processen, met Green Belt-certificering."
+      />
       <SiteHeader
         rightSlot={
           <a
