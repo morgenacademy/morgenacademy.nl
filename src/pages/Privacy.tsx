@@ -1,10 +1,16 @@
 import { Link } from "react-router-dom";
 import { ArrowLeft, Shield } from "lucide-react";
 import { ACADEMY_URL } from "@/lib/links";
+import Seo from "@/components/Seo";
 
 const Privacy = () => {
   return (
     <div className="min-h-screen bg-background">
+      <Seo
+        path="/privacy"
+        title="Privacy | Morgen Academy"
+        description="Hoe Morgen Academy omgaat met jouw gegevens. Geen kleine lettertjes: helder uitgelegd wat we bewaren, waarom en hoe je data veilig blijft."
+      />
       {/* Header */}
       <header className="border-b border-border/50">
         <div className="mx-auto flex max-w-3xl items-center px-6 py-5">

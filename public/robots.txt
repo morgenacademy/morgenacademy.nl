@@ -13,4 +13,4 @@ Allow: /
 User-agent: *
 Allow: /
 
-Sitemap: https://morgenacademy.nl/sitemap.xml
+Sitemap: https://academy.morgencompany.com/sitemap.xml

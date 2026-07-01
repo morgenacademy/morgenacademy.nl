@@ -1,0 +1,10 @@
+# Expliciete build-config. `npm run build` draait ook het postbuild-script
+# (scripts/prerender.mjs), dat met puppeteer de publieke routes prerendert.
+[build]
+  command = "npm run build"
+  publish = "dist"
+
+[build.environment]
+  # Puppeteer 25 vereist Node 18+. Pin op een stabiele LTS zodat de
+  # Chromium-download bij `npm install` betrouwbaar werkt.
+  NODE_VERSION = "20"
