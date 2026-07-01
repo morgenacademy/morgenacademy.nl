@@ -96,7 +96,7 @@ const PortalResourcesDialog = ({
           <DialogTitle className="font-display">{trainingTitle}</DialogTitle>
           <DialogDescription className="flex items-center gap-1.5 text-xs text-muted-foreground">
             <ShieldAlert className="h-3.5 w-3.5 shrink-0" />
-            Deze gegevens zijn vertrouwelijk — deel ze niet verder
+            Deze gegevens zijn vertrouwelijk. Deel ze niet verder.
           </DialogDescription>
         </DialogHeader>
 

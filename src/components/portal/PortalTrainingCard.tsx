@@ -161,7 +161,7 @@ const PortalTrainingCard = ({ training, slug, password, index }: PortalTrainingC
                 className="flex items-center gap-2 text-base font-medium text-primary hover:text-primary/80 transition-colors"
               >
                 <BookOpen className="h-5 w-5" />
-                Materialen bekijken
+                Trainingsmaterialen
               </button>
             )}
 
