@@ -158,9 +158,9 @@ const PortalTrainingCard = ({ training, slug, password, index }: PortalTrainingC
             {hasResources && (
               <button
                 onClick={() => setResourcesOpen(true)}
-                className="flex items-center gap-1.5 text-sm text-primary hover:text-primary/80 transition-colors"
+                className="flex items-center gap-2 text-base font-medium text-primary hover:text-primary/80 transition-colors"
               >
-                <BookOpen className="h-3.5 w-3.5" />
+                <BookOpen className="h-5 w-5" />
                 Materialen bekijken
               </button>
             )}
