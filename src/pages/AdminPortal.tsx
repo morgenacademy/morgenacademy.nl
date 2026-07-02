@@ -10,7 +10,7 @@ import { toast } from "sonner";
 import {
   ArrowLeft, Plus, Copy, Check, ToggleLeft, ToggleRight,
   Star, Loader2, Upload, Trash2, ExternalLink, Pencil, Download, Gift, FileUp, Link as LinkIcon,
-  Users, UserPlus, Mail, Building2, ClipboardList, Search,
+  Users, UserPlus, Mail, Building2, ClipboardList, Search, KeyRound,
 } from "lucide-react";
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle,
@@ -127,6 +127,12 @@ const AdminPortal = () => {
   const [newPassword, setNewPassword] = useState("");
   const [savingCompany, setSavingCompany] = useState(false);
   const [copiedSlug, setCopiedSlug] = useState<string | null>(null);
+  // Plaintext passwords only kept in-memory for companies set/reset this session (never persisted)
+  const [revealedPasswords, setRevealedPasswords] = useState<Record<string, string>>({});
+  const [pwDialogOpen, setPwDialogOpen] = useState(false);
+  const [pwTarget, setPwTarget] = useState<Company | null>(null);
+  const [pwValue, setPwValue] = useState("");
+  const [savingPw, setSavingPw] = useState(false);
 
   // Trainings state
   const [trainings, setTrainings] = useState<Training[]>([]);
@@ -281,6 +287,7 @@ const AdminPortal = () => {
       });
 
       setCompanies((prev) => [company as Company, ...prev]);
+      setRevealedPasswords((prev) => ({ ...prev, [company.id]: newPassword }));
       setCompanyDialogOpen(false);
       setNewName(""); setNewSlug(""); setNewPassword("");
       toast.success(`Bedrijf ${newName} aangemaakt`, { duration: Infinity });
@@ -328,10 +335,41 @@ const AdminPortal = () => {
     toast.success(`${company.name} verwijderd`, { duration: Infinity });
   };
 
-  const handleCopyUrl = (slug: string) => {
-    navigator.clipboard.writeText(`${window.location.origin}/portal/${slug}`);
-    setCopiedSlug(slug);
+  const handleCopyUrl = (company: Company) => {
+    const url = `${window.location.origin}/portal/${company.slug}`;
+    const pw = revealedPasswords[company.id];
+    if (pw) {
+      navigator.clipboard.writeText(`Portaal: ${url}\nWachtwoord: ${pw}`);
+      toast.success("URL + wachtwoord gekopieerd");
+    } else {
+      navigator.clipboard.writeText(url);
+    }
+    setCopiedSlug(company.slug);
     setTimeout(() => setCopiedSlug(null), 2000);
+  };
+
+  const handleResetPassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!pwTarget || !pwValue.trim()) return;
+    const target = pwTarget;
+    setSavingPw(true);
+    try {
+      const { error } = await supabase.rpc("portal_set_password", {
+        _company_id: target.id,
+        _password: pwValue,
+      });
+      if (error) throw error;
+      setRevealedPasswords((prev) => ({ ...prev, [target.id]: pwValue }));
+      setPwDialogOpen(false);
+      setPwValue("");
+      setPwTarget(null);
+      toast.success(`Wachtwoord van ${target.name} gewijzigd — je kunt nu URL + wachtwoord kopiëren.`, { duration: Infinity });
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : "Onbekende fout";
+      toast.error(`Wijzigen mislukt: ${msg}`, { duration: Infinity });
+    } finally {
+      setSavingPw(false);
+    }
   };
 
   // ---- Trainings ----
@@ -872,10 +910,17 @@ const AdminPortal = () => {
                       </span>
                       <Button
                         variant="ghost" size="icon"
-                        onClick={() => handleCopyUrl(company.slug)}
-                        title="Kopieer portaal-URL"
+                        onClick={() => handleCopyUrl(company)}
+                        title={revealedPasswords[company.id] ? "Kopieer URL + wachtwoord" : "Kopieer portaal-URL"}
                       >
                         {copiedSlug === company.slug ? <Check className="h-4 w-4 text-success" /> : <Copy className="h-4 w-4" />}
+                      </Button>
+                      <Button
+                        variant="ghost" size="icon"
+                        onClick={() => { setPwTarget(company); setPwValue(""); setPwDialogOpen(true); }}
+                        title="Wachtwoord wijzigen"
+                      >
+                        <KeyRound className="h-4 w-4" />
                       </Button>
                       <Button
                         variant="ghost" size="icon"
@@ -1367,6 +1412,41 @@ const AdminPortal = () => {
             </div>
             <Button type="submit" className="w-full" disabled={savingCompany}>
               {savingCompany ? <Loader2 className="h-4 w-4 animate-spin" /> : "Aanmaken"}
+            </Button>
+          </form>
+        </DialogContent>
+      </Dialog>
+
+      {/* Reset password Dialog */}
+      <Dialog
+        open={pwDialogOpen}
+        onOpenChange={(open) => {
+          setPwDialogOpen(open);
+          if (!open) { setPwTarget(null); setPwValue(""); }
+        }}
+      >
+        <DialogContent className="sm:max-w-md bg-card border-border">
+          <DialogHeader>
+            <DialogTitle className="font-display text-xl">
+              Wachtwoord wijzigen{pwTarget ? ` — ${pwTarget.name}` : ""}
+            </DialogTitle>
+          </DialogHeader>
+          <form onSubmit={handleResetPassword} className="space-y-4 pt-2">
+            <div className="space-y-1.5">
+              <label className="text-sm font-medium text-foreground">Nieuw wachtwoord</label>
+              <Input
+                type="text"
+                placeholder="Kies een nieuw wachtwoord"
+                value={pwValue}
+                onChange={(e) => setPwValue(e.target.value)}
+                required
+              />
+              <p className="text-xs text-muted-foreground">
+                Het oude wachtwoord vervalt direct. Deel het nieuwe met de deelnemers.
+              </p>
+            </div>
+            <Button type="submit" className="w-full" disabled={savingPw}>
+              {savingPw ? <Loader2 className="h-4 w-4 animate-spin" /> : "Wachtwoord opslaan"}
             </Button>
           </form>
         </DialogContent>
