@@ -81,7 +81,9 @@ const PortalDashboard = ({ session, slug, onLogout }: PortalDashboardProps) => {
   // Per-portal overrides: deze klant kreeg een keynote (geen training) en geen Summer School-blok.
   const isKeynote = slug === "or-gemeente-tilburg";
   const eventNoun = isKeynote ? "keynote" : "training";
-  const showSummerSchool = !isKeynote && slug !== "onview";
+  // Portals zonder Summer School-reclame.
+  const noSummerSchoolSlugs = ["onview", "pharmapartners"];
+  const showSummerSchool = !isKeynote && !noSummerSchoolSlugs.includes(slug);
 
   return (
     <div className="min-h-screen bg-background">
