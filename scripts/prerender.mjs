@@ -91,6 +91,9 @@ async function run() {
 }
 
 run().catch((err) => {
-  console.error("prerender failed:", err);
-  process.exit(1);
+  // Prerender is een SEO-optimalisatie voor 3 marketing-routes. Het mag een
+  // (productie-)deploy nooit blokkeren: valt puppeteer/Chromium weg, dan
+  // waarschuwen we luid maar laten de build slagen (de SPA werkt sowieso).
+  console.warn("prerender overgeslagen (niet-fataal):", err?.message ?? err);
+  process.exit(0);
 });
