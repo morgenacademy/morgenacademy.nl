@@ -710,7 +710,8 @@ const AdminPortal = () => {
 
       setGrantEmail("");
     } catch (err: unknown) {
-      const msg = err instanceof Error ? err.message : "Onbekende fout";
+      const msg =
+        (err as { message?: string })?.message ?? "Onbekende fout";
       toast.error(`Toegang geven mislukt: ${msg}`, { duration: Infinity });
     } finally {
       setGrantingAccess(false);
