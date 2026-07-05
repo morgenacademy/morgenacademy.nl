@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import * as tus from "tus-js-client";
@@ -56,6 +56,7 @@ interface Training {
 interface FeedbackRow {
   id: string;
   training_id: string;
+  company_id: string | null;
   respondent_name: string | null;
   respondent_function: string | null;
   rating_overall: number;
@@ -163,7 +164,7 @@ const AdminPortal = () => {
   const [feedback, setFeedback] = useState<FeedbackRow[]>([]);
   const [feedbackCompanyId, setFeedbackCompanyId] = useState<string>("");
   const [feedbackTrainingId, setFeedbackTrainingId] = useState<string>("");
-  const [feedbackTrainings, setFeedbackTrainings] = useState<Training[]>([]);
+  const [allTrainings, setAllTrainings] = useState<Training[]>([]);
   const [loadingFeedback, setLoadingFeedback] = useState(false);
 
   // Academy access state
@@ -214,30 +215,54 @@ const AdminPortal = () => {
       .then(({ data }) => setTrainings((data as Training[]) ?? []));
   }, [isAdmin, selectedCompanyId]);
 
-  // Load trainings for feedback tab
+  // Load all trainings once (used for feedback filters + labels)
   useEffect(() => {
-    if (!isAdmin || !feedbackCompanyId) { setFeedbackTrainings([]); return; }
+    if (!isAdmin) return;
     supabase.from("portal_trainings")
       .select("*")
-      .eq("company_id", feedbackCompanyId)
-      .eq("is_active", true)
       .order("training_date", { ascending: false })
-      .then(({ data }) => setFeedbackTrainings((data as Training[]) ?? []));
-  }, [isAdmin, feedbackCompanyId]);
+      .then(({ data }) => setAllTrainings((data as Training[]) ?? []));
+  }, [isAdmin]);
 
-  // Load feedback
+  // Load all feedback once; filtering happens client-side
   useEffect(() => {
-    if (!isAdmin || !feedbackTrainingId) { setFeedback([]); return; }
+    if (!isAdmin) return;
     setLoadingFeedback(true);
     supabase.from("portal_feedback")
       .select("*")
-      .eq("training_id", feedbackTrainingId)
       .order("created_at", { ascending: false })
       .then(({ data }) => {
         setFeedback((data as FeedbackRow[]) ?? []);
         setLoadingFeedback(false);
       });
-  }, [isAdmin, feedbackTrainingId]);
+  }, [isAdmin]);
+
+  // ---- Feedback derived data ----
+  const companyNameById = useMemo(() => {
+    const m = new Map<string, string>();
+    companies.forEach((c) => m.set(c.id, c.name));
+    return m;
+  }, [companies]);
+
+  const trainingById = useMemo(() => {
+    const m = new Map<string, Training>();
+    allTrainings.forEach((t) => m.set(t.id, t));
+    return m;
+  }, [allTrainings]);
+
+  const feedbackCompanyTrainings = useMemo(
+    () => (feedbackCompanyId ? allTrainings.filter((t) => t.company_id === feedbackCompanyId) : allTrainings),
+    [allTrainings, feedbackCompanyId],
+  );
+
+  const filteredFeedback = useMemo(
+    () => feedback.filter((f) => {
+      if (feedbackCompanyId && f.company_id !== feedbackCompanyId) return false;
+      if (feedbackTrainingId && f.training_id !== feedbackTrainingId) return false;
+      return true;
+    }),
+    [feedback, feedbackCompanyId, feedbackTrainingId],
+  );
 
   // Load workshop participants
   useEffect(() => {
@@ -649,7 +674,7 @@ const AdminPortal = () => {
   };
 
   const handleExportFeedback = () => {
-    if (!feedback.length) return;
+    if (!filteredFeedback.length) return;
     const tempoLabel = (t: string | null) =>
       t === "slow" ? "Te langzaam" : t === "balanced" ? "Goed" : t === "fast" ? "Te snel" : "";
     const escape = (v: string | null | undefined) => {
@@ -658,8 +683,10 @@ const AdminPortal = () => {
       return s.includes(",") || s.includes('"') || s.includes("\n") ? `"${s}"` : s;
     };
 
-    const headers = ["Naam", "Functie", "Overall", "Relevantie", "Toepasbaarheid", "Tempo", "Takeaways", "Meest waardevol", "Verbeteren", "E-mail", "Datum"];
-    const rows = feedback.map((r) => [
+    const headers = ["Bedrijf", "Training", "Naam", "Functie", "Overall", "Relevantie", "Toepasbaarheid", "Tempo", "Takeaways", "Meest waardevol", "Verbeteren", "E-mail", "Datum"];
+    const rows = filteredFeedback.map((r) => [
+      escape(r.company_id ? companyNameById.get(r.company_id) ?? "" : ""),
+      escape(trainingById.get(r.training_id)?.title ?? ""),
       escape(r.respondent_name),
       escape(r.respondent_function),
       r.rating_overall,
@@ -678,8 +705,8 @@ const AdminPortal = () => {
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
-    const training = feedbackTrainings.find((t) => t.id === feedbackTrainingId);
-    a.download = `feedback-${training?.title ?? "export"}.csv`;
+    const training = feedbackTrainingId ? trainingById.get(feedbackTrainingId) : null;
+    a.download = `feedback-${training?.title ?? "alle"}.csv`;
     a.click();
     URL.revokeObjectURL(url);
   };
@@ -1262,11 +1289,12 @@ const AdminPortal = () => {
             <h2 className="mb-4 font-display text-lg font-semibold text-foreground">Feedback</h2>
 
             <div className="mb-4 flex gap-3">
-              <Select value={feedbackCompanyId} onValueChange={(v) => { setFeedbackCompanyId(v); setFeedbackTrainingId(""); }}>
+              <Select value={feedbackCompanyId || "all"} onValueChange={(v) => { setFeedbackCompanyId(v === "all" ? "" : v); setFeedbackTrainingId(""); }}>
                 <SelectTrigger className="w-56">
                   <SelectValue placeholder="Bedrijf..." />
                 </SelectTrigger>
                 <SelectContent>
+                  <SelectItem value="all">Alle bedrijven</SelectItem>
                   {companies.map((c) => (
                     <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>
                   ))}
@@ -1274,12 +1302,13 @@ const AdminPortal = () => {
               </Select>
 
               {feedbackCompanyId && (
-                <Select value={feedbackTrainingId} onValueChange={setFeedbackTrainingId}>
+                <Select value={feedbackTrainingId || "all"} onValueChange={(v) => setFeedbackTrainingId(v === "all" ? "" : v)}>
                   <SelectTrigger className="w-64">
                     <SelectValue placeholder="Training..." />
                   </SelectTrigger>
                   <SelectContent>
-                    {feedbackTrainings.map((t) => (
+                    <SelectItem value="all">Alle trainingen</SelectItem>
+                    {feedbackCompanyTrainings.map((t) => (
                       <SelectItem key={t.id} value={t.id}>{t.title}</SelectItem>
                     ))}
                   </SelectContent>
@@ -1287,37 +1316,41 @@ const AdminPortal = () => {
               )}
             </div>
 
-            {feedbackCompanyId && !feedbackTrainingId && (
-              <p className="text-sm text-muted-foreground">Selecteer een training om feedback te zien.</p>
-            )}
-
-            {feedbackTrainingId && (
+            {loadingFeedback ? (
+              <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                <Loader2 className="h-4 w-4 animate-spin" /> Laden...
+              </div>
+            ) : filteredFeedback.length === 0 ? (
+              <p className="text-sm text-muted-foreground">
+                {feedbackCompanyId || feedbackTrainingId ? "Nog geen feedback voor deze selectie." : "Nog geen feedback ontvangen."}
+              </p>
+            ) : (
               <>
-                {loadingFeedback ? (
-                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                    <Loader2 className="h-4 w-4 animate-spin" /> Laden...
+                <div className="mb-4 flex items-center justify-between rounded-xl border border-border bg-card px-5 py-3">
+                  <div className="flex items-center gap-2">
+                    <Star className="h-5 w-5 fill-amber-400 text-amber-400" />
+                    <span className="text-lg font-semibold text-foreground">{avgRating(filteredFeedback)}</span>
+                    <span className="text-sm text-muted-foreground">gemiddeld ({filteredFeedback.length} {filteredFeedback.length === 1 ? "reactie" : "reacties"})</span>
                   </div>
-                ) : feedback.length === 0 ? (
-                  <p className="text-sm text-muted-foreground">Nog geen feedback voor deze training.</p>
-                ) : (
-                  <>
-                    <div className="mb-4 flex items-center justify-between rounded-xl border border-border bg-card px-5 py-3">
-                      <div className="flex items-center gap-2">
-                        <Star className="h-5 w-5 fill-amber-400 text-amber-400" />
-                        <span className="text-lg font-semibold text-foreground">{avgRating(feedback)}</span>
-                        <span className="text-sm text-muted-foreground">gemiddeld ({feedback.length} {feedback.length === 1 ? "reactie" : "reacties"})</span>
-                      </div>
-                      <Button variant="outline" size="sm" onClick={handleExportFeedback} className="gap-1.5 text-xs">
-                        <Download className="h-3.5 w-3.5" />
-                        CSV
-                      </Button>
-                    </div>
+                  <Button variant="outline" size="sm" onClick={handleExportFeedback} className="gap-1.5 text-xs">
+                    <Download className="h-3.5 w-3.5" />
+                    CSV
+                  </Button>
+                </div>
 
-                    <div className="space-y-4">
-                      {feedback.map((row) => (
-                        <div key={row.id} className="rounded-xl border border-border bg-card p-5">
-                          <div className="mb-3 flex items-center justify-between">
-                            <div>
+                <div className="space-y-4">
+                  {filteredFeedback.map((row) => (
+                    <div key={row.id} className="rounded-xl border border-border bg-card p-5">
+                      <div className="mb-3 flex flex-wrap items-center gap-2">
+                        <span className="rounded-md bg-muted px-2 py-0.5 text-xs font-medium text-foreground">
+                          {trainingById.get(row.training_id)?.title ?? "Onbekende training"}
+                        </span>
+                        {row.company_id && companyNameById.get(row.company_id) && (
+                          <span className="text-xs text-muted-foreground">{companyNameById.get(row.company_id)}</span>
+                        )}
+                      </div>
+                      <div className="mb-3 flex items-center justify-between">
+                        <div>
                               <p className="font-medium text-foreground">
                                 {row.respondent_name ?? "Anoniem"}
                               </p>
@@ -1382,8 +1415,6 @@ const AdminPortal = () => {
                     </div>
                   </>
                 )}
-              </>
-            )}
           </TabsContent>
         </Tabs>
       </main>
