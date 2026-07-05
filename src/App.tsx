@@ -2,7 +2,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate, useLocation } from "react-router-dom";
 import Landing from "./pages/Landing";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
@@ -21,12 +21,30 @@ import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
 
+// Captured synchronously at module load, before supabase-js asynchronously
+// consumes and strips the auth token from the URL hash.
+const initialHash =
+  typeof window !== "undefined" ? window.location.hash : "";
+const hasAuthTokenHash = /type=(invite|recovery)/.test(initialHash);
+
+// Invite/recovery links can land on any route (e.g. the Site URL default).
+// Whenever we detect such a token, route to the password-set page so the
+// user always gets a place to set their password.
+const AuthHashRedirect = () => {
+  const location = useLocation();
+  if (hasAuthTokenHash && location.pathname !== "/reset-password") {
+    return <Navigate to={`/reset-password${initialHash}`} replace />;
+  }
+  return null;
+};
+
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <TooltipProvider>
       <Toaster />
       <Sonner />
       <BrowserRouter>
+        <AuthHashRedirect />
         <Routes>
           <Route path="/" element={<Landing />} />
           <Route path="/login" element={<Login />} />
