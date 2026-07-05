@@ -1,6 +1,6 @@
 import aiBasisImage from "@/assets/course-ai-basis.jpg";
 import agenticAiImage from "@/assets/training-pinkroccade-harmen.jpeg";
-import vibecodenImage from "@/assets/training-fcdb-karin.jpeg";
+import academyHeroImage from "@/assets/academy-hero-02.jpg";
 import claudeOpenAiImage from "@/assets/training-avans-claude-code.jpg";
 import claudeCodeGevorderdImage from "@/assets/course-claude-openai.jpeg";
 import aiProjectmanagersImage from "@/assets/training-vml-karin.jpeg";
@@ -50,8 +50,8 @@ export const courses: Course[] = [
     id: "basistraining-ai",
     title: "Basistraining AI",
     subtitle:
-      "De laagdrempelige start om slimmer te werken met AI: begrijp het AI-landschap, leer effectief prompten en bouw je eerste assistent — zonder technische voorkennis.",
-    thumbnail: aiBasisImage,
+      "De laagdrempelige start om slimmer te werken met AI: begrijp het AI-landschap, leer effectief prompten en bouw je eerste assistent, zonder technische voorkennis.",
+    thumbnail: academyHeroImage,
     totalLessons: 30,
     totalDuration: "3u 30min",
     progress: 0,
@@ -87,7 +87,7 @@ export const courses: Course[] = [
             title: "About you",
             duration: "3:00",
             videoUrl: placeholderVideo,
-            description: "Even voorstellen — wie ben jij?",
+            description: "Even voorstellen: wie ben jij?",
           },
         ],
       },
@@ -329,8 +329,8 @@ export const courses: Course[] = [
     id: "vibecoden",
     title: "Bouwen met AI (vibecoding)",
     subtitle:
-      "Maak zelf een tool, website of app die je direct kunt laten zien en testen — zonder programmeerervaring.",
-    thumbnail: vibecodenImage,
+      "Maak zelf een tool, website of app die je direct kunt laten zien en testen, zonder programmeerervaring.",
+    thumbnail: aiBasisImage,
     totalLessons: 10,
     totalDuration: "Direct toegang",
     comingSoon: true,
@@ -353,7 +353,7 @@ export const courses: Course[] = [
     id: "claude-openai-training",
     title: "Claude Code / Codex: de basis",
     subtitle:
-      "Geef AI toegang tot je eigen map: het leest je bestanden, denkt mee en voert werk uit — de AI werkt ín je werk.",
+      "Geef AI toegang tot je eigen map: het leest je bestanden, denkt mee en voert werk uit. De AI werkt ín je werk.",
     thumbnail: claudeOpenAiImage,
     totalLessons: 14,
     totalDuration: "Direct toegang",
@@ -365,7 +365,7 @@ export const courses: Course[] = [
     id: "haal-meer-uit-claude-code",
     title: "Haal meer uit Claude Code + Samenwerken met AI",
     subtitle:
-      "Voor teams die al met Claude Code werken: samen professioneel blijven terwijl het tempo omhoog gaat — grotere changes, reviews en merge-conflicten in de hand.",
+      "Voor teams die al met Claude Code werken: samen professioneel blijven terwijl het tempo omhoog gaat. Grotere changes, reviews en merge-conflicten in de hand.",
     thumbnail: claudeCodeGevorderdImage,
     totalLessons: 12,
     totalDuration: "Direct toegang",

@@ -141,14 +141,14 @@ const CourseDetail = () => {
             Geen toegang
           </h1>
           <p className="text-muted-foreground">
-            Je hebt nog geen toegang tot deze training. Koop de training om te beginnen.
+            Je hebt nog geen toegang tot deze training. Start de training om te beginnen.
           </p>
           <div className="flex gap-3 justify-center">
             <Button variant="outline" onClick={() => navigate("/dashboard")}>
               Terug naar dashboard
             </Button>
             <Button onClick={() => navigate(`/checkout/${courseId}`)}>
-              Training kopen
+              Training starten
             </Button>
           </div>
         </div>
