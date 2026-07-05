@@ -9,8 +9,8 @@ const columns: { title: string; links: NavLink[] }[] = [
     links: [
       { label: "Online trainingen", href: "/", kind: "route" },
       { label: "Live agenda", href: "/#live-agenda", kind: "anchor" },
-      { label: "AI Accelerator", href: "/ai-accelerator", kind: "route" },
-      { label: "Incompany trainingen", href: `${COMPANY_URL}/academy`, kind: "external" },
+      { label: "AI Accelerator", href: "/ai-accelerator/", kind: "route" },
+      { label: "Incompany trainingen", href: `${COMPANY_URL}/academy/`, kind: "external" },
       { label: "Inloggen", href: "/login", kind: "route" },
     ],
   },
@@ -123,7 +123,7 @@ const SiteFooter = () => {
             © {year} Morgen. Alle rechten voorbehouden.
           </p>
           <div className="flex flex-wrap gap-6">
-            <Link to="/privacy" className="text-[0.78rem] text-[#7A6B8E] transition-colors hover:text-white">
+            <Link to="/privacy/" className="text-[0.78rem] text-[#7A6B8E] transition-colors hover:text-white">
               Privacybeleid
             </Link>
             <a

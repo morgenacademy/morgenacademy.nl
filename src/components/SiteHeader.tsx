@@ -10,15 +10,15 @@ import { COMPANY_URL, type NavLink } from "@/lib/links";
 const academyLinks: NavLink[] = [
   { label: "Online trainingen", href: "/", kind: "route" },
   { label: "Live agenda", href: "/#live-agenda", kind: "anchor" },
-  { label: "AI Accelerator", href: "/ai-accelerator", kind: "route" },
+  { label: "AI Accelerator", href: "/ai-accelerator/", kind: "route" },
 ];
 
 const companyLinks = [
   { label: "Morgen.", href: `${COMPANY_URL}/` },
-  { label: "Train", href: `${COMPANY_URL}/academy` },
-  { label: "Implement", href: `${COMPANY_URL}/consultancy` },
-  { label: "Build", href: `${COMPANY_URL}/technology` },
-  { label: "Get inspired", href: `${COMPANY_URL}/inspiratie` },
+  { label: "Train", href: `${COMPANY_URL}/academy/` },
+  { label: "Implement", href: `${COMPANY_URL}/consultancy/` },
+  { label: "Build", href: `${COMPANY_URL}/technology/` },
+  { label: "Get inspired", href: `${COMPANY_URL}/inspiratie/` },
 ];
 
 interface SiteHeaderProps {

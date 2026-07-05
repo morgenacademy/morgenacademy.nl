@@ -70,7 +70,7 @@ const Landing = () => {
       {/* Hero */}
       <section ref={heroRef} className="relative mx-auto flex min-h-[min(760px,calc(84svh-72px))] max-w-6xl items-center px-6 pb-10 pt-12 md:pb-12 md:pt-16">
         <div aria-hidden="true" className="pointer-events-none absolute left-1/2 top-0 h-full w-screen -translate-x-1/2">
-          <img src={heroPhoto} alt="" className="h-full w-full object-cover object-[62%_42%]" />
+          <img src={heroPhoto} alt="AI-training in de praktijk bij Morgen Academy" className="h-full w-full object-cover object-[62%_42%]" />
           <div className="absolute inset-0 bg-[linear-gradient(to_right,rgba(12,10,24,0.96)_0%,rgba(12,10,24,0.9)_34%,rgba(12,10,24,0.55)_70%,rgba(12,10,24,0.28)_100%)]" />
         </div>
         <motion.div
@@ -439,7 +439,7 @@ const Landing = () => {
         >
           <div className="absolute top-0 left-0 right-0 z-10 h-[3px] bg-gradient-to-r from-primary to-accent" />
           <div aria-hidden="true" className="pointer-events-none absolute inset-0">
-            <img src={incompanyPhoto} alt="" className="h-full w-full object-cover object-[55%_42%]" />
+            <img src={incompanyPhoto} alt="Deelnemers tijdens een incompany AI-training" className="h-full w-full object-cover object-[55%_42%]" />
             <div className="absolute inset-0 bg-[linear-gradient(to_right,rgba(12,10,24,0.95)_0%,rgba(12,10,24,0.88)_45%,rgba(12,10,24,0.5)_100%)]" />
           </div>
 
