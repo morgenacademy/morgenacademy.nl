@@ -189,16 +189,16 @@ const Landing = () => {
                 {course.comingSoon && (
                   <div className="absolute inset-0 bg-black/55" />
                 )}
-                <div className="absolute inset-x-0 bottom-0 p-6">
+                <div className={`absolute inset-x-0 p-6 ${course.comingSoon ? "top-0" : "bottom-0"}`}>
                   <h3 className="font-display text-2xl font-semibold text-white">
                     {course.title}
                   </h3>
-                  <p className="mt-2 max-w-[32ch] text-sm leading-relaxed text-white/80">
+                  <p className={`mt-2 max-w-[32ch] text-sm leading-relaxed text-white/80 ${course.comingSoon ? "line-clamp-2" : ""}`}>
                     {course.subtitle}
                   </p>
                 </div>
                 {course.comingSoon && (
-                  <div className="absolute inset-x-0 top-0 flex justify-center pt-4">
+                  <div className="absolute inset-0 flex items-center justify-center">
                     <div className="rounded-full bg-secondary/90 backdrop-blur-sm px-5 py-2.5 flex items-center gap-2">
                       <Lock className="h-3.5 w-3.5 text-primary" />
                       <span className="text-sm font-medium text-foreground tracking-wide">
