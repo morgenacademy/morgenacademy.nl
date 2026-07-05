@@ -74,7 +74,7 @@ const CourseCard = ({ course, index, enrolled = false, onWaitlist }: CourseCardP
               <div className="rounded-full bg-primary/90 backdrop-blur-sm px-5 py-2.5 flex items-center gap-2">
                 <ShoppingCart className="h-4 w-4 text-primary-foreground" />
                 <span className="text-sm font-medium text-primary-foreground">
-                  Kopen
+                  Starten
                 </span>
               </div>
             </div>

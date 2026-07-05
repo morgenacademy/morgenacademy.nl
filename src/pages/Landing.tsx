@@ -239,7 +239,7 @@ const Landing = () => {
                         navigate(`/checkout/${course.id}`);
                       }}
                     >
-                      Koop nu
+                      Start nu
                       <ArrowRight className="h-4 w-4" />
                     </Button>
                   </div>
