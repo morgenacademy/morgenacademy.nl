@@ -55,7 +55,7 @@ const CourseCard = ({ course, index, enrolled = false, onWaitlist }: CourseCardP
           </div>
 
           {course.comingSoon ? (
-            <div className="absolute inset-0 flex items-center justify-center">
+            <div className="absolute inset-x-0 top-0 flex justify-center pt-4">
               <div className="rounded-full bg-secondary/90 backdrop-blur-sm px-5 py-2.5 flex items-center gap-2">
                 <Lock className="h-3.5 w-3.5 text-primary" />
                 <span className="text-sm font-medium text-foreground tracking-wide">
