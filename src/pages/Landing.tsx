@@ -185,15 +185,15 @@ const Landing = () => {
                     course.comingSoon ? "grayscale" : "group-hover:scale-105"
                   }`}
                 />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/35 to-black/10" />
+                <div className="absolute inset-0 bg-gradient-to-b from-black/85 via-black/35 to-black/10" />
                 {course.comingSoon && (
                   <div className="absolute inset-0 bg-black/55" />
                 )}
-                <div className={`absolute inset-x-0 p-6 ${course.comingSoon ? "top-0" : "bottom-0"}`}>
+                <div className="absolute inset-x-0 top-0 p-6">
                   <h3 className="font-display text-2xl font-semibold text-white">
                     {course.title}
                   </h3>
-                  <p className={`mt-2 max-w-[32ch] text-sm leading-relaxed text-white/80 ${course.comingSoon ? "line-clamp-2" : ""}`}>
+                  <p className="mt-2 max-w-[32ch] text-sm leading-relaxed text-white/80 line-clamp-2">
                     {course.subtitle}
                   </p>
                 </div>

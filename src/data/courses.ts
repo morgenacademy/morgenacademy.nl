@@ -1,6 +1,6 @@
 import aiBasisImage from "@/assets/course-ai-basis.jpg";
 import agenticAiImage from "@/assets/training-pinkroccade-harmen.jpeg";
-import vibecodenImage from "@/assets/training-fcdb-karin.jpeg";
+import academyHeroImage from "@/assets/academy-hero-02.jpg";
 import claudeOpenAiImage from "@/assets/training-avans-claude-code.jpg";
 import claudeCodeGevorderdImage from "@/assets/course-claude-openai.jpeg";
 import aiProjectmanagersImage from "@/assets/training-vml-karin.jpeg";
@@ -51,7 +51,7 @@ export const courses: Course[] = [
     title: "Basistraining AI",
     subtitle:
       "De laagdrempelige start om slimmer te werken met AI: begrijp het AI-landschap, leer effectief prompten en bouw je eerste assistent, zonder technische voorkennis.",
-    thumbnail: vibecodenImage,
+    thumbnail: academyHeroImage,
     totalLessons: 30,
     totalDuration: "3u 30min",
     progress: 0,
