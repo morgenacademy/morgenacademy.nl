@@ -10,17 +10,19 @@ import { ArrowLeft, CheckCircle, Eye, EyeOff } from "lucide-react";
 
 const ResetPassword = () => {
   const [step, setStep] = useState<"request" | "sent" | "new-password">("request");
+  const [isInvite, setIsInvite] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
 
-  // Check if we arrived via a recovery link
+  // Check if we arrived via a recovery or invite link
   useState(() => {
     const hash = window.location.hash;
-    if (hash.includes("type=recovery")) {
+    if (hash.includes("type=recovery") || hash.includes("type=invite")) {
       setStep("new-password");
+      setIsInvite(hash.includes("type=invite"));
     }
   });
 
@@ -112,10 +114,12 @@ const ResetPassword = () => {
           className="w-full max-w-sm"
         >
           <h1 className="font-display text-3xl font-semibold text-foreground mb-2">
-            Nieuw wachtwoord
+            {isInvite ? "Welkom bij Morgen Academy" : "Nieuw wachtwoord"}
           </h1>
           <p className="text-muted-foreground mb-8">
-            Kies een nieuw wachtwoord voor je account
+            {isInvite
+              ? "Stel een wachtwoord in om je account te activeren. Je cursus staat daarna klaar."
+              : "Kies een nieuw wachtwoord voor je account"}
           </p>
 
           <form onSubmit={handleUpdatePassword} className="space-y-5">

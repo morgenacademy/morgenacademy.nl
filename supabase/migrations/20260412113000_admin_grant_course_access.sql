@@ -12,6 +12,7 @@ language plpgsql
 security definer
 set search_path = public
 as $$
+#variable_conflict use_column
 declare
   target_user_id uuid;
   normalized_email text;
