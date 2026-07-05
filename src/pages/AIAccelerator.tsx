@@ -122,7 +122,7 @@ const AIAccelerator = () => {
       <main>
         <section className="relative flex min-h-[min(820px,92svh)] items-end overflow-hidden px-6 pb-16 pt-28 lg:px-16">
           <div aria-hidden="true" className="absolute inset-0">
-            <img src={heroPhoto} alt="" className="h-full w-full object-cover object-[58%_42%]" />
+            <img src={heroPhoto} alt="Deelnemers aan het werk tijdens de AI Accelerator" className="h-full w-full object-cover object-[58%_42%]" />
             <div className="absolute inset-0 bg-[linear-gradient(to_right,rgba(12,10,24,0.98)_0%,rgba(12,10,24,0.9)_38%,rgba(12,10,24,0.6)_68%,rgba(12,10,24,0.28)_100%)]" />
           </div>
 
@@ -280,7 +280,7 @@ const AIAccelerator = () => {
                 className="grid overflow-hidden rounded-[28px] border border-white/10 bg-card lg:grid-cols-[0.9fr_1.1fr]"
               >
                 <div className="relative min-h-[260px]">
-                  <img src={day.image} alt="" className="absolute inset-0 h-full w-full object-cover" />
+                  <img src={day.image} alt={`Trainingsmoment tijdens ${day.label} van de AI Accelerator`} className="absolute inset-0 h-full w-full object-cover" />
                   <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
                   <div className="absolute bottom-5 left-5 rounded-[22px] border border-white/10 bg-black/40 px-4 py-3 backdrop-blur-xl">
                     <p className="text-xs uppercase tracking-[0.18em] text-primary">{day.label}</p>
@@ -353,7 +353,7 @@ const AIAccelerator = () => {
               </div>
             </div>
             <div className="relative min-h-[360px]">
-              <img src={coachingPhoto} alt="" className="absolute inset-0 h-full w-full object-cover" />
+              <img src={coachingPhoto} alt="Persoonlijke coaching en begeleiding tijdens de AI Accelerator" className="absolute inset-0 h-full w-full object-cover" />
               <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/10 to-transparent lg:bg-gradient-to-r lg:from-[rgba(6,4,14,0.9)] lg:via-transparent lg:to-transparent" />
               <div className="absolute bottom-6 left-6 right-6 rounded-[24px] border border-white/10 bg-black/35 p-5 backdrop-blur-xl">
                 <div className="flex flex-wrap gap-4 text-sm text-[#D8CCEC]">

@@ -555,7 +555,7 @@ const Checkout = () => {
                 </div>
                 <div className="text-center pt-1">
                   <Link
-                    to="/privacy"
+                    to="/privacy/"
                     className="text-[10px] text-muted-foreground/50 hover:text-primary transition-colors"
                   >
                     Privacybeleid
