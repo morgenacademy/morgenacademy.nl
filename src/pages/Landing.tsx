@@ -186,6 +186,9 @@ const Landing = () => {
                   }`}
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/35 to-black/10" />
+                {course.comingSoon && (
+                  <div className="absolute inset-0 bg-black/55" />
+                )}
                 <div className="absolute inset-x-0 bottom-0 p-6">
                   <h3 className="font-display text-2xl font-semibold text-white">
                     {course.title}

@@ -1,10 +1,9 @@
 import aiBasisImage from "@/assets/course-ai-basis.jpg";
-import agenticAiImage from "@/assets/training-tilburg-harmen.jpg";
-import vibecodenImage from "@/assets/training-pinkroccade-harmen.jpeg";
-import claudeOpenAiImage from "@/assets/training-fcdb-karin.jpeg";
-import aiBedrijfImage from "@/assets/course-ai-bedrijf.jpg";
+import agenticAiImage from "@/assets/training-pinkroccade-harmen.jpeg";
+import vibecodenImage from "@/assets/training-fcdb-karin.jpeg";
+import claudeOpenAiImage from "@/assets/training-avans-claude-code.jpg";
+import claudeCodeGevorderdImage from "@/assets/course-claude-openai.jpeg";
 import aiProjectmanagersImage from "@/assets/training-vml-karin.jpeg";
-import trainingCoPilotImage from "@/assets/training-tilburg-harmen-2.jpg";
 
 export interface Lesson {
   id: string;
@@ -49,9 +48,9 @@ const placeholderVideo = "";
 export const courses: Course[] = [
   {
     id: "basistraining-ai",
-    title: "AI Basis Training",
+    title: "Basistraining AI",
     subtitle:
-      "Het stevige fundament om AI direct toe te passen in je dagelijkse werk",
+      "De laagdrempelige start om slimmer te werken met AI: begrijp het AI-landschap, leer effectief prompten en bouw je eerste assistent — zonder technische voorkennis.",
     thumbnail: aiBasisImage,
     totalLessons: 30,
     totalDuration: "3u 30min",
@@ -327,68 +326,62 @@ export const courses: Course[] = [
     ],
   },
   {
-    id: "agentic-ai",
-    title: "Agentic AI",
+    id: "vibecoden",
+    title: "Bouwen met AI (vibecoding)",
     subtitle:
-      "Automatiseer workflows en laat AI-agents slim werk uit handen nemen",
-    thumbnail: agenticAiImage,
-    totalLessons: 12,
+      "Maak zelf een tool, website of app die je direct kunt laten zien en testen — zonder programmeerervaring.",
+    thumbnail: vibecodenImage,
+    totalLessons: 10,
     totalDuration: "Direct toegang",
+    comingSoon: true,
     price: "49.00",
     modules: [],
   },
   {
-    id: "vibecoden",
-    title: "VIBEcoden",
+    id: "agentic-ai",
+    title: "Automatiseren met AI",
     subtitle:
-      "Van idee naar werkend product met AI, zonder klassieke programmeerkennis",
-    thumbnail: vibecodenImage,
-    totalLessons: 10,
+      "Minder handwerk tussen systemen: leer wanneer automatisering en agentic AI slim zijn en hoe je daar veilig mee start.",
+    thumbnail: agenticAiImage,
+    totalLessons: 12,
     totalDuration: "Direct toegang",
+    comingSoon: true,
     price: "49.00",
     modules: [],
   },
   {
     id: "claude-openai-training",
-    title: "Claude & OpenAI Training",
+    title: "Claude Code / Codex: de basis",
     subtitle:
-      "Haal alles uit chat, cowork en coding skills in je dagelijkse werk",
+      "Geef AI toegang tot je eigen map: het leest je bestanden, denkt mee en voert werk uit — de AI werkt ín je werk.",
     thumbnail: claudeOpenAiImage,
     totalLessons: 14,
     totalDuration: "Direct toegang",
+    comingSoon: true,
     price: "49.00",
     modules: [],
   },
   {
-    id: "ai-in-je-bedrijf",
-    title: "AI in je bedrijf",
+    id: "haal-meer-uit-claude-code",
+    title: "Haal meer uit Claude Code + Samenwerken met AI",
     subtitle:
-      "Voor leiders die AI concreet, veilig en resultaatgericht willen inzetten",
-    thumbnail: aiBedrijfImage,
-    totalLessons: 8,
+      "Voor teams die al met Claude Code werken: samen professioneel blijven terwijl het tempo omhoog gaat — grotere changes, reviews en merge-conflicten in de hand.",
+    thumbnail: claudeCodeGevorderdImage,
+    totalLessons: 12,
     totalDuration: "Direct toegang",
+    comingSoon: true,
     price: "49.00",
     modules: [],
   },
   {
     id: "ai-voor-projectmanagers",
-    title: "AI voor projectmanagers",
+    title: "Projectmanagement met AI",
     subtitle:
-      "Gebruik AI voor planning, stakeholderupdates, risico's en betere projectbesluiten",
+      "Projecten voorbereiden, aansturen en laten slagen met AI: planning, stakeholdercommunicatie, risico's en betere besluitvorming.",
     thumbnail: aiProjectmanagersImage,
     totalLessons: 10,
     totalDuration: "Direct toegang",
-    price: "49.00",
-    modules: [],
-  },
-  {
-    id: "training-co-pilot",
-    title: "Training Co-Pilot",
-    subtitle:
-      "Ontwerp je eigen AI-co-pilot voor voorbereiding, uitvoering en opvolging van trainingen",
-    thumbnail: trainingCoPilotImage,
-    totalLessons: 10,
-    totalDuration: "Direct toegang",
+    comingSoon: true,
     price: "49.00",
     modules: [],
   },
