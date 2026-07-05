@@ -41,7 +41,7 @@ const defaultProductCopy = {
 
 const productCopyByCourseId: Record<string, typeof defaultProductCopy> = {
   "basistraining-ai": {
-    eyebrow: "AI Basis Training",
+    eyebrow: "Basistraining AI",
     headline: "Begin sterk met AI in je dagelijkse werk",
     introStrong:
       "Alles wat je nodig hebt om AI met vertrouwen te gebruiken, zonder technische drempel.",
@@ -60,12 +60,12 @@ const productCopyByCourseId: Record<string, typeof defaultProductCopy> = {
       "Deze training geeft je een stevig fundament. Je krijgt overzicht, praktische voorbeelden en opdrachten waarmee je AI meteen toepast op je eigen werk.",
   },
   "agentic-ai": {
-    eyebrow: "Agentic AI",
+    eyebrow: "Automatiseren met AI",
     headline: "Laat AI-agents werk voor je uitvoeren",
     introStrong:
       "Voor iedereen die verder wil dan losse prompts en echte workflows wil automatiseren.",
     intro:
-      "In Agentic AI leer je hoe je AI-agents inzet als digitale collega’s die stappen plannen, informatie verwerken en taken afmaken. Je ontdekt hoe je workflows ontwerpt die betrouwbaar, controleerbaar en nuttig zijn in de praktijk.",
+      "In deze training leer je hoe je AI-agents inzet als digitale collega’s die stappen plannen, informatie verwerken en taken afmaken. Je ontdekt hoe je workflows ontwerpt die betrouwbaar, controleerbaar en nuttig zijn in de praktijk.",
     benefitsTitle: "Bouw workflows die doorwerken als jij iets anders doet",
     benefits: [
       "Begrijp wat AI-agents zijn en wanneer je ze inzet",
@@ -79,12 +79,12 @@ const productCopyByCourseId: Record<string, typeof defaultProductCopy> = {
       "Deze training helpt je van experimenteren naar organiseren. Je leert hoe agentic workflows waarde toevoegen zonder dat je grip verliest op kwaliteit, veiligheid en resultaat.",
   },
   vibecoden: {
-    eyebrow: "VIBEcoden",
+    eyebrow: "Bouwen met AI (vibecoding)",
     headline: "Van idee naar werkend product met AI",
     introStrong:
       "Leer bouwen met AI, ook als je jezelf geen programmeur noemt.",
     intro:
-      "Met VIBEcoden zet je ideeën om in prototypes, tools en werkende concepten. Je leert hoe je AI gebruikt als bouwpartner: van het scherp maken van je idee tot testen, aanpassen en verbeteren.",
+      "In deze training zet je ideeën om in prototypes, tools en werkende concepten. Je leert hoe je AI gebruikt als bouwpartner: van het scherp maken van je idee tot testen, aanpassen en verbeteren.",
     benefitsTitle: "Maak sneller iets dat echt werkt",
     benefits: [
       "Zet een vaag idee om in een helder bouwplan",
@@ -95,48 +95,48 @@ const productCopyByCourseId: Record<string, typeof defaultProductCopy> = {
       "Volledig online met onbeperkte toegang",
     ],
     description:
-      "VIBEcoden is voor makers, ondernemers en professionals die sneller willen bouwen. Je leert denken in stappen, slim samenwerken met AI en je idee zichtbaar maken zonder maanden ontwikkelwerk.",
+      "Bouwen met AI is voor makers, ondernemers en professionals die sneller willen bouwen. Je leert denken in stappen, slim samenwerken met AI en je idee zichtbaar maken zonder maanden ontwikkelwerk.",
   },
   "claude-openai-training": {
-    eyebrow: "Claude & OpenAI Training",
-    headline: "Haal meer uit Claude, ChatGPT en OpenAI",
+    eyebrow: "Claude Code / Codex: de basis",
+    headline: "Stop met chatten, laat AI in je eigen map werken",
     introStrong:
-      "Gebruik de beste AI-tools doelgerichter, sneller en professioneler.",
+      "Geef AI toegang tot je bestanden en projecten — van chatvenster naar echte uitvoering.",
     intro:
-      "Deze training laat zien hoe je Claude en OpenAI inzet voor schrijven, analyseren, structureren, brainstormen en bouwen. Je leert wanneer je welke tool kiest en hoe je betere resultaten krijgt met minder proberen.",
-    benefitsTitle: "Werk scherper met je favoriete AI-tools",
+      "Je kent Claude of ChatGPT uit het chatvenster. In deze training geef je AI toegang tot je eigen map: het leest je bestanden, denkt mee en voert werk uit. Je ziet de agentic loop in actie, in zowel Claude Code als Codex.",
+    benefitsTitle: "Van losse prompts naar een AI die in je werk meedraait",
     benefits: [
-      "Ontdek de sterke punten van Claude, ChatGPT en OpenAI",
-      "Maak betere prompts voor analyse, tekst en strategie",
-      "Gebruik AI als sparringpartner voor complexe vraagstukken",
-      "Versnel schrijfwerk, voorbereiding en besluitvorming",
-      "Leer output controleren, aanscherpen en hergebruiken",
-      "Onbeperkt toegang tot voorbeelden en updates",
+      "Werk agentic in je eigen map met Claude Code én Codex",
+      "Leg projectafspraken vast in een CLAUDE.md zodat AI je project kent",
+      "Gebruik plan mode: eerst verkennen en plannen, dan pas uitvoeren",
+      "Benut het contextvenster slim en zet workflows op voor terugkerend werk",
+      "Maak kennis met skills, MCP-connectors, hooks en subagents",
+      "Volledig online met onbeperkte toegang",
     ],
     description:
-      "Na deze training gebruik je AI-tools minder willekeurig en veel gerichter. Je krijgt praktische workflows waarmee je direct betere output uit Claude, ChatGPT en OpenAI haalt.",
+      "Deze training maakt van AI een collega die jouw project kent en oppakt waar je gebleven was. Je leert dezelfde werkwijze in Claude Code en Codex, met een eerste opstap naar Git en teamwerk.",
   },
-  "ai-in-je-bedrijf": {
-    eyebrow: "AI in je bedrijf",
-    headline: "Maak AI concreet voor je organisatie",
+  "haal-meer-uit-claude-code": {
+    eyebrow: "Haal meer uit Claude Code + Samenwerken met AI",
+    headline: "Samen professioneel bouwen met Claude Code",
     introStrong:
-      "Voor leiders en teams die AI niet alleen willen proberen, maar goed willen invoeren.",
+      "Voor teams die al met Claude Code werken en het tempo omhoog willen brengen zonder grip te verliezen.",
     intro:
-      "Je leert hoe je kansen herkent, risico’s beheerst en AI vertaalt naar processen, rollen en besluitvorming. Zo voorkom je losse experimenten en bouw je aan toepassing die echt waarde oplevert.",
-    benefitsTitle: "Van losse ideeën naar een werkbare AI-aanpak",
+      "Iedereen bouwt — en precies daar begint het echte vraagstuk: grotere changes, vollere reviews, meer conflicten. In deze training verdiep je de agentic loop en leer je hoe je als team professioneel blijft samenwerken terwijl AI meer werk overneemt.",
+    benefitsTitle: "Van sneller bouwen naar samen borgen",
     benefits: [
-      "Bepaal waar AI de meeste waarde kan toevoegen",
-      "Breng kansen, risico’s en randvoorwaarden scherp in beeld",
-      "Maak AI begrijpelijk en toepasbaar voor je team",
-      "Ontwerp eerste use-cases die haalbaar en relevant zijn",
-      "Werk veiliger met data, tools en verantwoordelijkheden",
-      "Leer online in je eigen tempo met blijvende toegang",
+      "Verdiep de agentic loop: contextvenster, plan mode, subagents, workflows",
+      "Los de merge-realiteit op: klein en vaak integreren, review als eerste pass",
+      "Laat AI conflicten oplossen onder toezicht",
+      "Maak werkafspraken en leg ze vast in gedeelde skills en kaders",
+      "Borg kwaliteit met een review-gate en kaderscan",
+      "Volledig online met onbeperkte toegang",
     ],
     description:
-      "Deze training helpt je om AI volwassen en praktisch te benaderen. Je krijgt taal, structuur en voorbeelden om AI binnen je bedrijf verder te brengen.",
+      "Deze training maakt van snel bouwen een teamsport: concrete werkafspraken, gedeelde skills en een review-poort zodat kwaliteit geborgd blijft als iedereen bouwt.",
   },
   "ai-voor-projectmanagers": {
-    eyebrow: "AI voor projectmanagers",
+    eyebrow: "Projectmanagement met AI",
     headline: "Stuur projecten slimmer met AI",
     introStrong:
       "Gebruik AI als projectassistent voor planning, communicatie, risico’s en besluitvorming.",
@@ -153,25 +153,6 @@ const productCopyByCourseId: Record<string, typeof defaultProductCopy> = {
     ],
     description:
       "Deze training is gemaakt voor projectmanagers die hun werk slimmer willen organiseren zonder de menselijke kant kwijt te raken. Je leert AI inzetten als praktische co-pilot voor overzicht, communicatie en voortgang.",
-  },
-  "training-co-pilot": {
-    eyebrow: "Training Co-Pilot",
-    headline: "Maak je eigen AI-co-pilot voor trainingen",
-    introStrong:
-      "Voor trainers, opleiders en facilitators die AI willen inzetten zonder hun eigen stijl kwijt te raken.",
-    intro:
-      "Je leert hoe je AI gebruikt als praktische co-pilot voor het ontwerpen, voorbereiden, geven en opvolgen van trainingen. Van intake en draaiboek tot oefeningen, evaluatie en persoonlijke follow-up.",
-    benefitsTitle: "Meer kwaliteit en minder voorbereidingswerk",
-    benefits: [
-      "Ontwerp sneller programma's, werkvormen en trainingsopdrachten",
-      "Gebruik AI voor intakevragen, doelgroepanalyse en leerdoelen",
-      "Maak draaiboeken, slidestructuren en oefeningen die beter aansluiten",
-      "Verwerk feedback en evaluaties tot concrete verbeterpunten",
-      "Bouw herbruikbare prompts voor voorbereiding en opvolging",
-      "Volledig online met onbeperkte toegang",
-    ],
-    description:
-      "Training Co-Pilot helpt je om AI te gebruiken als slimme sparringpartner voor je trainingspraktijk. Je houdt zelf de regie, terwijl AI het denk-, schrijf- en structuurwerk versnelt.",
   },
 };
 

@@ -692,20 +692,39 @@ const AdminPortal = () => {
 
     setGrantingAccess(true);
     try {
-      const { data, error } = await supabase.rpc("admin_grant_course_access", {
-        _email: grantEmail.trim().toLowerCase(),
-        _course_id: grantCourseId,
+      const email = grantEmail.trim().toLowerCase();
+      const { data, error } = await supabase.functions.invoke("admin-invite-course", {
+        body: {
+          email,
+          course_id: grantCourseId,
+          redirect_to: `${window.location.origin}/reset-password`,
+        },
       });
 
-      if (error) throw error;
+      // functions.invoke returns an error for non-2xx; the body may still
+      // carry a specific message we want to surface.
+      if (error) {
+        let msg = error.message;
+        try {
+          const body = await (error as { context?: Response }).context?.json?.();
+          if (body?.error) msg = body.error;
+        } catch {
+          // keep the generic message
+        }
+        throw new Error(msg);
+      }
 
-      const result = data?.[0];
       const courseTitle = courses.find((course) => course.id === grantCourseId)?.title ?? grantCourseId;
 
-      if (result?.created) {
-        toast.success(`${grantEmail.trim()} heeft nu toegang tot ${courseTitle}.`, { duration: Infinity });
+      if (data?.invited) {
+        toast.success(
+          `Uitnodiging verstuurd naar ${email}. Na het instellen van een wachtwoord staat ${courseTitle} klaar.`,
+          { duration: Infinity }
+        );
+      } else if (data?.created) {
+        toast.success(`${email} heeft nu toegang tot ${courseTitle}.`, { duration: Infinity });
       } else {
-        toast.success(`${grantEmail.trim()} had al toegang tot ${courseTitle}.`, { duration: Infinity });
+        toast.success(`${email} had al toegang tot ${courseTitle}.`, { duration: Infinity });
       }
 
       setGrantEmail("");
@@ -967,7 +986,7 @@ const AdminPortal = () => {
                       Gratis toegang geven
                     </h2>
                     <p className="mt-1 text-sm text-muted-foreground">
-                      Geef iemand direct toegang tot een cursus zonder betaling. De gebruiker moet wel al een account hebben aangemaakt.
+                      Geef iemand direct toegang tot een cursus zonder betaling. Heeft de persoon nog geen account, dan sturen we automatisch een uitnodiging om een wachtwoord in te stellen.
                     </p>
                   </div>
                 </div>

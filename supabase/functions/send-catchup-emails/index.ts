@@ -7,13 +7,12 @@ const corsHeaders = {
 };
 
 const COURSE_TITLES: Record<string, string> = {
-  "basistraining-ai": "AI Basis Training",
-  "agentic-ai": "Agentic AI",
-  "vibecoden": "VIBEcoden",
-  "claude-openai-training": "Claude & OpenAI Training",
-  "ai-in-je-bedrijf": "AI in je bedrijf",
-  "ai-voor-projectmanagers": "AI voor projectmanagers",
-  "training-co-pilot": "Training Co-Pilot",
+  "basistraining-ai": "Basistraining AI",
+  "agentic-ai": "Automatiseren met AI",
+  "vibecoden": "Bouwen met AI (vibecoding)",
+  "claude-openai-training": "Claude Code / Codex: de basis",
+  "haal-meer-uit-claude-code": "Haal meer uit Claude Code + Samenwerken met AI",
+  "ai-voor-projectmanagers": "Projectmanagement met AI",
 };
 
 Deno.serve(async (req) => {
