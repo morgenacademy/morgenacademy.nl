@@ -485,7 +485,7 @@ const Landing = () => {
 
             <div className="w-full shrink-0 flex-col gap-3 md:w-auto md:pt-10 flex">
               <Button asChild size="lg" className="w-full gap-2 text-sm uppercase tracking-wider">
-                <a href="https://morgencompany.com/academy">
+                <a href="https://morgencompany.com/academy/">
                   Bekijk incompany trainingen
                   <ArrowRight className="h-4 w-4" />
                 </a>
