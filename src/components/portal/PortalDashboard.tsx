@@ -53,7 +53,7 @@ const offerLinks = [
   {
     title: "Incompany training",
     body: "Een training op maat voor je team, met cases uit jullie eigen praktijk.",
-    href: "https://morgencompany.com/academy",
+    href: "https://morgencompany.com/academy/",
     icon: Users,
     cta: "Bekijk voor teams",
   },
