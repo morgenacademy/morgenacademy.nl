@@ -8,7 +8,6 @@ const columns: { title: string; links: NavLink[] }[] = [
     title: "Academy",
     links: [
       { label: "Online trainingen", href: "/", kind: "route" },
-      { label: "Live agenda", href: "/#live-agenda", kind: "anchor" },
       { label: "AI Accelerator", href: "/ai-accelerator/", kind: "route" },
       { label: "Incompany trainingen", href: `${COMPANY_URL}/academy/`, kind: "external" },
       { label: "Inloggen", href: "/login", kind: "route" },
