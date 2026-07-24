@@ -9,7 +9,6 @@ import { COMPANY_URL, type NavLink } from "@/lib/links";
 // bent vanuit de leeromgeving in één klik bij elke company-sectie.
 const academyLinks: NavLink[] = [
   { label: "Online trainingen", href: "/", kind: "route" },
-  { label: "Live agenda", href: "/#live-agenda", kind: "anchor" },
   { label: "AI Accelerator", href: "/ai-accelerator/", kind: "route" },
 ];
 
