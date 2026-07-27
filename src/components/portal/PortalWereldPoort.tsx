@@ -184,9 +184,14 @@ const PortalWereldPoort = ({ vertraging = 0 }: { vertraging?: number }) => {
 
   // Autoplay kan geweigerd worden. Dan blijft de poster staan en laten we de
   // punten alsnog zien, anders is het blok onbruikbaar.
+  //
+  // play() hoort een Promise te geven, maar oudere Safari-versies en sommige
+  // webviews geven undefined. Zonder deze guard is dat een TypeError in een
+  // effect, en die sloopt zonder error boundary de hele portaalpagina.
   useEffect(() => {
     if (!geladen) return;
-    video.current?.play().catch(() => setAfgelopen(true));
+    const afspelen = video.current?.play();
+    afspelen?.catch(() => setAfgelopen(true));
   }, [geladen]);
 
   const puntenZichtbaar = minderBeweging || afgelopen;

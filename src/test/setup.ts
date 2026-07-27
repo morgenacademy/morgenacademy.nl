@@ -13,3 +13,10 @@ Object.defineProperty(window, "matchMedia", {
     dispatchEvent: () => {},
   }),
 });
+
+// jsdom implementeert play() niet: het schrijft een stacktrace naar stderr en
+// geeft undefined terug. Echte browsers geven een Promise, dus die geven we ook.
+Object.defineProperty(window.HTMLMediaElement.prototype, "play", {
+  writable: true,
+  value: () => Promise.resolve(),
+});
