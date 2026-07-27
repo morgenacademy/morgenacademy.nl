@@ -39,17 +39,26 @@ imports vervallen.
 
 ### Beeld
 
-De hub-illustratie van de wereld, rechtstreeks van de company-site:
-`https://morgencompany.com/wereld/assets/echt/hub.webp` (107 kB, 1112x834).
+Een stilstaand plaatje van een wereld die op de site juist beweegt, leest als een
+screenshot. Daarom de intro-video van de wereld, die in zes seconden de camera
+terugtrekt van de brug naar het hele plein en exact op de hub-still eindigt.
+Daarna lichten de vijf punten op.
 
-Niet gekopieerd naar deze repo: wijzigt de illustratie op de company-site, dan
-volgt het portaal vanzelf. Vaste `width`/`height` en `loading="lazy"` tegen layout
-shift.
+| Scherm | Video | Poster | Verhouding |
+|---|---|---|---|
+| >= 640px | `vid/intro.mp4` (5,1 MB) | `intro-poster.jpg` (130 kB) | 1112x834 |
+| < 640px | `vid/intro-m.mp4` (1,3 MB) | `intro-poster-m.jpg` (53 kB) | 468x832 |
 
-De mobiele variant `hub-m.webp` (45 kB) blijft ongebruikt. Die is 720x1280, dus
-een andere uitsnede in staand formaat: de hotspot-percentages kloppen er niet op
-en in een kaart wordt hij onwerkbaar hoog. Eén 4:3-beeld op alle formaten is
-simpeler en houdt de posities geldig.
+Alles rechtstreeks van de company-site, niet gekopieerd naar deze repo: wijzigt de
+wereld daar, dan volgt het portaal.
+
+De video staat op `preload="none"` en krijgt pas een `src` als een
+IntersectionObserver meldt dat het blok in beeld komt (rootMargin 200px). De poort
+staat onder de materialen, dus wie nooit doorscrollt betaalt niets.
+
+Weigert de browser autoplay, of faalt de video, dan blijft de poster staan en
+verschijnen de punten alsnog. Bij `prefers-reduced-motion: reduce` vervalt de
+video en tonen we de still (`hub.webp` / `hub-m.webp`) met de punten er direct op.
 
 ### Hotspots
 
@@ -89,9 +98,10 @@ vaak ook ander materiaal onder een portaal.
 
 ### Mobiel
 
-Onder 640px vervallen de absolute posities. De illustratie staat dan als beeld
-bovenaan en de vijf hotspots worden een rij chips eronder. Absolute puntjes op
-375px zijn onleesbaar en niet aan te tikken.
+Onder 640px schakelt het blok naar de staande uitsnede. De hotspots houden hun
+absolute plek, maar op de mobiele coordinaten (`xm`/`ym`) die ook in `wereld.js`
+staan. Geen aparte chips-weergave dus: hetzelfde gedrag op elk formaat, net als op
+de wereld zelf.
 
 ### Meten
 

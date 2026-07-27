@@ -1,13 +1,29 @@
+import { useEffect, useRef, useState } from "react";
 import { motion } from "framer-motion";
 import { ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ACADEMY_URL, COMPANY_URL } from "@/lib/links";
 
-// De hub-illustratie komt rechtstreeks van de company-site. Bewust niet
-// gekopieerd naar deze repo: wijzigt de wereld daar, dan volgt het portaal.
-const HUB_AFBEELDING = `${COMPANY_URL}/wereld/assets/echt/hub.webp`;
-const HUB_BREEDTE = 1112;
-const HUB_HOOGTE = 834;
+// Beeldmateriaal komt rechtstreeks van de company-site. Bewust niet gekopieerd
+// naar deze repo: wijzigt de wereld daar, dan volgt het portaal.
+const BASIS = `${COMPANY_URL}/wereld/assets/echt`;
+
+// intro.mp4 trekt de camera in zes seconden terug van de brug naar de hele
+// wereld en eindigt exact op de hub-still. Daarna lichten de punten op.
+const BEELD = {
+  breed: {
+    video: `${BASIS}/vid/intro.mp4`,
+    poster: `${BASIS}/intro-poster.jpg`,
+    still: `${BASIS}/hub.webp`,
+    verhouding: "1112 / 834",
+  },
+  smal: {
+    video: `${BASIS}/vid/intro-m.mp4`,
+    poster: `${BASIS}/intro-poster-m.jpg`,
+    still: `${BASIS}/hub-m.webp`,
+    verhouding: "468 / 832",
+  },
+};
 
 const UTM = "utm_source=portal&utm_medium=referral&utm_campaign=wereld-poort";
 
@@ -22,41 +38,51 @@ interface Hotspot {
   label: string;
   pad: string;
   beschrijving: string;
-  left: string;
-  top: string;
+  x: number;
+  y: number;
+  xm: number;
+  ym: number;
   accent?: boolean;
 }
 
-// Posities overgenomen uit wereld/index.html van de company-repo, zodat de
-// punten op dezelfde plekken van de illustratie staan als daar.
+// Posities overgenomen uit wereld.js van de company-repo, inclusief de aparte
+// mobiele coordinaten (xm/ym) die bij de staande uitsnede horen.
 const hotspots: Hotspot[] = [
   {
     label: "Trainingen",
     pad: "/academy/",
     beschrijving: "Trainingen: AI-training voor teams",
-    left: "22%",
-    top: "34%",
+    x: 22,
+    y: 34,
+    xm: 22,
+    ym: 39,
   },
   {
     label: "Implementatie",
     pad: "/consultancy/",
     beschrijving: "Implementatie: begeleiding bij het invoeren van AI",
-    left: "44%",
-    top: "24%",
+    x: 44,
+    y: 24,
+    xm: 41,
+    ym: 34,
   },
   {
     label: "AI-oplossingen",
     pad: "/technology/",
     beschrijving: "AI-oplossingen: maatwerk en automatisering",
-    left: "69%",
-    top: "26%",
+    x: 69,
+    y: 26,
+    xm: 72,
+    ym: 38,
   },
   {
     label: "Inspiratie",
     pad: "/inspiratie/",
     beschrijving: "Inspiratie: keynotes, podcast en boek",
-    left: "77%",
-    top: "55%",
+    x: 77,
+    y: 55,
+    xm: 77,
+    ym: 47,
   },
   {
     // De wereld linkt zelf naar /organisatie/#trainingwijzer-app, maar dat pad
@@ -66,99 +92,164 @@ const hotspots: Hotspot[] = [
     label: "Wegwijzer",
     pad: "/academy/#trainingwijzer-app",
     beschrijving: "Wegwijzer: vind de route die bij je past",
-    left: "52%",
-    top: "47%",
+    x: 52,
+    y: 47,
+    xm: 52,
+    ym: 50,
     accent: true,
   },
 ];
 
-const PortalWereldPoort = ({ vertraging = 0 }: { vertraging?: number }) => (
-  <motion.section
-    initial={{ opacity: 0, y: 16 }}
-    animate={{ opacity: 1, y: 0 }}
-    transition={{ duration: 0.4, delay: vertraging }}
-    className="mt-16 overflow-hidden rounded-xl bg-card/60"
-  >
-    <div className="relative">
-      <img
-        src={HUB_AFBEELDING}
-        width={HUB_BREEDTE}
-        height={HUB_HOOGTE}
-        loading="lazy"
-        alt=""
-        className="block w-full"
-      />
+const gebruikMediaQuery = (query: string) => {
+  // Meteen goed bij de eerste render: anders kiest mobiel eerst de brede
+  // verhouding en springt de pagina zodra het effect draait.
+  const [treft, setTreft] = useState(
+    () =>
+      typeof window !== "undefined" &&
+      typeof window.matchMedia === "function" &&
+      window.matchMedia(query).matches,
+  );
 
-      {/* Op mobiel staan de punten als chips onder het beeld: absolute
-          puntjes zijn daar onleesbaar en nauwelijks aan te tikken. */}
-      <div className="pointer-events-none absolute inset-0 hidden sm:block">
-        {hotspots.map((hotspot) => (
-          <a
-            key={hotspot.label}
-            href={metUtm(hotspot.pad)}
-            aria-label={hotspot.beschrijving}
-            style={{ left: hotspot.left, top: hotspot.top }}
-            className="group pointer-events-auto absolute flex -translate-x-1/2 -translate-y-1/2 flex-col items-center gap-1.5 no-underline"
-          >
-            <span
-              aria-hidden="true"
-              className={`h-2.5 w-2.5 rounded-full ring-4 transition-transform duration-200 group-hover:scale-110 ${
-                hotspot.accent
-                  ? "bg-neon ring-neon/20"
-                  : "bg-primary ring-primary/20"
+  useEffect(() => {
+    if (typeof window.matchMedia !== "function") return;
+    const mql = window.matchMedia(query);
+    setTreft(mql.matches);
+    const luister = (e: MediaQueryListEvent) => setTreft(e.matches);
+    mql.addEventListener?.("change", luister);
+    return () => mql.removeEventListener?.("change", luister);
+  }, [query]);
+
+  return treft;
+};
+
+const PortalWereldPoort = ({ vertraging = 0 }: { vertraging?: number }) => {
+  const smal = gebruikMediaQuery("(max-width: 639px)");
+  const minderBeweging = gebruikMediaQuery("(prefers-reduced-motion: reduce)");
+  const beeld = smal ? BEELD.smal : BEELD.breed;
+
+  const houder = useRef<HTMLDivElement>(null);
+  const video = useRef<HTMLVideoElement>(null);
+  const [geladen, setGeladen] = useState(false);
+  const [afgelopen, setAfgelopen] = useState(false);
+
+  // De poort staat onder de materialen. De video pas ophalen als iemand er
+  // daadwerkelijk naartoe scrollt, anders betaalt elke bezoeker voor beeld dat
+  // hij nooit ziet.
+  useEffect(() => {
+    if (minderBeweging) return;
+    const el = houder.current;
+    if (!el || typeof IntersectionObserver === "undefined") {
+      setGeladen(true);
+      return;
+    }
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries.some((entry) => entry.isIntersecting)) {
+          setGeladen(true);
+          observer.disconnect();
+        }
+      },
+      { rootMargin: "200px" },
+    );
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, [minderBeweging]);
+
+  // Autoplay kan geweigerd worden. Dan blijft de poster staan en laten we de
+  // punten alsnog zien, anders is het blok onbruikbaar.
+  useEffect(() => {
+    if (!geladen) return;
+    video.current?.play().catch(() => setAfgelopen(true));
+  }, [geladen]);
+
+  const puntenZichtbaar = minderBeweging || afgelopen;
+
+  return (
+    <motion.section
+      initial={{ opacity: 0, y: 16 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.4, delay: vertraging }}
+      className="mt-16 overflow-hidden rounded-xl bg-card/60"
+    >
+      <div
+        ref={houder}
+        className="relative"
+        style={{ aspectRatio: beeld.verhouding }}
+      >
+        {minderBeweging ? (
+          <img src={beeld.still} alt="" className="block h-full w-full" />
+        ) : (
+          <video
+            ref={video}
+            src={geladen ? beeld.video : undefined}
+            poster={beeld.poster}
+            muted
+            playsInline
+            preload="none"
+            onEnded={() => setAfgelopen(true)}
+            onError={() => setAfgelopen(true)}
+            className="block h-full w-full object-cover"
+          />
+        )}
+
+        <div className="pointer-events-none absolute inset-0">
+          {hotspots.map((hotspot, index) => (
+            <a
+              key={hotspot.label}
+              href={metUtm(hotspot.pad)}
+              aria-label={hotspot.beschrijving}
+              style={{
+                left: `${smal ? hotspot.xm : hotspot.x}%`,
+                top: `${smal ? hotspot.ym : hotspot.y}%`,
+                transitionDelay: `${index * 120}ms`,
+              }}
+              className={`group pointer-events-auto absolute flex -translate-x-1/2 -translate-y-1/2 flex-col items-center gap-1.5 no-underline transition-opacity duration-500 ${
+                puntenZichtbaar ? "opacity-100" : "opacity-0"
               }`}
-            />
-            <span className="whitespace-nowrap rounded-md bg-background/70 px-2 py-0.5 text-xs font-medium text-foreground backdrop-blur-sm">
-              {hotspot.label}
-            </span>
-          </a>
-        ))}
+            >
+              <span
+                aria-hidden="true"
+                className={`h-2.5 w-2.5 animate-pulse rounded-full ring-4 transition-transform duration-200 group-hover:scale-125 ${
+                  hotspot.accent
+                    ? "bg-neon ring-neon/20"
+                    : "bg-primary ring-primary/20"
+                }`}
+              />
+              <span className="whitespace-nowrap rounded-md bg-background/70 px-2 py-0.5 text-xs font-medium text-foreground backdrop-blur-sm">
+                {hotspot.label}
+              </span>
+            </a>
+          ))}
+        </div>
       </div>
-    </div>
 
-    <div className="p-6">
-      <h2 className="font-display text-xl font-semibold text-foreground">
-        Er ligt meer achter deze training
-      </h2>
-      <p className="mt-2 max-w-lg text-sm leading-relaxed text-muted-foreground">
-        Een training is vaak het begin. Daarna komt het echte werken met AI:
-        implementeren in de organisatie, laten landen in het dagelijkse werk, en
-        maatwerk bouwen waar dat nodig is.
-      </p>
+      <div className="p-6">
+        <h2 className="font-display text-xl font-semibold text-foreground">
+          Er ligt meer achter deze training
+        </h2>
+        <p className="mt-2 max-w-lg text-sm leading-relaxed text-muted-foreground">
+          Een training is vaak het begin. Daarna komt het echte werken met AI:
+          implementeren in de organisatie, laten landen in het dagelijkse werk,
+          en maatwerk bouwen waar dat nodig is.
+        </p>
 
-      <div className="mt-5 flex flex-wrap gap-2 sm:hidden">
-        {hotspots.map((hotspot) => (
+        <div className="mt-6 flex flex-wrap items-center gap-x-5 gap-y-3">
+          <Button asChild size="sm" className="gap-2">
+            <a href={metUtm("/")}>
+              De wereld van Morgen in
+              <ArrowRight className="h-4 w-4" />
+            </a>
+          </Button>
           <a
-            key={hotspot.label}
-            href={metUtm(hotspot.pad)}
-            aria-label={hotspot.beschrijving}
-            className={`rounded-full border px-3 py-1.5 text-xs font-medium no-underline transition-colors ${
-              hotspot.accent
-                ? "border-neon/40 text-neon"
-                : "border-border/70 text-muted-foreground"
-            }`}
+            href={ACADEMY_URL}
+            className="text-sm text-muted-foreground transition-colors hover:text-foreground"
           >
-            {hotspot.label}
+            Of leer zelf verder in de Online Academy
           </a>
-        ))}
+        </div>
       </div>
-
-      <div className="mt-6 flex flex-wrap items-center gap-x-5 gap-y-3">
-        <Button asChild size="sm" className="gap-2">
-          <a href={metUtm("/")}>
-            De wereld van Morgen in
-            <ArrowRight className="h-4 w-4" />
-          </a>
-        </Button>
-        <a
-          href={ACADEMY_URL}
-          className="text-sm text-muted-foreground transition-colors hover:text-foreground"
-        >
-          Of leer zelf verder in de Online Academy
-        </a>
-      </div>
-    </div>
-  </motion.section>
-);
+    </motion.section>
+  );
+};
 
 export default PortalWereldPoort;
