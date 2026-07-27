@@ -85,12 +85,11 @@ const hotspots: Hotspot[] = [
     ym: 47,
   },
   {
-    // De wereld linkt zelf naar /organisatie/#trainingwijzer-app, maar dat pad
-    // staat niet in validPages van de SPA: die valt terug op home en gooit de
-    // hash weg. /academy/ landt wel goed. Het scrollen naar het Kompas werkt
-    // pas als de nav()-fix van branch codex/projecten op main staat.
+    // #wegwijzer is een echte route in de wereld: pasWereldRouteToe() toont de
+    // hub en opent meteen het Kompas-vak. Beter dan het Kompas op de academy-
+    // pagina, want de bezoeker blijft in de wereld waar hij net op klikte.
     label: "Wegwijzer",
-    pad: "/academy/#trainingwijzer-app",
+    pad: "/#wegwijzer",
     beschrijving: "Wegwijzer: vind de route die bij je past",
     x: 52,
     y: 47,
@@ -209,7 +208,7 @@ const PortalWereldPoort = ({ vertraging = 0 }: { vertraging?: number }) => {
             >
               <span
                 aria-hidden="true"
-                className={`h-2.5 w-2.5 animate-pulse rounded-full ring-4 transition-transform duration-200 group-hover:scale-125 ${
+                className={`h-2.5 w-2.5 rounded-full ring-4 transition-transform duration-200 group-hover:scale-125 ${
                   hotspot.accent
                     ? "bg-neon ring-neon/20"
                     : "bg-primary ring-primary/20"

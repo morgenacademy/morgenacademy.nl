@@ -20,10 +20,7 @@ describe("PortalWereldPoort", () => {
       "Inspiratie: keynotes, podcast en boek",
       "https://morgencompany.com/inspiratie/",
     ],
-    [
-      "Wegwijzer: vind de route die bij je past",
-      "https://morgencompany.com/academy/",
-    ],
+    ["Wegwijzer: vind de route die bij je past", "https://morgencompany.com/?"],
   ];
 
   it("wijst alle vijf hotspots naar de juiste hoek van de company-site", () => {
@@ -52,11 +49,11 @@ describe("PortalWereldPoort", () => {
     );
   });
 
-  it("zet de query voor de hash zodat het anker naar het Kompas blijft werken", () => {
+  it("zet de query voor de hash zodat de wereld de route #wegwijzer nog leest", () => {
     render(<PortalWereldPoort />);
 
     expect(hrefVoor("Wegwijzer: vind de route die bij je past")).toBe(
-      "https://morgencompany.com/academy/?utm_source=portal&utm_medium=referral&utm_campaign=wereld-poort#trainingwijzer-app",
+      "https://morgencompany.com/?utm_source=portal&utm_medium=referral&utm_campaign=wereld-poort#wegwijzer",
     );
   });
 });

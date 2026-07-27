@@ -71,12 +71,15 @@ ze op de illustratie kloppen:
 | Implementatie | `/consultancy/` | 44% / 24% |
 | AI-oplossingen | `/technology/` | 69% / 26% |
 | Inspiratie | `/inspiratie/` | 77% / 55% |
-| Wegwijzer | `/academy/#trainingwijzer-app` | 52% / 47% |
+| Wegwijzer | `/#wegwijzer` | 52% / 47% |
 
-De wereld linkt zelf naar `/organisatie/#trainingwijzer-app`, maar dat pad zit niet
-in `validPages` van de SPA: de router valt terug op home en laat de hash vallen.
-`/academy/` landt wel goed. Het scrollen naar het Kompas werkt pas als de
-nav()-fix van branch `codex/projecten` op `main` staat.
+`#wegwijzer` is een echte route in de wereld: `pasWereldRouteToe()` toont de hub en
+opent meteen het Kompas-vak. De bezoeker blijft dus in de wereld waar hij net op
+klikte, in plaats van op de academy-pagina te landen.
+
+De wereld linkte zelf naar `/organisatie/#trainingwijzer-app`. Dat pad activeert de
+home-sectie terwijl het Kompas in de academy-sectie staat, dus het anker wees naar
+een onzichtbaar element. Rechtgezet in PR #46 van de company-repo.
 
 De Wegwijzer krijgt het geel-groene accent: dat is de route naar het Kompas en
 daarmee de plek waar doel 2 ontstaat.
