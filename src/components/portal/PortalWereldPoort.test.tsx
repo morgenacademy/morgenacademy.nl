@@ -5,29 +5,29 @@ import PortalWereldPoort from "./PortalWereldPoort";
 const hrefVoor = (beschrijving: string) =>
   screen.getByLabelText(beschrijving).getAttribute("href");
 
+const QUERY =
+  "?utm_source=portal&utm_medium=referral&utm_campaign=wereld-poort";
+
 describe("PortalWereldPoort", () => {
+  // De routes van de wereld zelf, niet de marketingpagina's: pasWereldRouteToe()
+  // opent daarmee het bijbehorende gebouw of het Kompas-vak.
   const bestemmingen: [string, string][] = [
-    ["Trainingen: AI-training voor teams", "https://morgencompany.com/academy/"],
-    [
-      "Implementatie: begeleiding bij het invoeren van AI",
-      "https://morgencompany.com/consultancy/",
-    ],
-    [
-      "AI-oplossingen: maatwerk en automatisering",
-      "https://morgencompany.com/technology/",
-    ],
-    [
-      "Inspiratie: keynotes, podcast en boek",
-      "https://morgencompany.com/inspiratie/",
-    ],
-    ["Wegwijzer: vind de route die bij je past", "https://morgencompany.com/?"],
+    ["Trainingen: AI-training voor teams", "train"],
+    ["Implementatie: begeleiding bij het invoeren van AI", "implement"],
+    ["AI-oplossingen: maatwerk en automatisering", "build"],
+    ["Inspiratie: keynotes, podcast en boek", "inspire"],
+    ["Projecten, klantcases en praktijkvoorbeelden", "projecten"],
+    ["Over Morgen, team en aanpak", "over-morgen"],
+    ["Wegwijzer: vind de route die bij je past", "wegwijzer"],
   ];
 
-  it("wijst alle vijf hotspots naar de juiste hoek van de company-site", () => {
+  it("wijst alle zeven hotspots naar hun eigen route in de wereld", () => {
     render(<PortalWereldPoort />);
 
-    for (const [beschrijving, bestemming] of bestemmingen) {
-      expect(hrefVoor(beschrijving)).toContain(bestemming);
+    for (const [beschrijving, route] of bestemmingen) {
+      expect(hrefVoor(beschrijving)).toBe(
+        `https://morgencompany.com/${QUERY}#${route}`,
+      );
     }
   });
 
@@ -43,17 +43,16 @@ describe("PortalWereldPoort", () => {
 
     expect(
       screen.getByRole("link", { name: /De wereld van Morgen in/ }),
-    ).toHaveAttribute(
-      "href",
-      "https://morgencompany.com/?utm_source=portal&utm_medium=referral&utm_campaign=wereld-poort",
-    );
+    ).toHaveAttribute("href", `https://morgencompany.com/${QUERY}`);
   });
 
-  it("zet de query voor de hash zodat de wereld de route #wegwijzer nog leest", () => {
+  it("zet de query voor de hash, anders leest de wereld de route niet", () => {
     render(<PortalWereldPoort />);
 
-    expect(hrefVoor("Wegwijzer: vind de route die bij je past")).toBe(
-      "https://morgencompany.com/?utm_source=portal&utm_medium=referral&utm_campaign=wereld-poort#wegwijzer",
-    );
+    for (const [beschrijving, route] of bestemmingen) {
+      const href = hrefVoor(beschrijving) ?? "";
+      expect(href.indexOf("utm_source")).toBeLessThan(href.indexOf("#"));
+      expect(href.endsWith(`#${route}`)).toBe(true);
+    }
   });
 });

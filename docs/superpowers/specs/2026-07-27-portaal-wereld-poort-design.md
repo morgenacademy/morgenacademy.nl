@@ -67,19 +67,31 @@ ze op de illustratie kloppen:
 
 | Label | Bestemming | left/top |
 |---|---|---|
-| Trainingen | `/academy/` | 22% / 34% |
-| Implementatie | `/consultancy/` | 44% / 24% |
-| AI-oplossingen | `/technology/` | 69% / 26% |
-| Inspiratie | `/inspiratie/` | 77% / 55% |
+| Trainingen | `/#train` | 22% / 34% |
+| Implementatie | `/#implement` | 44% / 24% |
+| AI-oplossingen | `/#build` | 69% / 26% |
+| Inspiratie | `/#inspire` | 77% / 55% |
+| Projecten | `/#projecten` | 27% / 51% |
+| Over Morgen. | `/#over-morgen` | 70% / 67% |
 | Wegwijzer | `/#wegwijzer` | 52% / 47% |
 
-`#wegwijzer` is een echte route in de wereld: `pasWereldRouteToe()` toont de hub en
-opent meteen het Kompas-vak. De bezoeker blijft dus in de wereld waar hij net op
-klikte, in plaats van op de academy-pagina te landen.
+Alle zeven punten van de wereld, zodat de kaart in het portaal dezelfde kaart is.
+Projecten en Over Morgen krijgen net als op de wereld de secundaire behandeling
+(`is-sub` daar): kleinere stip, gedempt label. De vier pilaren en het Kompas
+blijven daarmee voorop.
+
+Dit zijn de hash-routes van de wereld zelf (`ROUTE_BY_GEBOUW` plus `wegwijzer` in
+`wereld.js`). `pasWereldRouteToe()` opent daarmee het bijbehorende gebouw of het
+Kompas-vak, ook bij koud openen zonder de wereld eerst te doorlopen.
+
+Bewust niet `/academy/`, `/consultancy/` en zo. Dan verlaat de bezoeker meteen de
+wereld waar dit blok hem net naartoe lokte, en dat is precies wat we wilden
+bereiken. Elk gebouw heeft binnen de wereld een eigen CTA naar de marketingpagina,
+dus de route naar het aanbod blijft bestaan, alleen een stap later.
 
 De wereld linkte zelf naar `/organisatie/#trainingwijzer-app`. Dat pad activeert de
 home-sectie terwijl het Kompas in de academy-sectie staat, dus het anker wees naar
-een onzichtbaar element. Rechtgezet in PR #46 van de company-repo.
+een onzichtbaar element. Rechtgezet in PR #46 en #47 van de company-repo.
 
 De Wegwijzer krijgt het geel-groene accent: dat is de route naar het Kompas en
 daarmee de plek waar doel 2 ontstaat.

@@ -43,14 +43,22 @@ interface Hotspot {
   xm: number;
   ym: number;
   accent?: boolean;
+  // Plein-plekken, secundair. Heten op de wereld `is-sub`.
+  sub?: boolean;
 }
 
 // Posities overgenomen uit wereld.js van de company-repo, inclusief de aparte
 // mobiele coordinaten (xm/ym) die bij de staande uitsnede horen.
+//
+// De paden zijn de hash-routes van de wereld zelf (ROUTE_BY_GEBOUW plus
+// wegwijzer). pasWereldRouteToe() opent daarmee het bijbehorende gebouw of het
+// Kompas-vak, ook bij koud openen. Bewust niet /academy/, /consultancy/ en zo:
+// dan verlaat de bezoeker meteen de wereld waar dit blok hem net naartoe lokte.
+// Elk gebouw heeft zijn eigen CTA naar de marketingpagina.
 const hotspots: Hotspot[] = [
   {
     label: "Trainingen",
-    pad: "/academy/",
+    pad: "/#train",
     beschrijving: "Trainingen: AI-training voor teams",
     x: 22,
     y: 34,
@@ -59,7 +67,7 @@ const hotspots: Hotspot[] = [
   },
   {
     label: "Implementatie",
-    pad: "/consultancy/",
+    pad: "/#implement",
     beschrijving: "Implementatie: begeleiding bij het invoeren van AI",
     x: 44,
     y: 24,
@@ -68,7 +76,7 @@ const hotspots: Hotspot[] = [
   },
   {
     label: "AI-oplossingen",
-    pad: "/technology/",
+    pad: "/#build",
     beschrijving: "AI-oplossingen: maatwerk en automatisering",
     x: 69,
     y: 26,
@@ -77,12 +85,32 @@ const hotspots: Hotspot[] = [
   },
   {
     label: "Inspiratie",
-    pad: "/inspiratie/",
+    pad: "/#inspire",
     beschrijving: "Inspiratie: keynotes, podcast en boek",
     x: 77,
     y: 55,
     xm: 77,
     ym: 47,
+  },
+  {
+    label: "Projecten",
+    pad: "/#projecten",
+    beschrijving: "Projecten, klantcases en praktijkvoorbeelden",
+    x: 27,
+    y: 51,
+    xm: 27,
+    ym: 52,
+    sub: true,
+  },
+  {
+    label: "Over Morgen.",
+    pad: "/#over-morgen",
+    beschrijving: "Over Morgen, team en aanpak",
+    x: 70,
+    y: 67,
+    xm: 74,
+    ym: 56,
+    sub: true,
   },
   {
     // #wegwijzer is een echte route in de wereld: pasWereldRouteToe() toont de
@@ -208,13 +236,21 @@ const PortalWereldPoort = ({ vertraging = 0 }: { vertraging?: number }) => {
             >
               <span
                 aria-hidden="true"
-                className={`h-2.5 w-2.5 rounded-full ring-4 transition-transform duration-200 group-hover:scale-125 ${
+                className={`rounded-full ring-4 transition-transform duration-200 group-hover:scale-125 ${
+                  hotspot.sub ? "h-2 w-2" : "h-2.5 w-2.5"
+                } ${
                   hotspot.accent
                     ? "bg-neon ring-neon/20"
                     : "bg-primary ring-primary/20"
                 }`}
               />
-              <span className="whitespace-nowrap rounded-md bg-background/70 px-2 py-0.5 text-xs font-medium text-foreground backdrop-blur-sm">
+              <span
+                className={`whitespace-nowrap rounded-md bg-background/70 px-2 py-0.5 font-medium backdrop-blur-sm ${
+                  hotspot.sub
+                    ? "text-[11px] text-muted-foreground"
+                    : "text-xs text-foreground"
+                }`}
+              >
                 {hotspot.label}
               </span>
             </a>
