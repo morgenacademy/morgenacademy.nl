@@ -1,0 +1,124 @@
+# Poort naar de wereld in het klantportaal
+
+Datum: 2026-07-27
+Status: goedgekeurd, klaar voor implementatie
+
+## Aanleiding
+
+Het klantportaal (`morgenacademy.nl/portal/<klant>`) is voor deelnemers vaak het
+enige contactmoment met Morgen na een training. Ze halen hun materiaal op en zijn
+weg. Onderaan staan nu twee vlakke tekstkaartjes ("Online Academy", "Incompany
+training") die niets laten zien van wat Morgen verder doet.
+
+## Doel
+
+Twee dingen, in deze volgorde:
+
+1. De deelnemer klikt door naar morgencompany.com en gaat daar rondkijken.
+2. Daar komt een vervolgvraag uit de organisatie uit (incompany, implementatie,
+   maatwerk).
+
+De primaire taak van het portaal blijft ongewijzigd: materiaal ophalen. De poort
+staat onder de materialen, niet ervoor.
+
+## Scope
+
+Alleen de academy-repo. De company-site verandert niet. Voor elke klant hetzelfde
+blok, geen personalisatie per portaal en geen databasewerk.
+
+## Ontwerp
+
+### Component
+
+Nieuw: `src/components/portal/PortalWereldPoort.tsx`. Geen props, geen data-
+afhankelijkheid, geen state. Het rendert altijd, ook voor wie niets downloadt.
+
+`PortalDashboard.tsx` rendert het op de plek van de huidige `offerLinks`-grid.
+De constante `offerLinks` en de bijbehorende `GraduationCap`/`Users`/`ArrowRight`-
+imports vervallen.
+
+### Beeld
+
+De hub-illustratie van de wereld, rechtstreeks van de company-site:
+`https://morgencompany.com/wereld/assets/echt/hub.webp` (107 kB, 1112x834).
+
+Niet gekopieerd naar deze repo: wijzigt de illustratie op de company-site, dan
+volgt het portaal vanzelf. Vaste `width`/`height` en `loading="lazy"` tegen layout
+shift.
+
+De mobiele variant `hub-m.webp` (45 kB) blijft ongebruikt. Die is 720x1280, dus
+een andere uitsnede in staand formaat: de hotspot-percentages kloppen er niet op
+en in een kaart wordt hij onwerkbaar hoog. Eén 4:3-beeld op alle formaten is
+simpeler en houdt de posities geldig.
+
+### Hotspots
+
+Vijf links, posities overgenomen uit `wereld/index.html` van de company-repo zodat
+ze op de illustratie kloppen:
+
+| Label | Bestemming | left/top |
+|---|---|---|
+| Trainingen | `/academy/` | 22% / 34% |
+| Implementatie | `/consultancy/` | 44% / 24% |
+| AI-oplossingen | `/technology/` | 69% / 26% |
+| Inspiratie | `/inspiratie/` | 77% / 55% |
+| Wegwijzer | `/organisatie/#trainingwijzer-app` | 52% / 47% |
+
+De Wegwijzer krijgt het geel-groene accent: dat is de route naar het Kompas en
+daarmee de plek waar doel 2 ontstaat.
+
+Onder de illustratie een kop, een korte tekst en een primaire knop naar
+`morgencompany.com`. Daaronder een stille tekstlink naar de Online Academy, zodat
+die conversieroute niet verdwijnt met de oude kaartjes.
+
+### Copy
+
+- Kop: "Er ligt meer achter deze training"
+- Body: "Een training is vaak het begin. Daarna komt het echte werken met AI:
+  implementeren in de organisatie, laten landen in het dagelijkse werk, en
+  maatwerk bouwen waar dat nodig is."
+- Knop: "De wereld van Morgen in"
+
+Geen em-dashes, conform de huisstijl. De copy noemt bewust geen "slides": er hangt
+vaak ook ander materiaal onder een portaal.
+
+### Mobiel
+
+Onder 640px vervallen de absolute posities. De illustratie staat dan als beeld
+bovenaan en de vijf hotspots worden een rij chips eronder. Absolute puntjes op
+375px zijn onleesbaar en niet aan te tikken.
+
+### Meten
+
+Alle uitgaande links krijgen:
+
+```
+?utm_source=portal&utm_medium=referral&utm_campaign=wereld-poort
+```
+
+GA4 (`G-5F0ELV239K`) draait al op morgencompany.com en pikt dit op. Zonder deze
+parameters blijft doel 1 een aanname.
+
+### Toegankelijkheid
+
+Elke hotspot is een `<a>` met een beschrijvend `aria-label`, gelijk aan de
+company-site. De illustratie krijgt een lege `alt` (decoratief, alle betekenis zit
+in de links). Geen JS nodig om het blok te tonen.
+
+## Testen
+
+`src/components/portal/PortalWereldPoort.test.tsx` met vitest en Testing Library:
+
+1. Rendert vijf hotspot-links met de juiste bestemmingen.
+2. Elke uitgaande link draagt de utm-parameters.
+
+Daarnaast visueel nakijken in de dev-preview, desktop en mobiel.
+
+## Bewust niet
+
+- **Onthullen na download.** Overwogen, laten vallen: wie alleen komt kijken en
+  niets downloadt zou de poort dan nooit zien.
+- **De scroll-wereld embedden.** `scrub-engine.js` kaapt de scroll en botst met de
+  portaalpagina, kost video-assets op mobiel en moet in twee repo's onderhouden.
+- **Personalisatie per klant.** Handmatig instelbaar per portaal is scherper, maar
+  verwatert zodra het invullen wordt vergeten.

@@ -1,10 +1,11 @@
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
-import { ArrowRight, CheckCircle, GraduationCap, LogOut, MessageSquare, Sparkles, Star, Users } from "lucide-react";
+import { CheckCircle, LogOut, MessageSquare, Sparkles, Star } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import PortalTrainingCard from "./PortalTrainingCard";
 import PortalFeedbackDialog from "./PortalFeedbackDialog";
+import PortalWereldPoort from "./PortalWereldPoort";
 import { ACADEMY_URL } from "@/lib/links";
 
 interface Training {
@@ -41,23 +42,6 @@ interface PortalDashboardProps {
   slug: string;
   onLogout: () => void;
 }
-
-const offerLinks = [
-  {
-    title: "Online Academy",
-    body: "Leer op je eigen tempo met directe toegang tot de online trainingen.",
-    href: ACADEMY_URL,
-    icon: GraduationCap,
-    cta: "Bekijk online",
-  },
-  {
-    title: "Incompany training",
-    body: "Een training op maat voor je team, met cases uit jullie eigen praktijk.",
-    href: "https://morgencompany.com/academy/",
-    icon: Users,
-    cta: "Bekijk voor teams",
-  },
-];
 
 const PortalDashboard = ({ session, slug, onLogout }: PortalDashboardProps) => {
   const [trainings, setTrainings] = useState<Training[]>([]);
@@ -183,40 +167,8 @@ const PortalDashboard = ({ session, slug, onLogout }: PortalDashboardProps) => {
           </div>
         )}
 
-        {!loading && trainings.length > 0 && (
-          <motion.section
-            initial={{ opacity: 0, y: 16 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.4, delay: trainings.length * 0.1 + 0.1 }}
-            className="mt-16 space-y-4"
-          >
-            <div className="grid gap-4 sm:grid-cols-2">
-              {offerLinks.map((offer) => {
-                const Icon = offer.icon;
-                return (
-                  <a
-                    key={offer.title}
-                    href={offer.href}
-                    className="group rounded-xl border border-border/70 bg-card/60 p-4 transition-colors hover:border-primary/60"
-                  >
-                    <div className="mb-3 flex h-9 w-9 items-center justify-center rounded-lg bg-primary/10 text-primary">
-                      <Icon className="h-4 w-4" />
-                    </div>
-                    <h3 className="font-display text-base font-semibold text-foreground">
-                      {offer.title}
-                    </h3>
-                    <p className="mt-1.5 text-sm leading-relaxed text-muted-foreground">
-                      {offer.body}
-                    </p>
-                    <span className="mt-3 inline-flex items-center gap-2 text-sm font-medium text-primary group-hover:text-primary/80">
-                      {offer.cta}
-                      <ArrowRight className="h-4 w-4" />
-                    </span>
-                  </a>
-                );
-              })}
-            </div>
-          </motion.section>
+        {!loading && (
+          <PortalWereldPoort vertraging={trainings.length * 0.1 + 0.1} />
         )}
 
         {/* Footer */}
