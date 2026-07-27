@@ -111,7 +111,7 @@ const PortalDashboard = ({ session, slug, onLogout }: PortalDashboardProps) => {
             initial={{ opacity: 0, y: 16 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.4, delay: 0.1 }}
-            className="mb-12 rounded-xl border border-border/60 bg-card/40 p-4"
+            className="mb-12 rounded-xl bg-card/40 p-4"
           >
             <div className="flex flex-col gap-2.5 sm:flex-row">
               <Button

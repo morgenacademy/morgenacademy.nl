@@ -26,7 +26,7 @@ describe("PortalWereldPoort", () => {
     ],
     [
       "Wegwijzer: vind de route die bij je past",
-      "https://morgencompany.com/organisatie/",
+      "https://morgencompany.com/academy/",
     ],
   ];
 
@@ -66,7 +66,7 @@ describe("PortalWereldPoort", () => {
 
     for (const href of hrefsVoor("Wegwijzer: vind de route die bij je past")) {
       expect(href).toBe(
-        "https://morgencompany.com/organisatie/?utm_source=portal&utm_medium=referral&utm_campaign=wereld-poort#trainingwijzer-app",
+        "https://morgencompany.com/academy/?utm_source=portal&utm_medium=referral&utm_campaign=wereld-poort#trainingwijzer-app",
       );
     }
   });

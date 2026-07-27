@@ -59,8 +59,12 @@ const hotspots: Hotspot[] = [
     top: "55%",
   },
   {
+    // De wereld linkt zelf naar /organisatie/#trainingwijzer-app, maar dat pad
+    // staat niet in validPages van de SPA: die valt terug op home en gooit de
+    // hash weg. /academy/ landt wel goed. Het scrollen naar het Kompas werkt
+    // pas als de nav()-fix van branch codex/projecten op main staat.
     label: "Wegwijzer",
-    pad: "/organisatie/#trainingwijzer-app",
+    pad: "/academy/#trainingwijzer-app",
     beschrijving: "Wegwijzer: vind de route die bij je past",
     left: "52%",
     top: "47%",
@@ -73,7 +77,7 @@ const PortalWereldPoort = ({ vertraging = 0 }: { vertraging?: number }) => (
     initial={{ opacity: 0, y: 16 }}
     animate={{ opacity: 1, y: 0 }}
     transition={{ duration: 0.4, delay: vertraging }}
-    className="mt-16 overflow-hidden rounded-xl border border-border/70 bg-card/60"
+    className="mt-16 overflow-hidden rounded-xl bg-card/60"
   >
     <div className="relative">
       <img

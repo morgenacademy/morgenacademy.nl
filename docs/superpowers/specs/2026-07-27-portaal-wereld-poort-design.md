@@ -62,7 +62,12 @@ ze op de illustratie kloppen:
 | Implementatie | `/consultancy/` | 44% / 24% |
 | AI-oplossingen | `/technology/` | 69% / 26% |
 | Inspiratie | `/inspiratie/` | 77% / 55% |
-| Wegwijzer | `/organisatie/#trainingwijzer-app` | 52% / 47% |
+| Wegwijzer | `/academy/#trainingwijzer-app` | 52% / 47% |
+
+De wereld linkt zelf naar `/organisatie/#trainingwijzer-app`, maar dat pad zit niet
+in `validPages` van de SPA: de router valt terug op home en laat de hash vallen.
+`/academy/` landt wel goed. Het scrollen naar het Kompas werkt pas als de
+nav()-fix van branch `codex/projecten` op `main` staat.
 
 De Wegwijzer krijgt het geel-groene accent: dat is de route naar het Kompas en
 daarmee de plek waar doel 2 ontstaat.
