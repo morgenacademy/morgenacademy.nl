@@ -26,6 +26,8 @@ Belangrijke functionele blokken:
   `portal_companies`, `portal_trainings`, `portal_feedback`
   plus RPC's:
   `portal_set_password`, `portal_verify_password`, `portal_get_trainings`, `portal_submit_feedback`
+- Keep-alive:
+  `keepalive`
 
 ## Storage buckets
 
@@ -119,3 +121,29 @@ Als je wel wilt overzetten, zijn dit de relevante tabellen:
 8. adminrol geven
 9. testflow doen:
    registratie, login, checkout, gratis toegang geven, portaal login, feedback, slide-download
+
+## Project wakker houden (gratis plan)
+
+Supabase pauzeert projecten op het gratis plan na zeven dagen zonder activiteit.
+Een gepauzeerd project neemt het klantportaal mee: elke RPC faalt en de bezoeker
+ziet "Fout opgetreden. Probeer het later opnieuw." Weer aanzetten kan alleen
+handmatig, via het Supabase-dashboard (Restore project).
+
+Om dat te voorkomen draait `.github/workflows/supabase-keepalive.yml` dagelijks
+een ping op de `keepalive`-RPC. Zet daarvoor eenmalig twee repository secrets in
+GitHub (Settings > Secrets and variables > Actions):
+
+```txt
+SUPABASE_URL       https://<project-ref>.supabase.co
+SUPABASE_ANON_KEY  de publishable (anon) key
+```
+
+Twee dingen om te weten:
+
+- Faalt de ping, dan faalt de workflow en stuurt GitHub een mail. Dat is meteen
+  je storingsmelding.
+- GitHub schakelt geplande workflows automatisch uit na 60 dagen zonder commits
+  in de repo. Ligt de repo lang stil, zet de workflow dan weer aan via de
+  Actions-tab.
+
+Op een betaald plan (Pro) pauzeren projecten niet en is deze workflow overbodig.
