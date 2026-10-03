@@ -1,13 +1,14 @@
 import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
+import * as tus from "tus-js-client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
 import {
   ArrowLeft, Plus, Copy, Check, ToggleLeft, ToggleRight,
-  Star, Loader2, Upload, Trash2, ExternalLink,
+  Star, Loader2, Upload, Trash2, ExternalLink, Pencil,
 } from "lucide-react";
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle,
@@ -33,6 +34,7 @@ interface Training {
   title: string;
   description: string | null;
   training_date: string | null;
+  training_dates: string[] | null;
   slide_storage_path: string | null;
   slide_filename: string | null;
   is_active: boolean;
@@ -42,13 +44,15 @@ interface FeedbackRow {
   id: string;
   training_id: string;
   respondent_name: string | null;
+  respondent_function: string | null;
   rating_overall: number;
-  rating_content: number | null;
-  rating_trainer: number | null;
-  rating_practical: number | null;
+  rating_relevance: number | null;
+  takeaways: string[] | null;
+  rating_applicability: number | null;
+  rating_tempo: string | null;
   feedback_liked: string | null;
   feedback_improve: string | null;
-  feedback_apply: string | null;
+  feedback_other: string | null;
   created_at: string;
 }
 
@@ -74,12 +78,20 @@ const AdminPortal = () => {
   const [trainingDialogOpen, setTrainingDialogOpen] = useState(false);
   const [newTrainingTitle, setNewTrainingTitle] = useState("");
   const [newTrainingDesc, setNewTrainingDesc] = useState("");
-  const [newTrainingDate, setNewTrainingDate] = useState("");
+  const [newTrainingDates, setNewTrainingDates] = useState<string[]>([""]);
   const [newTrainingCompany, setNewTrainingCompany] = useState("");
   const [savingTraining, setSavingTraining] = useState(false);
   const [uploadingFor, setUploadingFor] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [uploadTarget, setUploadTarget] = useState<string | null>(null);
+
+  // Edit training state
+  const [editDialogOpen, setEditDialogOpen] = useState(false);
+  const [editTraining, setEditTraining] = useState<Training | null>(null);
+  const [editTitle, setEditTitle] = useState("");
+  const [editDesc, setEditDesc] = useState("");
+  const [editDates, setEditDates] = useState<string[]>([]);
+  const [savingEdit, setSavingEdit] = useState(false);
 
   // Feedback state
   const [feedback, setFeedback] = useState<FeedbackRow[]>([]);
@@ -159,10 +171,10 @@ const AdminPortal = () => {
       setCompanies((prev) => [company as Company, ...prev]);
       setCompanyDialogOpen(false);
       setNewName(""); setNewSlug(""); setNewPassword("");
-      toast.success(`Bedrijf ${newName} aangemaakt`);
+      toast.success(`Bedrijf ${newName} aangemaakt`, { duration: Infinity });
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : "Onbekende fout";
-      toast.error(`Aanmaken mislukt: ${msg}`);
+      toast.error(`Aanmaken mislukt: ${msg}`, { duration: Infinity });
     } finally {
       setSavingCompany(false);
     }
@@ -188,13 +200,15 @@ const AdminPortal = () => {
     if (!newTrainingTitle || !newTrainingCompany) return;
     setSavingTraining(true);
     try {
+      const filteredDates = newTrainingDates.filter(Boolean);
       const { data: training, error } = await supabase
         .from("portal_trainings")
         .insert({
           company_id: newTrainingCompany,
           title: newTrainingTitle,
           description: newTrainingDesc || null,
-          training_date: newTrainingDate || null,
+          training_date: filteredDates[0] || null,
+          training_dates: filteredDates.length > 0 ? filteredDates : null,
         })
         .select()
         .single();
@@ -203,11 +217,11 @@ const AdminPortal = () => {
         setTrainings((prev) => [training as Training, ...prev]);
       }
       setTrainingDialogOpen(false);
-      setNewTrainingTitle(""); setNewTrainingDesc(""); setNewTrainingDate(""); setNewTrainingCompany("");
-      toast.success("Training aangemaakt");
+      setNewTrainingTitle(""); setNewTrainingDesc(""); setNewTrainingDates([""]); setNewTrainingCompany("");
+      toast.success("Training aangemaakt", { duration: Infinity });
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : "Onbekende fout";
-      toast.error(`Aanmaken mislukt: ${msg}`);
+      toast.error(`Aanmaken mislukt: ${msg}`, { duration: Infinity });
     } finally {
       setSavingTraining(false);
     }
@@ -215,40 +229,125 @@ const AdminPortal = () => {
 
   const handleUploadSlide = async (trainingId: string, file: File) => {
     setUploadingFor(trainingId);
-    try {
-      const ext = file.name.split(".").pop() ?? "pdf";
-      const path = `${trainingId}/slides.${ext}`;
+    const ext = file.name.split(".").pop() ?? "pdf";
+    const path = `${trainingId}/slides.${ext}`;
+    const bucketName = "portal-slides";
 
-      const { error: uploadError } = await supabase.storage
-        .from("portal-slides")
-        .upload(path, file, { upsert: true });
-      if (uploadError) throw uploadError;
+    // Remove existing file first (TUS doesn't support upsert)
+    await supabase.storage.from(bucketName).remove([path]);
 
-      const { error: updateError } = await supabase
-        .from("portal_trainings")
-        .update({ slide_storage_path: path, slide_filename: file.name })
-        .eq("id", trainingId);
-      if (updateError) throw updateError;
-
-      setTrainings((prev) =>
-        prev.map((t) =>
-          t.id === trainingId ? { ...t, slide_storage_path: path, slide_filename: file.name } : t
-        )
-      );
-      toast.success("Slides geüpload");
-    } catch (err: unknown) {
-      const msg = err instanceof Error ? err.message : "Onbekende fout";
-      toast.error(`Upload mislukt: ${msg}`);
-    } finally {
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session) {
+      toast.error("Niet ingelogd", { duration: Infinity });
       setUploadingFor(null);
-      setUploadTarget(null);
+      return;
     }
+
+    const projectUrl = import.meta.env.VITE_SUPABASE_URL;
+
+    return new Promise<void>((resolve) => {
+      const upload = new tus.Upload(file, {
+        endpoint: `${projectUrl}/storage/v1/upload/resumable`,
+        retryDelays: [0, 1000, 3000, 5000],
+        headers: {
+          authorization: `Bearer ${session.access_token}`,
+          "x-upsert": "true",
+        },
+        uploadDataDuringCreation: true,
+        removeFingerprintOnSuccess: true,
+        metadata: {
+          bucketName,
+          objectName: path,
+          contentType: file.type || "application/octet-stream",
+        },
+        chunkSize: 6 * 1024 * 1024, // 6MB chunks
+        onError: (error: Error) => {
+          toast.error(`Upload mislukt: ${error.message}`, { duration: Infinity });
+          setUploadingFor(null);
+          setUploadTarget(null);
+          resolve();
+        },
+        onSuccess: async () => {
+          try {
+            const { error: updateError } = await supabase
+              .from("portal_trainings")
+              .update({ slide_storage_path: path, slide_filename: file.name })
+              .eq("id", trainingId);
+            if (updateError) throw updateError;
+
+            setTrainings((prev) =>
+              prev.map((t) =>
+                t.id === trainingId ? { ...t, slide_storage_path: path, slide_filename: file.name } : t
+              )
+            );
+            toast.success(`Slides geüpload: ${file.name}`, { duration: Infinity });
+          } catch (err: unknown) {
+            const msg = err instanceof Error ? err.message : "Onbekende fout";
+            toast.error(`Upload gelukt maar opslaan mislukt: ${msg}`, { duration: Infinity });
+          } finally {
+            setUploadingFor(null);
+            setUploadTarget(null);
+            resolve();
+          }
+        },
+      });
+
+      // Check for previous uploads to resume
+      upload.findPreviousUploads().then((prev) => {
+        if (prev.length > 0) upload.resumeFromPreviousUpload(prev[0]);
+        upload.start();
+      });
+    });
   };
 
   const handleDeleteTraining = async (trainingId: string) => {
     await supabase.from("portal_trainings").update({ is_active: false }).eq("id", trainingId);
     setTrainings((prev) => prev.filter((t) => t.id !== trainingId));
-    toast.success("Training verwijderd");
+    toast.success("Training verwijderd", { duration: Infinity });
+  };
+
+  const openEditDialog = (training: Training) => {
+    setEditTraining(training);
+    setEditTitle(training.title);
+    setEditDesc(training.description ?? "");
+    const dates = training.training_dates?.length
+      ? training.training_dates
+      : training.training_date ? [training.training_date] : [];
+    setEditDates(dates);
+    setEditDialogOpen(true);
+  };
+
+  const handleEditTraining = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editTraining || !editTitle) return;
+    setSavingEdit(true);
+    const filteredDates = editDates.filter(Boolean);
+    try {
+      const { error } = await supabase
+        .from("portal_trainings")
+        .update({
+          title: editTitle,
+          description: editDesc || null,
+          training_date: filteredDates[0] || null,
+          training_dates: filteredDates.length > 0 ? filteredDates : null,
+        })
+        .eq("id", editTraining.id);
+      if (error) throw error;
+      setTrainings((prev) =>
+        prev.map((t) =>
+          t.id === editTraining.id
+            ? { ...t, title: editTitle, description: editDesc || null, training_date: filteredDates[0] || null, training_dates: filteredDates.length > 0 ? filteredDates : null }
+            : t
+        )
+      );
+      setEditDialogOpen(false);
+      toast.success("Training bijgewerkt", { duration: Infinity });
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : "Onbekende fout";
+      toast.error(`Bijwerken mislukt: ${msg}`, { duration: Infinity });
+    } finally {
+      setSavingEdit(false);
+    }
   };
 
   // ---- Render helpers ----
@@ -385,33 +484,41 @@ const AdminPortal = () => {
             ) : (
               <div className="divide-y divide-border rounded-xl border border-border bg-card">
                 {trainings.map((training) => (
-                  <div key={training.id} className="flex items-center gap-4 px-5 py-4">
-                    <div className="flex-1 min-w-0">
-                      <p className="font-medium text-foreground">{training.title}</p>
-                      <p className="mt-0.5 text-xs text-muted-foreground">
-                        {training.training_date
-                          ? new Date(training.training_date).toLocaleDateString("nl-NL", { day: "numeric", month: "long", year: "numeric" })
-                          : "Geen datum"
-                        }
-                        {training.slide_filename && (
-                          <span className="ml-2 text-success">· {training.slide_filename}</span>
-                        )}
-                      </p>
-                    </div>
-                    <div className="flex items-center gap-2 shrink-0">
+                  <div key={training.id} className="px-5 py-4 space-y-2">
+                    <div className="flex items-center gap-4">
+                      <div className="flex-1 min-w-0">
+                        <p className="font-medium text-foreground">{training.title}</p>
+                        <p className="mt-0.5 text-xs text-muted-foreground">
+                          {(training.training_dates?.length ? training.training_dates : training.training_date ? [training.training_date] : [])
+                            .map((d) => new Date(d).toLocaleDateString("nl-NL", { day: "numeric", month: "long", year: "numeric" }))
+                            .join(", ") || "Geen datum"
+                          }
+                          {training.slide_filename && (
+                            <span className="ml-2 text-success">· {training.slide_filename}</span>
+                          )}
+                        </p>
+                      </div>
+                      <div className="flex items-center gap-2 shrink-0">
+                        <Button
+                          variant="outline" size="sm"
+                          disabled={uploadingFor === training.id}
+                          onClick={() => {
+                            setUploadTarget(training.id);
+                            fileInputRef.current?.click();
+                          }}
+                          className="gap-1.5 text-xs"
+                        >
+                          {uploadingFor === training.id
+                            ? <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                            : <Upload className="h-3.5 w-3.5" />}
+                          {training.slide_storage_path ? "Vervangen" : "Upload slides"}
+                        </Button>
                       <Button
-                        variant="outline" size="sm"
-                        disabled={uploadingFor === training.id}
-                        onClick={() => {
-                          setUploadTarget(training.id);
-                          fileInputRef.current?.click();
-                        }}
-                        className="gap-1.5 text-xs"
+                        variant="ghost" size="icon"
+                        onClick={() => openEditDialog(training)}
+                        title="Bewerk training"
                       >
-                        {uploadingFor === training.id
-                          ? <Loader2 className="h-3.5 w-3.5 animate-spin" />
-                          : <Upload className="h-3.5 w-3.5" />}
-                        {training.slide_storage_path ? "Vervangen" : "Slides uploaden"}
+                        <Pencil className="h-4 w-4" />
                       </Button>
                       <Button
                         variant="ghost" size="icon"
@@ -420,6 +527,7 @@ const AdminPortal = () => {
                       >
                         <Trash2 className="h-4 w-4 text-destructive" />
                       </Button>
+                      </div>
                     </div>
                   </div>
                 ))}
@@ -500,19 +608,37 @@ const AdminPortal = () => {
                       {feedback.map((row) => (
                         <div key={row.id} className="rounded-xl border border-border bg-card p-5">
                           <div className="mb-3 flex items-center justify-between">
-                            <p className="font-medium text-foreground">
-                              {row.respondent_name ?? "Anoniem"}
-                            </p>
+                            <div>
+                              <p className="font-medium text-foreground">
+                                {row.respondent_name ?? "Anoniem"}
+                              </p>
+                              {row.respondent_function && (
+                                <p className="text-xs text-muted-foreground">{row.respondent_function}</p>
+                              )}
+                            </div>
                             <p className="text-xs text-muted-foreground">
                               {new Date(row.created_at).toLocaleDateString("nl-NL")}
                             </p>
                           </div>
                           <div className="mb-3 grid grid-cols-2 gap-2 text-sm sm:grid-cols-4">
                             <div><p className="text-xs text-muted-foreground">Overall</p><Stars value={row.rating_overall} /></div>
-                            <div><p className="text-xs text-muted-foreground">Inhoud</p><Stars value={row.rating_content} /></div>
-                            <div><p className="text-xs text-muted-foreground">Trainer</p><Stars value={row.rating_trainer} /></div>
-                            <div><p className="text-xs text-muted-foreground">Praktijk</p><Stars value={row.rating_practical} /></div>
+                            <div><p className="text-xs text-muted-foreground">Relevantie</p><Stars value={row.rating_relevance} /></div>
+                            <div><p className="text-xs text-muted-foreground">Toepasbaarheid</p><Stars value={row.rating_applicability} /></div>
+                            <div>
+                              <p className="text-xs text-muted-foreground">Tempo</p>
+                              <p className="text-xs text-foreground mt-0.5">
+                                {row.rating_tempo === "slow" ? "Te langzaam" : row.rating_tempo === "balanced" ? "Goed" : row.rating_tempo === "fast" ? "Te snel" : "—"}
+                              </p>
+                            </div>
                           </div>
+                          {row.takeaways && row.takeaways.length > 0 && (
+                            <div className="mb-2">
+                              <p className="text-xs text-muted-foreground">Na deze sessie...</p>
+                              <ul className="mt-0.5 text-sm text-foreground list-disc list-inside">
+                                {row.takeaways.map((t, i) => <li key={i}>{t}</li>)}
+                              </ul>
+                            </div>
+                          )}
                           {row.feedback_liked && (
                             <div className="mb-2">
                               <p className="text-xs text-muted-foreground">Meest waardevol</p>
@@ -525,10 +651,10 @@ const AdminPortal = () => {
                               <p className="mt-0.5 text-sm text-foreground">{row.feedback_improve}</p>
                             </div>
                           )}
-                          {row.feedback_apply && (
+                          {row.feedback_other && (
                             <div>
-                              <p className="text-xs text-muted-foreground">Morgen anders doen</p>
-                              <p className="mt-0.5 text-sm text-foreground">{row.feedback_apply}</p>
+                              <p className="text-xs text-muted-foreground">Overig</p>
+                              <p className="mt-0.5 text-sm text-foreground">{row.feedback_other}</p>
                             </div>
                           )}
                         </div>
@@ -630,15 +756,89 @@ const AdminPortal = () => {
               />
             </div>
             <div className="space-y-1.5">
-              <label className="text-sm font-medium text-foreground">Datum <span className="text-muted-foreground font-normal">(optioneel)</span></label>
-              <Input
-                type="date"
-                value={newTrainingDate}
-                onChange={(e) => setNewTrainingDate(e.target.value)}
-              />
+              <label className="text-sm font-medium text-foreground">Data <span className="text-muted-foreground font-normal">(optioneel)</span></label>
+              {newTrainingDates.map((d, i) => (
+                <div key={i} className="flex gap-2">
+                  <Input
+                    type="date"
+                    value={d}
+                    onChange={(e) => {
+                      const updated = [...newTrainingDates];
+                      updated[i] = e.target.value;
+                      setNewTrainingDates(updated);
+                    }}
+                  />
+                  {newTrainingDates.length > 1 && (
+                    <Button type="button" variant="ghost" size="icon" onClick={() => setNewTrainingDates(newTrainingDates.filter((_, j) => j !== i))}>
+                      <Trash2 className="h-3.5 w-3.5 text-muted-foreground" />
+                    </Button>
+                  )}
+                </div>
+              ))}
+              <Button type="button" variant="outline" size="sm" onClick={() => setNewTrainingDates([...newTrainingDates, ""])} className="gap-1.5 text-xs">
+                <Plus className="h-3.5 w-3.5" /> Datum toevoegen
+              </Button>
             </div>
             <Button type="submit" className="w-full" disabled={savingTraining}>
               {savingTraining ? <Loader2 className="h-4 w-4 animate-spin" /> : "Aanmaken"}
+            </Button>
+          </form>
+        </DialogContent>
+      </Dialog>
+      {/* Edit Training Dialog */}
+      <Dialog open={editDialogOpen} onOpenChange={setEditDialogOpen}>
+        <DialogContent className="sm:max-w-md bg-card border-border">
+          <DialogHeader>
+            <DialogTitle className="font-display text-xl">Training bewerken</DialogTitle>
+          </DialogHeader>
+          <form onSubmit={handleEditTraining} className="space-y-4 pt-2">
+            <div className="space-y-1.5">
+              <label className="text-sm font-medium text-foreground">Titel</label>
+              <Input
+                value={editTitle}
+                onChange={(e) => setEditTitle(e.target.value)}
+                required
+              />
+            </div>
+            <div className="space-y-1.5">
+              <label className="text-sm font-medium text-foreground">Omschrijving <span className="text-muted-foreground font-normal">(optioneel)</span></label>
+              <Textarea
+                value={editDesc}
+                onChange={(e) => setEditDesc(e.target.value)}
+                rows={2}
+              />
+            </div>
+            <div className="space-y-1.5">
+              <label className="text-sm font-medium text-foreground">Data <span className="text-muted-foreground font-normal">(optioneel)</span></label>
+              {editDates.length === 0 && (
+                <Button type="button" variant="outline" size="sm" onClick={() => setEditDates([""])} className="gap-1.5 text-xs">
+                  <Plus className="h-3.5 w-3.5" /> Datum toevoegen
+                </Button>
+              )}
+              {editDates.map((d, i) => (
+                <div key={i} className="flex gap-2">
+                  <Input
+                    type="date"
+                    value={d}
+                    onChange={(e) => {
+                      const updated = [...editDates];
+                      updated[i] = e.target.value;
+                      setEditDates(updated);
+                    }}
+                  />
+                  <Button type="button" variant="ghost" size="icon" onClick={() => setEditDates(editDates.filter((_, j) => j !== i))}>
+                    <Trash2 className="h-3.5 w-3.5 text-muted-foreground" />
+                  </Button>
+                </div>
+              ))}
+              {editDates.length > 0 && (
+                <Button type="button" variant="outline" size="sm" onClick={() => setEditDates([...editDates, ""])} className="gap-1.5 text-xs">
+                  <Plus className="h-3.5 w-3.5" /> Datum toevoegen
+                </Button>
+              )}
+            </div>
+            <Button type="submit" className="w-full" disabled={savingEdit}>
+              {savingEdit ? <Loader2 className="h-4 w-4 animate-spin" /> : "Opslaan"}
             </Button>
           </form>
         </DialogContent>

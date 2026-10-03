@@ -12,6 +12,7 @@ interface Training {
   title: string;
   description: string | null;
   training_date: string | null;
+  training_dates: string[] | null;
   slide_storage_path: string | null;
   slide_filename: string | null;
 }
@@ -30,13 +31,14 @@ const PortalTrainingCard = ({ training, companyId, slug, password, index }: Port
   const [feedbackSubmitted, setFeedbackSubmitted] = useState(false);
   const { toast } = useToast();
 
-  const formattedDate = training.training_date
-    ? new Date(training.training_date).toLocaleDateString("nl-NL", {
-        day: "numeric",
-        month: "long",
-        year: "numeric",
-      })
+  const dates = training.training_dates?.length
+    ? training.training_dates
+    : training.training_date ? [training.training_date] : [];
+  const formattedDate = dates.length > 0
+    ? dates.map((d) => new Date(d).toLocaleDateString("nl-NL", { day: "numeric", month: "long", year: "numeric" })).join(", ")
     : null;
+
+  const hasSlide = !!training.slide_storage_path;
 
   const handleDownload = async () => {
     setDownloading(true);
@@ -47,7 +49,6 @@ const PortalTrainingCard = ({ training, companyId, slug, password, index }: Port
 
       if (error || !data?.download_url) throw new Error("Download mislukt");
 
-      // Trigger download
       const a = document.createElement("a");
       a.href = data.download_url;
       a.download = data.filename || "slides.pdf";
@@ -97,7 +98,7 @@ const PortalTrainingCard = ({ training, companyId, slug, password, index }: Port
           </CardHeader>
 
           <CardContent className="flex flex-col gap-2.5 sm:flex-row">
-            {training.slide_storage_path && (
+            {hasSlide && (
               <Button
                 onClick={handleDownload}
                 disabled={downloading}
